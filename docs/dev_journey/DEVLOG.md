@@ -22,3 +22,13 @@ Friday 8/1
 
 6 PM - 7 PM and
 9 PM - 11 PM Set up a new template repository, and then a project specific repository based on the template.
+
+Saturday 8/2
+
+8 - 10 AM more work on data generation (manual) by reviewing the game
+
+11AM - 1 PM: SDG with RAGAS
+
+2PM - 3 PM: needed a 'question re-wrtier'
+            working on RAG
+            Issues w/Langsmith again. 
