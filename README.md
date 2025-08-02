@@ -1,6 +1,6 @@
-# Project Title
+# Thudbot
 
-A brief, one-sentence summary of the project's purpose.
+Thudbot: a hint system for The Space Bar
 
 ## 📋 Table of Contents
 
@@ -93,4 +93,4 @@ Instructions for anyone who wants to contribute to the project.
 
 ## 📄 License
 
-Specify the license under which the project is distributed. _This project is copyrighted and all rights are reserved._
+ _This project is copyrighted and all rights are reserved. Boffo Games 2025_ 

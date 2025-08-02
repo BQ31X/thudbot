@@ -1,8 +1,9 @@
 # This file is used by `uv sync` to install and manage project dependencies.
 # Add your required packages here, one per line.
 #
-# Examples:
-# langchain
+# Expected for this project:
+langchain
 streamlit
-# qdrant-client
-# ragas
+qdrant-client
+ragas
+python-dotenv

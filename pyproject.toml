@@ -2,11 +2,11 @@
 [project]
 name = "project-title"
 version = "0.1.0"
-description = "A brief description of your project."
+description = "Thudbot: hint system for The Space Bar"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Leo", email = "ldc31@mac.com"}
 ]
 
 # This is where you declare your project's dependencies.
