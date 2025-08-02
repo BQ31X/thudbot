@@ -1,0 +1,48 @@
+# Name of the workflow as it appears in the GitHub Actions UI
+name: CI - Python Project Template
+
+# Trigger the workflow on pushes and pull requests to the main branch
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+# A workflow is made of one or more jobs.
+jobs:
+  # The name of the job
+  test:
+    # Use a fresh Ubuntu runner for the job
+    runs-on: ubuntu-latest
+    
+    # Steps are a sequence of tasks that are executed as part of the job.
+    steps:
+    - name: Checkout repository
+      # Use the official action to check out your code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      # Use the official action to set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11' # Use the latest stable Python version
+        
+    - name: Install uv and dependencies
+      # Install uv first, then use it to sync dependencies
+      run: |
+        pip install uv
+        uv sync
+        
+    - name: Run fast tests
+      # This step assumes you have a test file named `test_functions.py`
+      # and that your `pytest` command runs those tests
+      run: |
+        uv run pytest
+        
+    - name: Run check_and_commit.sh script
+      # This step shows how to run your pre-commit script in the CI pipeline
+      # You may want to add `uv run` before the script name if you want to
+      # execute Python scripts from within the shell script.
+      run: |
+        chmod +x check_and_commit.sh
+        ./check_and_commit.sh "CI test commit"
