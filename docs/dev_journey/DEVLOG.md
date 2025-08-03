@@ -32,3 +32,5 @@ Saturday 8/2
 2PM - 3 PM: needed a 'question re-wrtier'
             working on RAG
             Issues w/Langsmith again. 
+
+4PM - midnight: (minus dinner) completed RAG & Langsmith evals leveraging HW #9 (see checkpoint doc)
