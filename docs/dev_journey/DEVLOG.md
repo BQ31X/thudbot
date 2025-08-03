@@ -34,3 +34,10 @@ Saturday 8/2
             Issues w/Langsmith again. 
 
 4PM - midnight: (minus dinner) completed RAG & Langsmith evals leveraging HW #9 (see checkpoint doc)
+
+Sunday 8/3
+
+7AM - 10AM Rebuilt noteobook, based on results of eval
+            added tool calls, API
+
+11 AM - 1PM Attempted to wrap as LangGraph. too many issues; rolling back
