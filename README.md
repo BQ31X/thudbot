@@ -11,14 +11,14 @@ An intelligent AI assistant for **The Space Bar** adventure game that provides c
 
 ## 🚀 Project Overview
 
-Thudbot converts a Jupyter notebook-based game assistant into a production-ready web application. Players can ask questions about The Space Bar adventure game and receive contextual hints from a RAG-powered knowledge base, with weather information as a fallback for non-game questions.
+Thudbot was prototyped via a Jupyter notebook, then converted to this production-ready web application. Players can ask questions about The Space Bar adventure game and receive contextual hints from a RAG-powered knowledge base, with weather information as a fallback for non-game questions.
 
-**Built from notebook to web app in record time!** 🚀
+**Built from notebook to web app in record time!** 🚀 (Claude likes to brag about this part)
 
 ## ✨ Features
 
 - **🎮 Game Hint System**: RAG-powered hints for The Space Bar adventure game puzzles
-- **🌤️ Weather Integration**: Real-time weather information as fallback responses  
+- **🌤️ Weather Integration**: Real-time weather information as fallback responses  (to meet api requirement)
 - **🤖 LangChain Agent**: Intelligent tool selection between hint lookup and weather
 - **🌐 Web Interface**: Clean Next.js frontend for easy interaction
 - **⚡ FastAPI Backend**: High-performance Python API server
@@ -31,6 +31,7 @@ Thudbot converts a Jupyter notebook-based game assistant into a production-ready
 - Python 3.12+
 - Node.js 18+
 - OpenAI API Key
+- OpenWeather API Key (optional)
 
 ### 1. Environment Setup
 
@@ -87,6 +88,24 @@ Frontend (Next.js) → Backend (FastAPI) → Agent (LangChain) → Tools (Hints/
 - **Data**: CSV hint database + Qdrant vector store
 - **Tools**: Weather API + RAG hint lookup
 
+## 📊 RAG Evaluation & Performance
+
+**Data-driven retriever selection** using comprehensive evaluation:
+
+- **📓 Full evaluation in:** `00_Thud_construction.ipynb`
+- **🧪 Framework:** RAGAS metrics (context recall, entity recall, noise sensitivity)
+- **📋 Golden dataset:** 12 synthetically generated test queries  
+- **🥇 Platinum dataset:**  Selected subset of 5 queries, produced by applying a LangChain-based rewriting prompt to the golden dataset, followed by manual selection for evaluation focus and cost control
+- **⚖️ Compared retrievers:** Naive, BM25, Multi-query
+- **🎯 Result:** Multi-query retrieval selected based on superior performance
+
+**Key findings:**
+- Multi-query retrieval significantly improved context precision
+- Enhanced handling of ambiguous game terminology  
+- Better retrieval of relevant hints for complex puzzles
+
+*See notebook for detailed metrics, comparison tables, and methodology.*
+
 ## 🧪 Testing
 
 Run the comprehensive test suite:
@@ -109,7 +128,13 @@ uv run pytest
 **Ask about game puzzles:**
 ```
 "How do I get the token from the cup?"
-→ "The bus token is in a cup nearby; make sure Thud has it before you hop on the bus."
+→ "The bus token is in the cup; make sure Thud has it before you hop on the bus."
+```
+
+**Get general game help
+```
+"When is the shuttle to Karas 4?"
+→ "The shuttle to Karkas 4 departs at 22:50."
 ```
 
 **Get weather information:**
@@ -140,6 +165,10 @@ thudbot/
 - Full-stack development with Python + TypeScript
 - Clean architecture patterns for AI applications
 
+## 📝 Graders Note
+
+**For certification evaluators:** See [CERTIFICATION.md](docs/CERTIFICATION.md) for detailed mapping of this project to all 7 required certification tasks, including evaluation results and technical implementation details.
+
 ## 📄 License
 
- _This project is [copyrighted](COPYRIGHT) and all rights are reserved. Boffo Games 2025_ 
+ _This project is [copyrighted](COPYRIGHT) and all rights are reserved. Leo DaCosta 2025_ 
