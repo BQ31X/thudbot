@@ -98,7 +98,7 @@ Your hint:"""
         """Gets the current weather for a given city using the OpenWeatherMap API."""
         api_key = os.getenv("OPENWEATHER_API_KEY")
         if not api_key:
-            return "Oops, no weather API key found."
+            return f"🌤️ I'd love to tell you about the weather in {city}, but I need a weather API key! Ask your developer to add OPENWEATHER_API_KEY to the .env file, or just enjoy the game hints instead! 🎮"
 
         try:
             url = (
