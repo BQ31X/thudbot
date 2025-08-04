@@ -131,9 +131,6 @@ thudbot/
 ├── requirements.txt      # Python dependencies
 └── package.json          # Node.js dependencies
 ```
-## 📄 License
-
-This project is copyrighted and all rights are reserved. Boffo Games 2025_  - see the [COPYRIGHT](COPYRIGHT) file for details.
 
 ## 🚀 Built With
 
@@ -145,4 +142,4 @@ This project is copyrighted and all rights are reserved. Boffo Games 2025_  - se
 
 ## 📄 License
 
- _This project is copyrighted and all rights are reserved. Boffo Games 2025_ 
+ _This project is [copyrighted](COPYRIGHT) and all rights are reserved. Boffo Games 2025_ 
