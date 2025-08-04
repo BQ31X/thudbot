@@ -2,10 +2,14 @@
 Thudbot Agent - Converted from notebook
 """
 import os
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv(dotenv_path=".env", override=True)
+# Load environment variables (optional - for local development)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(dotenv_path=".env", override=True)
+except ImportError:
+    # python-dotenv not installed - that's fine, use system environment
+    pass
 
 # Core imports
 from langchain_community.document_loaders.csv_loader import CSVLoader
