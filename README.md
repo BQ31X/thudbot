@@ -36,9 +36,10 @@ Thudbot was prototyped via a Jupyter notebook, then converted to this production
 ### 1. Environment Setup
 
 ```bash
-# Clone the repository
-git clone <your-repo-url>
+# 📦 Clone the correct feature branch **(not main!)**
+git clone --branch feat/thudbot-cc https://github.com/BQ31X/thudbot.git
 cd thudbot
+
 
 # Create Python virtual environment  
 uv venv
