@@ -1,9 +1,26 @@
 # This file is used by `uv sync` to install and manage project dependencies.
 # Add your required packages here, one per line.
 #
-# Expected for this project:
+# Core LangChain and AI dependencies
 langchain
-streamlit
-qdrant-client
-ragas
+langchain-openai
+langchain-community
+openai
 python-dotenv
+
+# RAG and Vector Database
+qdrant-client
+
+# Web Framework
+fastapi
+uvicorn[standard]
+pydantic
+
+# External APIs
+requests
+
+# Evaluation (optional)
+ragas
+
+# Development
+streamlit

@@ -1,0 +1,140 @@
+"""
+Thudbot Agent - Converted from notebook
+"""
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv(dotenv_path=".env", override=True)
+
+# Core imports
+from langchain_community.document_loaders.csv_loader import CSVLoader
+from langchain_community.vectorstores import Qdrant
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.tools import tool
+from langchain.agents import initialize_agent, AgentType
+from operator import itemgetter
+import requests
+
+# Initialize global components
+def initialize_thudbot():
+    """Initialize the Thudbot agent with RAG and tools"""
+    
+    # Load hint data
+    loader = CSVLoader(
+        file_path="./data/Thudbot_Hint_Data_1.csv",
+        metadata_columns=[
+            "question", "hint_level", "character", "speaker",
+            "narrative_context", "planet", "location", "category",
+            "tone", "follow_up_hint_id", "answer_keywords", "tags"
+        ]
+    )
+    hint_data = loader.load()
+    
+    # Create vector store
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    vectorstore = Qdrant.from_documents(
+        documents=hint_data,
+        embedding=embeddings,
+        location=":memory:",
+        collection_name="Thudbot_Hints"
+    )
+    
+    # Create retrievers
+    naive_retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+    chat_model = ChatOpenAI(model="gpt-4.1-nano")
+    multi_query_retriever = MultiQueryRetriever.from_llm(
+        retriever=naive_retriever, llm=chat_model
+    )
+    
+    # Thud prompt template
+    THUD_TEMPLATE = """\
+You are Thud, a friendly and somewhat simple-minded patron at The Thirsty Tentacle. 
+
+You're trying your best to help the player navigate the game "The Space Bar."
+
+Use the clues and context provided below to offer a gentle hint — not a full solution.
+
+If you're not sure what to say, admit it honestly or say something silly — like talk about the weather or suggest looking around more.
+
+If the player's question is clearly outside the game's scope (e.g., about real-world topics), 
+you may consult the get_weather tool to offer a friendly distraction.
+
+Player's question:
+{question}
+
+Context:
+{context}
+
+Your hint:"""
+    
+    rag_prompt = ChatPromptTemplate.from_template(THUD_TEMPLATE)
+    
+    # Create RAG chain
+    multi_query_retrieval_chain = (
+        {"context": itemgetter("question") | multi_query_retriever, "question": itemgetter("question")}
+        | RunnablePassthrough.assign(context=itemgetter("context"))
+        | {"response": rag_prompt | chat_model, "context": itemgetter("context")}
+    ).with_config({"run_name": "multi_query_chain"})
+    
+    # Define tools
+    @tool
+    def hint_lookup(question: str) -> str:
+        """Answer in-game player questions or (if needed) give the weather."""
+        result = multi_query_retrieval_chain.invoke({"question": question})
+        answer = result["response"].content
+
+        if "not sure" in answer.lower() or "look around" in answer.lower():
+            return get_weather.invoke({"city": "Boston"})
+        
+        return answer
+    
+    @tool
+    def get_weather(city: str) -> str:
+        """Gets the current weather for a given city using the OpenWeatherMap API."""
+        api_key = os.getenv("OPENWEATHER_API_KEY")
+        if not api_key:
+            return "Oops, no weather API key found."
+
+        try:
+            url = (
+                f"https://api.openweathermap.org/data/2.5/weather?"
+                f"q={city}&units=imperial&appid={api_key}"
+            )
+            response = requests.get(url)
+            data = response.json()
+
+            if response.status_code != 200 or "weather" not in data:
+                return f"Couldn't get weather for {city} right now."
+
+            weather = data["weather"][0]["description"]
+            temp = data["main"]["temp"]
+            return f"It's currently {weather}, around {temp:.0f}°F in {city}."
+        
+        except Exception as e:
+            return f"Weather system error: {e}"
+    
+    # Create agent
+    tools = [hint_lookup]
+    thud_agent = initialize_agent(
+        tools=tools,
+        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+        llm=chat_model,
+        verbose=True
+    )
+    
+    return thud_agent
+
+# Global agent instance
+_thud_agent = None
+
+def get_thud_agent():
+    """Get or create the Thudbot agent"""
+    global _thud_agent
+    if _thud_agent is None:          # First time? Build it!
+        _thud_agent = initialize_thudbot()  # ← Expensive setup once
+    return _thud_agent               # Already built? Just return it!

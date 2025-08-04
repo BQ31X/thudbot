@@ -36,3 +36,7 @@ build/
 # Working design documents (for local development only)
 WorkNotes.md
 PromptingIdeas.md
+
+# Node.js dependencies  
+node_modules/
+.next/
