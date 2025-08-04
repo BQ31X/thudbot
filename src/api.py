@@ -23,10 +23,8 @@ async def chat_with_thud(request: ChatRequest):
         if not api_key:
             raise HTTPException(status_code=400, detail="OpenAI API key required (provide in request or set OPENAI_API_KEY in .env)")
         
-        os.environ['OPENAI_API_KEY'] = api_key
-        
-        # Get the Thudbot agent and run
-        thud_agent = get_thud_agent()
+        # Get the Thudbot agent with API key (lazy initialization)
+        thud_agent = get_thud_agent(api_key=api_key)
         response = thud_agent.run(request.user_message)
         return {"response": response}
     except Exception as e:

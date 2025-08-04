@@ -25,8 +25,16 @@ from operator import itemgetter
 import requests
 
 # Initialize global components
-def initialize_thudbot():
+def initialize_thudbot(api_key=None):
     """Initialize the Thudbot agent with RAG and tools"""
+    
+    # Use provided API key or fall back to environment
+    if api_key:
+        os.environ['OPENAI_API_KEY'] = api_key
+    
+    # Verify API key is available
+    if not os.getenv('OPENAI_API_KEY'):
+        raise ValueError("OpenAI API key required - provide via parameter or environment variable")
     
     # Load hint data
     loader = CSVLoader(
@@ -136,9 +144,15 @@ Your hint:"""
 # Global agent instance
 _thud_agent = None
 
-def get_thud_agent():
-    """Get or create the Thudbot agent"""
+def get_thud_agent(api_key=None):
+    """Get or create the Thudbot agent with optional API key"""
     global _thud_agent
-    if _thud_agent is None:          # First time? Build it!
-        _thud_agent = initialize_thudbot()  # ← Expensive setup once
-    return _thud_agent               # Already built? Just return it!
+    
+    # If no agent exists, create one with provided API key
+    if _thud_agent is None:
+        if api_key or os.getenv('OPENAI_API_KEY'):
+            _thud_agent = initialize_thudbot(api_key)
+        else:
+            raise ValueError("OpenAI API key required for first-time agent initialization")
+    
+    return _thud_agent
