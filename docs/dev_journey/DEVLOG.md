@@ -41,3 +41,6 @@ Sunday 8/3
             added tool calls, API
 
 11 AM - 1PM Attempted to wrap as LangGraph. too many issues; rolling back
+
+4PM - 6PM &
+9:30 - 12:30 Vibe-coded and debugged Front End with Claude Sonnet 4

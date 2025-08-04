@@ -40,3 +40,6 @@ PromptingIdeas.md
 # Node.js dependencies  
 node_modules/
 .next/
+
+# private files
+docs/dev_journey/LLM_Partner_Profile.md
