@@ -117,9 +117,8 @@ export default function Home() {
             <h3 className="font-semibold text-yellow-800 mb-2">💡 How to chat with Thud:</h3>
             <ul className="text-sm text-yellow-700 space-y-1">
               <li>• Ask about puzzles: "How do I get the token from the cup?"</li>
-              <li>• Get hints: "I'm stuck at the security guard"</li>
-              <li>• General help: "What should I do next?"</li>
-              <li>• Just chat: Thud might even tell you about the weather!</li>
+              <li>• Get general game help: "How do I use the voice printer"</li>
+              <li>• Talk about the weather: "What's the weather in Boston?"</li>
             </ul>
           </div>
         </div>

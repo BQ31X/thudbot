@@ -119,7 +119,7 @@ Your hint:"""
             return f"Weather system error: {e}"
     
     # Create agent
-    tools = [hint_lookup]
+    tools = [hint_lookup, get_weather]
     thud_agent = initialize_agent(
         tools=tools,
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
