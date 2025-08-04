@@ -44,3 +44,6 @@ Sunday 8/3
 
 4PM - 6PM &
 9:30 - 12:30 Vibe-coded and debugged Front End with Claude Sonnet 4
+
+Monday 8/4 
+9 - noon: bug fixes and documentation cleanup
