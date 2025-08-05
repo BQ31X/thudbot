@@ -130,7 +130,7 @@ export default function Home() {
           <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <h3 className="font-semibold text-yellow-800 mb-2">💡 How to chat with Thud:</h3>
             <ul className="text-sm text-yellow-700 space-y-1">
-              <li>• Ask about puzzles: "How do I get the token from the cup?"</li>
+              <li>• Ask about puzzles: "How do I get a token for the bus?"</li>
               <li>• Get general game help: "How do I use the voice printer"</li>
               <li>• Talk about the weather: "What's the weather in Boston?"</li>
             </ul>
