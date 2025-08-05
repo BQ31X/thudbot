@@ -21,12 +21,44 @@ Thudbot was prototyped via a Jupyter notebook, then converted to this production
 
 *See Thudbot in action: agentic tool selection, character-driven responses, and real-time problem solving for The Space Bar game puzzles.*
 
+## 🧪 Quick Testing Guide for Graders
+
+**Not familiar with "The Space Bar" game? No problem!** Here are ready-to-test examples:
+
+### **Game Hint Examples** (Tests RAG system)
+```
+Q: "Where is the bus token?"
+Expected: Thud explains it's in a cup, with character-specific advice
+
+Q: "How do I get the token from the cup?" 
+Expected: Step-by-step hint about asking Thud for help or looking carefully
+
+Q: "When does the shuttle to Karkas 4 leave?"
+Expected: Specific time (22:50) with character commentary about checking monitors
+```
+
+### **Weather Tool Examples** (Tests external API)
+```
+Q: "What's the weather in Boston?"
+Expected: Real-time weather data with temperature
+
+Q: "How's the weather in New York?"
+Expected: Current weather conditions for any city
+```
+
+### **Character Voice Examples**
+Thud responds as a friendly, simple-minded bar patron with phrases like "Oh, hello there!" and "Hope that helps!" Watch for:
+- ✅ **In-character responses** with game-specific knowledge
+- ✅ **Intelligent tool selection** (game questions → hints, weather questions → weather API)
+- ✅ **Graceful error handling** (no technical errors shown to users)
+
 ## ✨ Features
 
 - **🎮 Game Hint System**: RAG-powered hints for The Space Bar adventure game puzzles
-- **🌤️ Weather Integration**: Real-time weather information as fallback responses  (to meet api requirement)
+- **🌤️ Weather Integration**: Real-time weather information as external API demonstration
 - **🤖 LangChain Agent**: Intelligent tool selection between hint lookup and weather
-- **🌐 Web Interface**: Clean Next.js frontend for easy interaction
+- **🛡️ Robust Error Handling**: Graceful LLM parsing error recovery, no technical errors shown to users
+- **🌐 Web Interface**: Clean Next.js frontend with custom Thud icon branding
 - **⚡ FastAPI Backend**: High-performance Python API server
 - **🧪 Comprehensive Testing**: Robust test suite with pytest
 
@@ -171,6 +203,16 @@ thudbot/
 - Rapid prototyping with modern AI tools  
 - Full-stack development with Python + TypeScript
 - Clean architecture patterns for AI applications
+
+## 🚨 Troubleshooting
+
+
+
+### **Performance Notes**
+
+- **🔑 Recommended:** Set OpenAI API key in `.env` file for optimal performance
+- **🌤️ Optional:** Add OpenWeather API key for weather functionality  
+- **⚡ Debug output:** Available in backend terminal during development
 
 ## 📝 Graders Note
 

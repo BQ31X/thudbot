@@ -47,3 +47,7 @@ Sunday 8/3
 
 Monday 8/4 
 9 - noon: bug fixes and documentation cleanup
+
+1PM - 4PM: clean machine testing; fixes; behavior tuning
+
+6PM - midnight: Loom video (and custom Thudbot icon)

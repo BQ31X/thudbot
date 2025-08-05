@@ -96,21 +96,23 @@ Your hint:"""
     # Define tools
     @tool
     def hint_lookup(question: str) -> str:
-        """Answer in-game player questions or (if needed) give the weather."""
+        """Get Thud's advice about game puzzles and locations."""
+        print(f"\n🎮 HINT_LOOKUP called with: '{question}'")
         result = multi_query_retrieval_chain.invoke({"question": question})
-        answer = result["response"].content
-
-        if "not sure" in answer.lower() or "look around" in answer.lower():
-            return get_weather.invoke({"city": "Boston"})
-        
-        return answer
+        response = result["response"].content
+        print(f"📝 RAG Response: {response[:100]}{'...' if len(response) > 100 else ''}")
+        print(f"✅ Returning RAG response directly (no weather fallback)")
+        return response
     
     @tool
     def get_weather(city: str) -> str:
         """Gets the current weather for a given city using the OpenWeatherMap API."""
+        print(f"\n🌤️ GET_WEATHER called with: '{city}'")
         api_key = os.getenv("OPENWEATHER_API_KEY")
         if not api_key:
-            return f"🌤️ I'd love to tell you about the weather in {city}, but I need a weather API key! Ask your developer to add OPENWEATHER_API_KEY to the .env file, or just enjoy the game hints instead! 🎮"
+            response = f"🌤️ I'd love to tell you about the weather in {city}, but I need a weather API key! Ask your developer to add OPENWEATHER_API_KEY to the .env file, or just enjoy the game hints instead! 🎮"
+            print(f"❌ No API key - returning: {response[:50]}...")
+            return response
 
         try:
             url = (
@@ -125,10 +127,14 @@ Your hint:"""
 
             weather = data["weather"][0]["description"]
             temp = data["main"]["temp"]
-            return f"It's currently {weather}, around {temp:.0f}°F in {city}."
+            response = f"It's currently {weather}, around {temp:.0f}°F in {city}."
+            print(f"✅ Weather API success: {response}")
+            return response
         
         except Exception as e:
-            return f"Weather system error: {e}"
+            error_msg = f"Weather system error: {e}"
+            print(f"❌ Weather API error: {error_msg}")
+            return error_msg
     
     # Create agent
     tools = [hint_lookup, get_weather]
@@ -136,7 +142,8 @@ Your hint:"""
         tools=tools,
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
         llm=chat_model,
-        verbose=True
+        verbose=True,
+        handle_parsing_errors=True  # Gracefully handle LLM output parsing errors
     )
     
     return thud_agent
