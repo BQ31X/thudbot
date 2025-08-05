@@ -59,11 +59,14 @@ Thudbot was prototyped via a Jupyter notebook, then converted to this production
 
 ### **Game Hint Examples** (Tests RAG system)
 ```
-Q: "Where is the bus token?"
-Expected: Thud explains it's in a cup, with character-specific advice
+Q: "Where can I find the bus token?"
+Expected: Thud should tell you to look in the cup
 
-Q: "How do I get the token from the cup?" 
-Expected: Step-by-step hint about asking Thud for help or looking carefully
+Q: "How do I empathy telepathy?"
+Expected: Guidance for this unique game mechanic
+
+Q: "How do I use the lockers in the vestibule?"
+Expected: Instructions to look for an available locker
 
 Q: "When does the shuttle to Karkas 4 leave?"
 Expected: Specific time (22:50) with character commentary about checking monitors
@@ -254,10 +257,17 @@ thudbot/
 - **Technical Challenge:** Complex fallback logic previously caused agent loops and iteration limits
 - **Resolution:** Prioritized stability over personality for certification deadline
 
+**Conversation Memory Limitations:**
+- **No Context Retention:** Each question is treated independently with no memory of previous interactions
+- **Pronoun Problems:** Questions like "What does it do?" fail because "it" has no referent from prior context
+- **Impact:** Users must provide full context in each message rather than building on previous exchanges
+- **Workaround:** Always use specific nouns instead of pronouns (e.g., "What does the voice printer do?" not "What does it do?")
+
 **Planned Improvements:**
 - **Enhanced Character Voice:** More Thud-specific speech patterns ("Thud would lose his tail if it wasn't attached")
 - **Intelligent Weather Fallback:** Weather tool activation when RAG confidence is low
-- **Conversation Memory:** Track previous hints to enable progressive hint escalation
+- **Session Memory:** Track conversation context to handle pronouns and follow-up questions naturally
+- **Progressive Hint System:** Remember what hints were already given and escalate appropriately
 - **Error Recovery:** More creative responses when external APIs fail
 - **Production Deployment:** Cloud hosting configuration (Dockerfile requires updates for FastAPI + Next.js stack)
 
