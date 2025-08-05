@@ -46,8 +46,9 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-xl shadow-xl p-6">
-          <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-            🍺 Thudbot: Your Agentic Companion for The Space Bar
+          <h1 className="text-3xl font-bold mb-6 text-center text-gray-800 flex items-center justify-center">
+            <img src="/Thud32x32.png" alt="Thud" className="w-8 h-8 mr-3" />
+            Thudbot: Your Agentic Companion for The Space Bar
           </h1>
           
           {/* API Key Input */}
@@ -83,8 +84,13 @@ export default function Home() {
                     : 'bg-green-100 border-l-4 border-green-500'
                 }`}
               >
-                <p className="text-sm font-semibold mb-2 text-gray-700">
-                  {message.role === 'user' ? '🤔 You' : message.role === 'error' ? '❌ Error' : '🍺 Thud'}
+                <p className="text-sm font-semibold mb-2 text-gray-700 flex items-center">
+                  {message.role === 'user' ? '🤔 You' : message.role === 'error' ? '❌ Error' : (
+                    <>
+                      <img src="/Thud32x32.png" alt="Thud" className="w-4 h-4 mr-1" />
+                      Thud
+                    </>
+                  )}
                 </p>
                 <p className="whitespace-pre-wrap text-gray-800">{message.content}</p>
               </div>
@@ -92,7 +98,7 @@ export default function Home() {
             {isLoading && (
               <div className="text-center text-gray-500 p-4">
                 <p className="flex items-center justify-center">
-                  <span className="animate-spin mr-2">🍺</span>
+                  <img src="/Thud32x32.png" alt="Thud" className="w-5 h-5 mr-2 animate-spin" />
                   Thud is thinking...
                 </p>
               </div>
