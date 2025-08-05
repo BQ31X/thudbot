@@ -4,7 +4,7 @@ name = "project-title"
 version = "0.1.0"
 description = "Thudbot: hint system for The Space Bar"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 authors = [
     {name = "Leo", email = "ldc31@mac.com"}
 ]
@@ -16,7 +16,7 @@ authors = [
 dependencies = [
     "jupyter>=1.1.1",
     "langchain-community>=0.3.16", # Core framework for building agentic and RAG applications
-    "langchain-openai>=0.3.3",
+    "langchain-openai>=0.3.7",
     "langchain-qdrant>=0.2.0",
     "langgraph>=0.2.69",
     "numpy>=2.2.2",
@@ -28,5 +28,19 @@ dependencies = [
     "pydantic>=2.5.0", # For parsing documents and data
     "pandas>=2.1.0",
     "pytest>=7.4.0", # Testing and evaluation dependencies
-    "ragas==0.2.10"
+    "ragas==0.2.10",
+    "langchain-experimental>=0.3.4",
+    "langchain>=0.3.19",
+    "langchain-core>=0.3.0",
+    "langchain-cohere==0.4.4",
+    "cohere>=5.12.0,<5.13.0",
+    "rank-bm25>=0.2.2",
+    "langchain-anthropic>=0.3.18",
+    "rapidfuzz>=3.13.0",
+    "qdrant-client>=1.13.2",
+    "fastapi>=0.100.0", # Web framework for API backend
+    "uvicorn[standard]>=0.24.0", # ASGI server for FastAPI
+    "requests>=2.31.0", # For external API calls (weather)
+    "python-dotenv>=1.0.0", # For loading .env files
+    "openai>=1.0.0" # OpenAI API client
 ]

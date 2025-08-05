@@ -1,3 +1,9 @@
+# NOTE: This Dockerfile is from an earlier Streamlit prototype and needs updating
+# for the current FastAPI + Next.js stack. It references the wrong framework,
+# ports, and commands. Kept for future containerization work.
+# 
+# TODO: Update for multi-stage build with FastAPI backend (port 8000) and Next.js frontend (port 3000)
+
 # Use a Python base image. It's a good practice to specify a version.
 # Use a slim-bullseye image for a smaller footprint.
 FROM python:3.11-slim-bullseye

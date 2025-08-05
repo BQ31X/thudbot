@@ -36,3 +36,15 @@ build/
 # Working design documents (for local development only)
 WorkNotes.md
 PromptingIdeas.md
+
+# Node.js dependencies  
+node_modules/
+.next/
+
+# private files
+docs/dev_journey/LLM_Partner_Profile.md
+docs/dev_journey/CertChallengeRequirements.md
+docs/dev_journey/DEVLOG.md
+docs/MERGE.md
+# AI session context summaries (working notes, not project documentation)
+docs/dev_journey/*Context*Summary*.md
