@@ -106,8 +106,8 @@ Thud responds as a friendly, simple-minded bar patron with phrases like "Oh, hel
 ### 1. Environment Setup
 
 ```bash
-# 📦 Clone the correct feature branch **(not main!)**
-git clone --branch feat/thudbot-cc https://github.com/BQ31X/thudbot.git
+# 📦 Clone the repository
+git clone https://github.com/BQ31X/thudbot.git
 cd thudbot
 
 
