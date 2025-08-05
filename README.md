@@ -147,6 +147,8 @@ npm run dev
 
 **Access:** Open `http://localhost:3000` in your browser!
 
+**Note:** This is a locally-hosted prototype for certification evaluation. No production deployment is currently configured.
+
 ## 🏗️ Architecture
 
 ```
@@ -257,6 +259,7 @@ thudbot/
 - **Intelligent Weather Fallback:** Weather tool activation when RAG confidence is low
 - **Conversation Memory:** Track previous hints to enable progressive hint escalation
 - **Error Recovery:** More creative responses when external APIs fail
+- **Production Deployment:** Cloud hosting configuration (Dockerfile requires updates for FastAPI + Next.js stack)
 
 **Development Notes:**
 - Agent behavior is primarily driven by the `THUD_TEMPLATE` prompt (~80% of personality)
