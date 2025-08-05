@@ -7,7 +7,39 @@
   <img src="https://img.shields.io/badge/LangChain-🦜-yellow.svg" alt="LangChain"/>
 </p>
 
+# Welcome to THUDBOT
+
 An intelligent AI assistant for **The Space Bar** adventure game that provides contextual hints and weather information through a clean web interface.
+
+New here? Check out the Quick Start
+
+## Quick Start
+
+1. 🎬 **[Watch the Loom video](https://www.loom.com/share/bd971bccf3ca4b8094c5ed47c03451c3)** to get oriented to Thudbot
+    
+2. 📄 **Read [`CERTIFICATION.md`](docs/CERTIFICATION.md)** to understand how Thudbot meets the certification challenge
+    
+3. 🧪 **Try out Thudbot locally**
+    
+    1. Follow the [Setup & Installation](#-setup--installation) steps below
+        
+    2. Try these [Example Queries](#-testing-guide-for-graders) to test hinting and tool use
+        
+4. 🛠 **Learn how Thudbot was built**
+    
+    1. Review the [RAG evaluation in `00_Thud_construction.ipynb`](00_Thud_construction.ipynb)
+        
+    2. Explore the [prototype notebook](01_Thud_construction.ipynb) and final [`src/agent.py`](src/agent.py) code for the `AgentExecutor` with tools
+        
+5. 🔍 **Want to dig deeper?**
+    
+    1. Include your LangChain API key in the UI to activate LangSmith Tracing
+        
+    2. Read [`DESIGN.md`](docs/DESIGN.md) and [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) for construction details
+    
+    3. Follow the [development journey here](docs/dev_journey/)
+        
+    4. See the full [test plan](docs/TEST_PLAN.md) for engineering-level detail
 
 ## 🚀 Project Overview
 
@@ -21,7 +53,7 @@ Thudbot was prototyped via a Jupyter notebook, then converted to this production
 
 *See Thudbot in action: agentic tool selection, character-driven responses, and real-time problem solving for The Space Bar game puzzles.*
 
-## 🧪 Quick Testing Guide for Graders
+## 🧪 Testing Guide for Graders
 
 **Not familiar with "The Space Bar" game? No problem!** Here are ready-to-test examples:
 
@@ -62,7 +94,7 @@ Thud responds as a friendly, simple-minded bar patron with phrases like "Oh, hel
 - **⚡ FastAPI Backend**: High-performance Python API server
 - **🧪 Comprehensive Testing**: Robust test suite with pytest
 
-## ⚡ Quick Start
+## ⚡ Setup & Installation
 
 ### Prerequisites
 
@@ -170,7 +202,7 @@ uv run pytest
 → "The bus token is in the cup; make sure Thud has it before you hop on the bus."
 ```
 
-**Get general game help
+**Get general game help:**
 ```
 "When is the shuttle to Karas 4?"
 → "The shuttle to Karkas 4 departs at 22:50."
@@ -206,13 +238,31 @@ thudbot/
 
 ## 🚨 Troubleshooting
 
-
-
 ### **Performance Notes**
 
 - **🔑 Recommended:** Set OpenAI API key in `.env` file for optimal performance
 - **🌤️ Optional:** Add OpenWeather API key for weather functionality  
 - **⚡ Debug output:** Available in backend terminal during development
+
+### **Known Issues & Future Enhancements**
+
+**Thud Personality Limitations:**
+- **Current State:** Thud responds reliably but with simplified personality
+- **Design Intent:** Thud should fall back to weather chat when confused by non-game questions
+- **Technical Challenge:** Complex fallback logic previously caused agent loops and iteration limits
+- **Resolution:** Prioritized stability over personality for certification deadline
+
+**Planned Improvements:**
+- **Enhanced Character Voice:** More Thud-specific speech patterns ("Thud would lose his tail if it wasn't attached")
+- **Intelligent Weather Fallback:** Weather tool activation when RAG confidence is low
+- **Conversation Memory:** Track previous hints to enable progressive hint escalation
+- **Error Recovery:** More creative responses when external APIs fail
+
+**Development Notes:**
+- Agent behavior is primarily driven by the `THUD_TEMPLATE` prompt (~80% of personality)
+- AgentExecutor handles tool routing (~15% of behavior) 
+- Tool-specific logic provides minimal behavioral impact (~5%)
+- Future personality enhancements should focus on prompt engineering and RAG confidence scoring
 
 ## 📝 Graders Note
 

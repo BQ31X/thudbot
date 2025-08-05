@@ -45,5 +45,6 @@ node_modules/
 docs/dev_journey/LLM_Partner_Profile.md
 docs/dev_journey/CertChallengeRequirements.md
 docs/dev_journey/DEVLOG.md
+docs/MERGE.md
 # AI session context summaries (working notes, not project documentation)
 docs/dev_journey/*Context*Summary*.md
