@@ -2,6 +2,12 @@
 
 This document outlines how the Thudbot project meets all 7 required tasks for the AIM Certification Challenge.
 
+## 🎬 Demo Video
+
+**[5-Minute Live Demonstration](https://www.loom.com/share/bd971bccf3ca4b8094c5ed47c03451c3)**
+
+*Complete walkthrough of the agentic RAG system, showcasing character-driven responses, tool selection, and all certification requirements in action.*
+
 ---
 
 ## ✅ Task 1: Define the Problem and Audience

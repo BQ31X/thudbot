@@ -15,6 +15,12 @@ Thudbot was prototyped via a Jupyter notebook, then converted to this production
 
 **Built from notebook to web app in record time!** 🚀 (Claude likes to brag about this part)
 
+## 🎬 Demo Video
+
+**[Watch the 5-Minute Live Demo](https://www.loom.com/share/bd971bccf3ca4b8094c5ed47c03451c3)**
+
+*See Thudbot in action: agentic tool selection, character-driven responses, and real-time problem solving for The Space Bar game puzzles.*
+
 ## ✨ Features
 
 - **🎮 Game Hint System**: RAG-powered hints for The Space Bar adventure game puzzles
