@@ -16,6 +16,9 @@ alwaysApply: true
 - User prefers understanding root causes over quick patches
 - Reference working examples from reference_notebooks/ when debugging
 - Run `./check_and_commit.sh` before committing to ensure all checks pass
+- Use pyproject.toml to manage dependencies, and keep it up to date as needed
+- All necessary API Keys should be sourced from .env
+- OpenAI API Key and Langchain API key are already present in .env
 
 # current environment
 - Cursor 1.4.5

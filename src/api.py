@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
-from agent import get_thud_agent
+from app import run_hint_request
 
 # Load environment variables
 load_dotenv()
@@ -23,9 +23,12 @@ async def chat_with_thud(request: ChatRequest):
         if not api_key:
             raise HTTPException(status_code=400, detail="OpenAI API key required (provide in request or set OPENAI_API_KEY in .env)")
         
-        # Get the Thudbot agent with API key (lazy initialization)
-        thud_agent = get_thud_agent(api_key=api_key)
-        response = thud_agent.run(request.user_message)
+        # Set the API key in environment for the LangGraph to use
+        if api_key:
+            os.environ['OPENAI_API_KEY'] = api_key
+        
+        # Use the new LangGraph implementation
+        response = run_hint_request(request.user_message)
         return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -3,31 +3,17 @@
 Test script for the LangGraph implementation
 """
 import os
-from state import LangGraphState
-from langgraph_flow import LangGraphFlow
+from app import run_hint_request
 
 def test_basic_flow():
     """Test the basic flow with a simple hint request"""
-    
-    # Initialize state
-    initial_state = {
-        "chat_history": [],
-        "hint_level": 1,
-        "last_question_id": "",
-        "user_input": "",
-        "current_hint": "",
-        "formatted_output": ""
-    }
-    
-    # Create flow
-    flow = LangGraphFlow(initial_state)
     
     # Test with a hint request
     test_input = "I need a hint to find the bus token"
     print(f"Testing with input: '{test_input}'")
     
     try:
-        result = flow.run(test_input)
+        result = run_hint_request(test_input)
         print(f"✅ Success! Result: {result}")
         return True
     except Exception as e:
@@ -37,25 +23,12 @@ def test_basic_flow():
 def test_non_hint_request():
     """Test with a non-hint request"""
     
-    # Initialize state
-    initial_state = {
-        "chat_history": [],
-        "hint_level": 1,
-        "last_question_id": "",
-        "user_input": "",
-        "current_hint": "",
-        "formatted_output": ""
-    }
-    
-    # Create flow
-    flow = LangGraphFlow(initial_state)
-    
     # Test with a non-hint request
     test_input = "What's the weather like?"
     print(f"Testing with input: '{test_input}'")
     
     try:
-        result = flow.run(test_input)
+        result = run_hint_request(test_input)
         print(f"✅ Success! Result: {result}")
         return True
     except Exception as e:
