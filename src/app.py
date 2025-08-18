@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, START, END
 from state import LangGraphState
+from langsmith import traceable
 from langgraph_flow import (
     router_node, 
     find_hint_node, 
@@ -60,6 +61,11 @@ def create_thud_graph():
 # Create the compiled graph
 compiled_graph = create_thud_graph()
 
+@traceable(
+    run_type="chain", 
+    name="thudbot_hint_flow",
+    metadata={"version": "intent-based-router-v2"}
+)
 def run_hint_request(user_input: str) -> str:
     """Run a hint request through the graph"""
     

@@ -2,6 +2,7 @@ from state import LangGraphState
 from agent import get_thud_agent
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
+from langsmith import traceable
 
 # Canned responses for off-topic questions
 OFF_TOPIC_RESPONSES = [
@@ -49,18 +50,23 @@ def classify_intent(user_input: str) -> str:
     return classification
 
 # Node functions for LangGraph
+@traceable(run_type="chain", name="router_node")
 def router_node(state: LangGraphState) -> LangGraphState:
     """Router node to determine if this is a Space Bar game question and if it's a repeat"""
     user_input = state["user_input"]
+    print(f"🔍 ROUTER INPUT: '{user_input}'")
     
     # Use LLM to classify intent
     intent = classify_intent(user_input)
+    print(f"🔍 ROUTER CLASSIFICATION: {intent}")
     
     if intent == "OFF_TOPIC":
         # Use a canned response instead of calling character maintenance
         import random
-        state["formatted_output"] = random.choice(OFF_TOPIC_RESPONSES)
+        canned_response = random.choice(OFF_TOPIC_RESPONSES)
+        state["formatted_output"] = canned_response
         print(f"🚫 Off-topic question detected, using canned response")
+        print(f"🔍 ROUTER OUTPUT: OFF_TOPIC -> '{canned_response[:50]}...'")
         return state
     
     # This is a game-related question, proceed with hint logic
@@ -75,18 +81,23 @@ def router_node(state: LangGraphState) -> LangGraphState:
         state["hint_level"] = 1
         print(f"🆕 New query, starting at hint level 1")
     
+    print(f"🔍 ROUTER OUTPUT: GAME_RELATED -> continuing to hint flow (level {state['hint_level']})")
     return state
 
+@traceable(run_type="chain", name="find_hint_node")  
 def find_hint_node(state: LangGraphState) -> LangGraphState:
     """Find hint using the existing thud agent"""
     user_input = state["user_input"]
+    hint_level = state.get("hint_level", 1)
     
+    print(f"🔍 FIND_HINT INPUT: '{user_input}' (level {hint_level})")
     print(f"🎮 Finding hint for: {user_input}")
     agent = get_thud_agent()
     hint = agent.run(user_input)
     
     state["current_hint"] = hint
     print(f"📝 Retrieved hint: {hint[:100]}{'...' if len(hint) > 100 else ''}")
+    print(f"🔍 FIND_HINT OUTPUT: '{hint[:50]}...' -> current_hint updated")
     return state
 
 def verify_correctness_node(state: LangGraphState) -> LangGraphState:
@@ -96,10 +107,12 @@ def verify_correctness_node(state: LangGraphState) -> LangGraphState:
     # For now, just pass through
     return state
 
+@traceable(run_type="chain", name="maintain_character_node")
 def maintain_character_node(state: LangGraphState) -> LangGraphState:
     """Rewrite hint in Zelda's voice with guardrails"""
     hint = state["current_hint"]
     
+    print(f"🔍 MAINTAIN_CHARACTER INPUT: '{hint[:50]}...'")
     print(f"🎭 Rewriting in Zelda's voice...")
     chat_model = ChatOpenAI(model="gpt-4o-mini")
     template = ChatPromptTemplate.from_template("""
@@ -135,6 +148,7 @@ def maintain_character_node(state: LangGraphState) -> LangGraphState:
         print(f"✅ Guardrail passed - response is clean")
     
     print(f"✨ Zelda's version: {state['current_hint'][:100]}{'...' if len(state['current_hint']) > 100 else ''}")
+    print(f"🔍 MAINTAIN_CHARACTER OUTPUT: '{state['current_hint'][:50]}...' -> current_hint updated")
     return state
 
 def format_output_node(state: LangGraphState) -> LangGraphState:
@@ -142,7 +156,9 @@ def format_output_node(state: LangGraphState) -> LangGraphState:
     hint = state["current_hint"]
     hint_level = state.get("hint_level", 1)
     
+    print(f"🔍 FORMAT_OUTPUT INPUT: hint='{hint[:50]}...', level={hint_level}")
     formatted = f"🎯 Hint (Level {hint_level}): {hint}"
     state["formatted_output"] = formatted
     print(f"📋 Formatted output ready")
+    print(f"🔍 FORMAT_OUTPUT OUTPUT: '{formatted[:50]}...' -> formatted_output set")
     return state
