@@ -44,3 +44,11 @@ dependencies = [
     "python-dotenv>=1.0.0", # For loading .env files
     "openai>=1.0.0" # OpenAI API client
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+# Ignore the manual test script in src/
+addopts = "--ignore=src/test_langgraph.py"

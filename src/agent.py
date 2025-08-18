@@ -101,7 +101,7 @@ Your hint:"""
         result = multi_query_retrieval_chain.invoke({"question": question})
         response = result["response"].content
         print(f"📝 RAG Response: {response[:100]}{'...' if len(response) > 100 else ''}")
-        print(f"✅ Returning RAG response directly (no weather fallback)")
+        print(f"✅ Returning RAG response directly")
         return response
     
     @tool

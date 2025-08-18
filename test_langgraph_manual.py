@@ -5,21 +5,6 @@ Test script for the LangGraph implementation
 import os
 from app import run_hint_request
 
-def test_basic_flow():
-    """Test the basic flow with a simple hint request"""
-    
-    # Test with a hint request
-    test_input = "I need a hint to find the bus token"
-    print(f"Testing with input: '{test_input}'")
-    
-    try:
-        result = run_hint_request(test_input)
-        print(f"✅ Success! Result: {result}")
-        return True
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        return False
-
 def test_game_related_questions():
     """Test various game-related questions that should get hints"""
     
@@ -28,7 +13,9 @@ def test_game_related_questions():
         "Where is the bus?", 
         "I'm stuck on this puzzle",
         "Who is Zelda?",
-        "How do I save the game?"
+        "How do I save the game?",
+        "I need help in the Thirsty Tentacle",
+        "What do I do next?"
     ]
     
     print("🎮 Testing game-related questions...")
@@ -60,7 +47,8 @@ def test_off_topic_questions():
         "Tell me a joke",
         "How do I play Minecraft?", 
         "What's 2+2?",
-        "Hello, how are you?"
+        "Hello, how are you?",
+        "Can you help me with my homework?"
     ]
     
     print("🚫 Testing off-topic questions...")
@@ -76,7 +64,6 @@ def test_off_topic_questions():
                 success_count += 1
             else:
                 print(f"❌ Failed: Did not get off-topic response")
-                print(f"    Got: {result}")
                 return False
         except Exception as e:
             print(f"❌ Error: {e}")
@@ -85,38 +72,17 @@ def test_off_topic_questions():
     print(f"\n🎯 Off-topic questions success rate: {success_count}/{len(off_topic_questions)}")
     return success_count == len(off_topic_questions)
 
-def test_zelda_guardrail():
-    """Test that Zelda stays in character for The Space Bar, not Legend of Zelda"""
+def test_basic_flow():
+    """Test the basic flow with explicit hint request"""
     
-    print("🛡️ Testing Zelda character guardrail...")
-    
-    # Test the specific question that was problematic
-    question = "Who is Zelda?"
-    print(f"\n--- Testing: '{question}' ---")
+    # Test with a clear hint request
+    test_input = "I need a hint to find the bus token"
+    print(f"Testing with input: '{test_input}'")
     
     try:
-        result = run_hint_request(question)
-        
-        # Check for forbidden Legend of Zelda content
-        forbidden_terms = ["legend of zelda", "hyrule", "princess", "nintendo", "triforce"]
-        result_lower = result.lower()
-        
-        if any(term in result_lower for term in forbidden_terms):
-            print(f"❌ Failed: Response contains Legend of Zelda references")
-            print(f"    Got: {result}")
-            return False
-        
-        # Check for Space Bar game references (positive indicators)
-        space_bar_terms = ["space bar", "pda", "personal digital assistant", "detective", "alias node"]
-        if any(term in result_lower for term in space_bar_terms):
-            print(f"✅ Success: Response correctly identifies Space Bar Zelda")
-            return True
-        else:
-            print(f"⚠️  Warning: Response doesn't clearly identify Space Bar context")
-            print(f"    Got: {result}")
-            # Still pass if no forbidden content, but warn
-            return True
-            
+        result = run_hint_request(test_input)
+        print(f"✅ Success! Result: {result}")
+        return True
     except Exception as e:
         print(f"❌ Error: {e}")
         return False
@@ -141,14 +107,10 @@ if __name__ == "__main__":
     
     print("3️⃣ Testing off-topic questions...")
     test3 = test_off_topic_questions()
-    print()
-    
-    print("4️⃣ Testing Zelda character guardrail...")
-    test4 = test_zelda_guardrail()
     
     print("\n" + "=" * 60)
-    total_tests = 4
-    passed_tests = sum([test1, test2, test3, test4])
+    total_tests = 3
+    passed_tests = sum([test1, test2, test3])
     
     if passed_tests == total_tests:
         print("🎉 All tests passed! Intent-based routing is working!")

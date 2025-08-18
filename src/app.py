@@ -17,7 +17,8 @@ load_dotenv()
 
 def should_continue(state: LangGraphState) -> str:
     """Conditional edge function to determine next step"""
-    if state.get("formatted_output") and "can only help with game hints" in state["formatted_output"]:
+    # If we already have a formatted output (off-topic response), end here
+    if state.get("formatted_output"):
         return "end"
     return "continue"
 
