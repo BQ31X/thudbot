@@ -123,33 +123,41 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Input Area - Positioned over button area */}
+        {/* Input Area - Positioned over first 4 buttons */}
         <div 
           className="absolute"
           style={{ 
             left: '20.6%', 
             bottom: '12.6%', 
-            width: '43.3%',
+            width: '38.3%',
           }}
         >
-          <form onSubmit={handleSubmit} className="flex gap-2">
+          <form onSubmit={handleSubmit}>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask Zelda about The Space Bar..."
-              className="flex-1 p-[1%] bg-gray-800 text-green-400 border border-green-600 rounded text-[0.9vw] font-mono focus:ring-1 focus:ring-green-500 focus:border-green-500"
+              className="w-full p-[1%] bg-gray-800 text-green-400 border border-green-600 rounded text-[0.9vw] font-mono focus:ring-1 focus:ring-green-500 focus:border-green-500"
               disabled={isLoading}
             />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="bg-green-700 text-green-100 px-[2%] py-[1%] rounded hover:bg-green-600 disabled:bg-gray-600 transition-colors font-mono text-[0.9vw]"
-            >
-              SEND
-            </button>
           </form>
         </div>
+
+        {/* Send Button - Positioned independently over LOG button */}
+        <button
+          onClick={handleSubmit}
+          disabled={isLoading}
+          className="absolute bg-green-700 text-green-100 rounded hover:bg-green-600 disabled:bg-gray-600 transition-colors font-mono text-[0.9vw]"
+          style={{
+            left: '60.3%',
+            bottom: '12.6%',
+            width: '5.5%',
+            height: '5.3%'
+          }}
+        >
+          SEND
+        </button>
       </div>
     </main>
   );
