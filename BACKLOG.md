@@ -22,7 +22,15 @@
 
 ### 🚀 Feature Enhancements
 
-#### 3. Add State Context for Follow-up Questions
+#### 3. Dynamic Status Display in PDA Small Screen
+- **Priority**: Low
+- **Status**: Pending
+- **Description**: Replace static instructions with real-time status information in PDA small screen
+- **Details**: Show live activity like "Zelda: Online", "Processing...", message counts, timestamps, connection status
+- **Files**: `src/app/page.tsx`
+- **Benefit**: More authentic PDA feel, real-time feedback, dynamic interface
+
+#### 4. Add State Context for Follow-up Questions
 - **Priority**: Medium  
 - **Status**: Pending
 - **Description**: Enable conversational follow-ups and hint escalation

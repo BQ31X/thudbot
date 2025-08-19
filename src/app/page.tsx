@@ -106,19 +106,19 @@ export default function Home() {
         <div 
           className="absolute bg-black overflow-hidden"
           style={{ 
-            left: '72.7%', 
-            top: '19.6%', 
-            width: '9.86%', 
-            height: '11.2%',
+            left: '75.0%', 
+            top: '26%', 
+            width: '17.8%', 
+            height: '16.8%',
             borderRadius: '0.12%'
           }}
         >
-          <div className="h-full p-[0.5%] bg-gray-900 text-green-400 font-mono text-[0.7vw]">
-            <div className="text-center">
-              <p>💡 How to chat:</p>
-              <p className="mt-1">• Ask about puzzles</p>
-              <p>• Get game help</p>
-              <p>• General questions</p>
+          <div className="h-full p-[1%] bg-gray-900 text-green-400 font-mono text-[0.9vw]">
+            <div className="text-left">
+              <p className="font-bold mb-2">💡 How to chat with Zelda:</p>
+              <p className="text-[0.8vw] mb-1">• "How do I get a token for the bus?"</p>
+              <p className="text-[0.8vw] mb-1">• "How do I use the voice printer?"</p>
+              <p className="text-[0.8vw]">• Ask about puzzles & locations</p>
             </div>
           </div>
         </div>
@@ -127,9 +127,9 @@ export default function Home() {
         <div 
           className="absolute"
           style={{ 
-            left: '11.1%', 
+            left: '20.6%', 
             bottom: '12.6%', 
-            width: '30.8%',
+            width: '43.3%',
           }}
         >
           <form onSubmit={handleSubmit} className="flex gap-2">
