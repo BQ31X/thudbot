@@ -30,9 +30,26 @@
 - **Files**: `src/state.py`, `src/langgraph_flow.py`
 - **Benefit**: Better user experience, natural conversations
 
+### 📊 Evaluation & Debugging
+
+#### 4. Add RAG Pipeline Diagnostic Logging
+- **Priority**: Medium
+- **Status**: Pending
+- **Description**: Add intermediate logging to identify retrieval vs generation issues
+- **Details**: Log retrieved documents, context quality, and response generation steps
+- **Files**: `src/agent.py` (hint_lookup function)
+- **Benefit**: Quick debugging without full RAGAS evaluation, identify pipeline bottlenecks
+
+#### 5. Implement Full RAGAS Evaluation
+- **Priority**: Low
+- **Status**: Pending
+- **Description**: Set up comprehensive RAG evaluation with RAGAS framework
+- **Details**: Evaluate retrieval relevance, answer faithfulness, context precision/recall
+- **Benefit**: Data-driven insights into RAG performance, systematic improvement
+
 ### 🛠️ Process & Tooling
 
-#### 4. Create GitHub Issue Tracker
+#### 6. Create GitHub Issue Tracker
 - **Priority**: Low
 - **Status**: Pending  
 - **Description**: Migrate backlog from markdown to GitHub Issues for better project management
