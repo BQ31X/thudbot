@@ -156,6 +156,76 @@ Your hint:"""
 _thud_agent = None
 _multi_query_retrieval_chain = None
 
+def initialize_rag_only(api_key=None):
+    """Initialize only the RAG components without AgentExecutor"""
+    
+    # Use provided API key or fall back to environment
+    if api_key:
+        os.environ['OPENAI_API_KEY'] = api_key
+    
+    # Verify API key is available
+    if not os.getenv('OPENAI_API_KEY'):
+        raise ValueError("OpenAI API key required - provide via parameter or environment variable")
+    
+    # Load hint data
+    loader = CSVLoader(
+        file_path="./data/Thudbot_Hint_Data_1.csv",
+        metadata_columns=[
+            "question", "hint_level", "character", "speaker",
+            "narrative_context", "planet", "location", "category",
+            "puzzle_id", "response_must_mention", "response_must_not_mention"
+        ]
+    )
+    hint_data = loader.load()
+    
+    # Create vector store
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    vectorstore = Qdrant.from_documents(
+        documents=hint_data,
+        embedding=embeddings,
+        location=":memory:",
+        collection_name="Thudbot_Hints"
+    )
+    
+    # Create retrievers
+    naive_retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+    chat_model = ChatOpenAI(model="gpt-4.1-nano")
+    multi_query_retriever = MultiQueryRetriever.from_llm(
+        retriever=naive_retriever, llm=chat_model
+    )
+    
+    # Thud prompt template (still used in RAG chain for now)
+    THUD_TEMPLATE = """\
+You are Thud, a friendly and somewhat simple-minded patron at The Thirsty Tentacle. 
+
+You're trying your best to help the player navigate the game "The Space Bar."
+
+Use the clues and context provided below to offer a gentle hint — not a full solution.
+
+If you're not sure what to say, admit it honestly or say something silly — like talk about the weather or suggest looking around more.
+
+If the player's question is clearly outside the game's scope (e.g., about real-world topics), 
+you may consult the get_weather tool to offer a friendly distraction.
+
+Player's question:
+{question}
+
+Context:
+{context}
+
+Your hint:"""
+    
+    rag_prompt = ChatPromptTemplate.from_template(THUD_TEMPLATE)
+    
+    # Create RAG chain
+    multi_query_retrieval_chain = (
+        {"context": itemgetter("question") | multi_query_retriever, "question": itemgetter("question")}
+        | RunnablePassthrough.assign(context=itemgetter("context"))
+        | {"response": rag_prompt | chat_model, "context": itemgetter("context")}
+    ).with_config({"run_name": "multi_query_chain"})
+    
+    return multi_query_retrieval_chain
+
 def get_thud_agent(api_key=None):
     """Get or create the Thudbot agent with optional API key"""
     global _thud_agent
@@ -175,7 +245,7 @@ def get_direct_hint(question: str) -> str:
     
     # Initialize if needed
     if _multi_query_retrieval_chain is None:
-        get_thud_agent()  # This will initialize the chain
+        _multi_query_retrieval_chain = initialize_rag_only()  # Clean RAG-only init
     
     print(f"\n🎮 DIRECT_HINT called with: '{question}'")
     result = _multi_query_retrieval_chain.invoke({"question": question})
