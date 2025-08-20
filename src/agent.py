@@ -146,10 +146,15 @@ Your hint:"""
         handle_parsing_errors=True  # Gracefully handle LLM output parsing errors
     )
     
+    # Store components globally for direct access
+    global _multi_query_retrieval_chain
+    _multi_query_retrieval_chain = multi_query_retrieval_chain
+    
     return thud_agent
 
-# Global agent instance
+# Global components
 _thud_agent = None
+_multi_query_retrieval_chain = None
 
 def get_thud_agent(api_key=None):
     """Get or create the Thudbot agent with optional API key"""
@@ -163,3 +168,18 @@ def get_thud_agent(api_key=None):
             raise ValueError("OpenAI API key required for first-time agent initialization")
     
     return _thud_agent
+
+def get_direct_hint(question: str) -> str:
+    """Get hint directly from RAG chain without Agent Executor wrapper"""
+    global _multi_query_retrieval_chain
+    
+    # Initialize if needed
+    if _multi_query_retrieval_chain is None:
+        get_thud_agent()  # This will initialize the chain
+    
+    print(f"\n🎮 DIRECT_HINT called with: '{question}'")
+    result = _multi_query_retrieval_chain.invoke({"question": question})
+    response = result["response"].content
+    print(f"📝 RAG Response: {response[:100]}{'...' if len(response) > 100 else ''}")
+    print(f"✅ Returning RAG response directly (no Agent Executor)")
+    return response
