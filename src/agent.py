@@ -153,3 +153,35 @@ def get_direct_hint(question: str) -> str:
     print(f"📝 RAG Response: {response[:100]}{'...' if len(response) > 100 else ''}")
     print(f"✅ Returning RAG response directly (no Agent Executor)")
     return response
+
+def get_direct_hint_with_context(question: str) -> dict:
+    """Get hint with context from RAG chain for verification purposes"""
+    global _multi_query_retrieval_chain
+    
+    # Initialize if needed
+    if _multi_query_retrieval_chain is None:
+        _multi_query_retrieval_chain = initialize_rag_only()  # Clean RAG-only init
+    
+    print(f"\n🎮 DIRECT_HINT_WITH_CONTEXT called with: '{question}'")
+    result = _multi_query_retrieval_chain.invoke({"question": question})
+    
+    # Extract response and context
+    response = result["response"].content
+    context = result["context"]  # This contains the retrieved documents
+    
+    # Format context for verification
+    if isinstance(context, list):
+        # Convert document objects to text
+        context_text = "\n\n".join([
+            f"Document {i+1}: {doc.page_content}" for i, doc in enumerate(context)
+        ])
+    else:
+        context_text = str(context)
+    
+    print(f"📝 RAG Response: {response[:100]}{'...' if len(response) > 100 else ''}")
+    print(f"📄 Context docs: {len(context) if isinstance(context, list) else '1'}")
+    
+    return {
+        "response": response,
+        "context": context_text
+    }

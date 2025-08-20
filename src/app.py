@@ -10,6 +10,7 @@ from find_hint_node import find_hint_node
 from verify_correctness_node import verify_correctness_node
 from maintain_character_node import maintain_character_node
 from format_output_node import format_output_node
+from generate_error_message_node import generate_error_message_node
 
 # Load environment variables
 load_dotenv()
@@ -20,6 +21,17 @@ def should_continue(state: LangGraphState) -> str:
     if state.get("formatted_output"):
         return "end"
     return "continue"
+
+def verification_router(state: LangGraphState) -> str:
+    """Route based on verification results"""
+    verification_passed = state.get("verification_passed", False)
+    
+    if verification_passed:
+        print("✅ Verification passed - proceeding to character maintenance")
+        return "verified"
+    else:
+        print("❌ Verification failed - generating error message")
+        return "failed"
 
 def create_thud_graph():
     """Create and compile the LangGraph"""
@@ -33,6 +45,7 @@ def create_thud_graph():
     graph.add_node("verify_correctness", verify_correctness_node)
     graph.add_node("maintain_character", maintain_character_node)
     graph.add_node("format_output", format_output_node)
+    graph.add_node("generate_error_message", generate_error_message_node)
     
     # Add edges
     graph.add_edge(START, "router")
@@ -47,11 +60,25 @@ def create_thud_graph():
         }
     )
     
-    # Sequential flow for hint processing
+    # Sequential flow: find_hint -> verify_correctness
     graph.add_edge("find_hint", "verify_correctness")
-    graph.add_edge("verify_correctness", "maintain_character")
+    
+    # Conditional edge from verify_correctness
+    graph.add_conditional_edges(
+        "verify_correctness",
+        verification_router,
+        {
+            "verified": "maintain_character",
+            "failed": "generate_error_message"
+        }
+    )
+    
+    # Success path: maintain_character -> format_output -> END
     graph.add_edge("maintain_character", "format_output")
     graph.add_edge("format_output", END)
+    
+    # Error path: generate_error_message -> END
+    graph.add_edge("generate_error_message", END)
     
     # Compile the graph
     return graph.compile()
@@ -73,7 +100,11 @@ def run_hint_request(user_input: str) -> str:
         last_question_id="",
         user_input=user_input,
         current_hint="",
-        formatted_output=""
+        formatted_output="",
+        verification_passed=False,
+        verification_reason="",
+        retry_count=0,
+        retrieved_context=""
     )
     
     print(f"🚀 Running LangGraph with input: '{user_input}'")

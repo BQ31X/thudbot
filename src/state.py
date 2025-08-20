@@ -12,6 +12,10 @@ class LangGraphState(TypedDict):
         user_input: The current user input
         current_hint: The hint being processed
         formatted_output: The final formatted response
+        verification_passed: Boolean indicating if hint verification passed
+        verification_reason: Reason for verification failure (if any)
+        retry_count: Number of retries attempted for failed verifications
+        retrieved_context: The original context documents from RAG retrieval
     """
     chat_history: List[BaseMessage]
     hint_level: int
@@ -19,3 +23,7 @@ class LangGraphState(TypedDict):
     user_input: str
     current_hint: str
     formatted_output: str
+    verification_passed: bool
+    verification_reason: str
+    retry_count: int
+    retrieved_context: str
