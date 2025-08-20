@@ -100,6 +100,16 @@
 - ✅ **Complete AgentExecutor → LangGraph Migration** - Removed all vestigial AgentExecutor code for clean LangGraph architecture
 - ✅ **RAG Pipeline Diagnostic Logging** - Added comprehensive logging for retrieval and generation steps
 
+
+
+### SHA warning
+# In agent.py, line 50-54
+cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
+    base_embeddings, 
+    store, 
+    namespace=safe_namespace,
+    key_encoder="sha256"  # Add this line
+)
 ---
 
 ## Notes

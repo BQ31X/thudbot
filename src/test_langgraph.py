@@ -28,7 +28,10 @@ def test_game_related_questions():
         "Where is the bus?", 
         "I'm stuck on this puzzle",
         "Who is Zelda?",
-        "How do I save the game?"
+        "How do I save the game?",
+        "How do I open the locker?",
+        "How do I do empathy telepathy?",
+        "How do I start a flashback?"
     ]
     
     print("🎮 Testing game-related questions...")
@@ -60,7 +63,11 @@ def test_off_topic_questions():
         "Tell me a joke",
         "How do I play Minecraft?", 
         "What's 2+2?",
-        "Hello, how are you?"
+        "Hello, how are you?",
+        "I'm stuck on this puzzle",  # Too vague - no specific element
+        "How do I solve a puzzle?",  # Too vague - which puzzle?
+        "Help me with this",         # Too vague
+        "What should I do?"          # Too vague
     ]
     
     print("🚫 Testing off-topic questions...")

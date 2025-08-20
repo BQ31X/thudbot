@@ -7,9 +7,15 @@ from langchain_openai import ChatOpenAI
 # Canned responses for off-topic questions
 OFF_TOPIC_RESPONSES = [
     "Listen sweetie, I'm Zelda - your personal digital assistant for *The Space Bar*. I only help with puzzles, locations, and characters from our little corner of the galaxy. Try asking about the game!",
-    "Sorry hon, but I'm programmed specifically for *The Space Bar* mysteries. Ask me about the Thirsty Tentacle, alien suspects, or any puzzles you're stuck on.",
+    "Sorry hon, but I'm programmed specifically for *The Space Bar*. Ask me about the Thirsty Tentacle, alien suspects, or any puzzles you're stuck on.",
     "I appreciate the chat, but my circuits are dedicated to *The Space Bar* only. Need help finding something in the game? That's my specialty!"
 ]
+
+# TODO, maybe. 20250820.
+# below template is used to classify if input is about The Space Bar game or off-topic. 
+# it is working well but I am not sure if it is the best way to do this. 
+# If it needs further refinement, we should consider removing the specific examples to avoid bloating the prompt.
+# e.g. a simpler rule like: Simple rule like "GAME_RELATED if asking HOW/WHERE/WHO about specific things, OFF_TOPIC if vague or non-gaming"
 
 def classify_intent(user_input: str) -> str:
     """Use LLM to classify if input is about The Space Bar game or off-topic"""
@@ -18,25 +24,36 @@ def classify_intent(user_input: str) -> str:
     
     template = ChatPromptTemplate.from_template("""
     You are a classifier for The Space Bar adventure game. Determine if the user's input is:
-    1. GAME_RELATED: About The Space Bar game (puzzles, characters, locations, mechanics, story, walkthrough help)
-    2. OFF_TOPIC: About anything else (weather, general conversation, other games, etc.)
+    1. GAME_RELATED: Appears to be asking about a specific game element, action, or mechanic (give benefit of the doubt)
+    2. OFF_TOPIC: Clearly not about gaming, OR too vague to be actionable
+
+    GAME_RELATED (be permissive - let downstream systems handle if it's not actually in the game):
+    - Any question asking HOW to do something specific
+    - Any question asking WHERE something is
+    - Any question asking about a specific item, character, location, or action
+    - Game mechanics questions, even if unfamiliar
+    - Questions about specific puzzles or challenges
 
     Examples of GAME_RELATED:
     - "How do I find the token?"
-    - "Where is the bus?" 
-    - "I'm stuck on this puzzle"
+    - "How do I open the locker?" 
+    - "How do I do empathy telepathy?"
+    - "How do I start a flashback?"
+    - "Where is the bus?"
     - "Who is Zelda?"
     - "How do I save the game?"
     - "What do I do in the Thirsty Tentacle?"
     - "How do I interact with objects?"
-    - "I need help with the alien suspects"
 
     Examples of OFF_TOPIC:
-    - "What's the weather like?"
-    - "Tell me a joke"
-    - "How do I play Minecraft?"
-    - "What's 2+2?"
-    - "Hello, how are you?"
+    - "What's the weather like?" (not about gaming)
+    - "Tell me a joke" (not about gaming)
+    - "How do I play Minecraft?" (different game)
+    - "I'm stuck on this puzzle" (too vague - no specific element mentioned)
+    - "How do I solve a puzzle?" (too vague - no specific element mentioned)  
+    - "Help me with this" (too vague)
+    - "What should I do?" (too vague)
+    - "Hello, how are you?" (social, not gaming)
 
     User input: "{user_input}"
     
