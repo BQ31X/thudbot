@@ -24,10 +24,46 @@ from langchain.agents import initialize_agent, AgentType
 from operator import itemgetter
 import requests
 
-# Global components for RAG-only system
+# Caching imports
+from langchain.embeddings import CacheBackedEmbeddings
+from langchain.storage import LocalFileStore
+import hashlib
+import logging
 
 # Global components for RAG-only system
 _multi_query_retrieval_chain = None
+
+def create_cached_embeddings(model="text-embedding-3-small", cache_dir="./cache/embeddings"):
+    """Create cached embeddings with fallback to non-cached if caching fails.
+    
+    Based on HW16 pattern with production-ready fallback strategy.
+    """
+    try:
+        # Create base embeddings
+        base_embeddings = OpenAIEmbeddings(model=model)
+        
+        # Create safe namespace from model name
+        safe_namespace = hashlib.md5(model.encode()).hexdigest()
+        
+        # Set up file store and cached embeddings
+        store = LocalFileStore(cache_dir)
+        cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
+            base_embeddings, 
+            store, 
+            namespace=safe_namespace
+        )
+        
+        print(f"✅ Cached embeddings initialized with cache dir: {cache_dir}")
+        return cached_embeddings
+        
+    except (PermissionError, OSError, IOError) as e:
+        logging.warning(f"Cache unavailable, falling back to direct embeddings: {e}")
+        print(f"⚠️  Cache failed, using direct embeddings: {e}")
+        return OpenAIEmbeddings(model=model)
+    except Exception as e:
+        logging.warning(f"Unexpected caching error, falling back to direct embeddings: {e}")
+        print(f"⚠️  Unexpected cache error, using direct embeddings: {e}")
+        return OpenAIEmbeddings(model=model)
 
 def initialize_rag_only(api_key=None):
     """Initialize only the RAG components without AgentExecutor"""
@@ -51,8 +87,8 @@ def initialize_rag_only(api_key=None):
     )
     hint_data = loader.load()
     
-    # Create vector store
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    # Create vector store with cached embeddings
+    embeddings = create_cached_embeddings(model="text-embedding-3-small")
     vectorstore = Qdrant.from_documents(
         documents=hint_data,
         embedding=embeddings,

@@ -46,6 +46,8 @@ def test_agent_imports():
 def test_api_imports():
     """Test that API module imports correctly."""
     try:
+        import sys
+        sys.path.append('src')
         from api import app
         assert app is not None, "FastAPI app should be created"
     except ImportError as e:
@@ -81,6 +83,8 @@ def test_agent_initialization():
 def test_fastapi_app_creation():
     """Test that FastAPI app can be created without starting server."""
     try:
+        import sys
+        sys.path.append('src')
         from api import app
         assert app is not None, "FastAPI app should be created"
         # Check that basic routes exist
