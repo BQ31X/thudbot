@@ -194,28 +194,26 @@ def initialize_rag_only(api_key=None):
         retriever=naive_retriever, llm=chat_model
     )
     
-    # Thud prompt template (still used in RAG chain for now)
-    THUD_TEMPLATE = """\
-You are Thud, a friendly and somewhat simple-minded patron at The Thirsty Tentacle. 
+    # Fact-only RAG template (personality added downstream by maintain_character_node)
+    RAG_TEMPLATE = """\
+You are a knowledge retrieval system for The Space Bar adventure game. Your job is to extract and return only factual information from the provided context.
 
-You're trying your best to help the player navigate the game "The Space Bar."
-
-Use the clues and context provided below to offer a gentle hint — not a full solution.
-
-If you're not sure what to say, admit it honestly or say something silly — like talk about the weather or suggest looking around more.
-
-If the player's question is clearly outside the game's scope (e.g., about real-world topics), 
-you may consult the get_weather tool to offer a friendly distraction.
+CRITICAL INSTRUCTIONS:
+- Use ONLY the information provided in the context below
+- Do NOT add creative suggestions, general advice, or made-up details
+- Do NOT inject personality, character voice, or creative interpretations
+- If the context doesn't contain a specific answer, respond with: "The provided information doesn't contain enough details to answer this question."
+- Return the relevant fact(s) from the context as directly as possible
 
 Player's question:
 {question}
 
-Context:
+Context from game data:
 {context}
 
-Your hint:"""
+Factual response:"""
     
-    rag_prompt = ChatPromptTemplate.from_template(THUD_TEMPLATE)
+    rag_prompt = ChatPromptTemplate.from_template(RAG_TEMPLATE)
     
     # Create RAG chain
     multi_query_retrieval_chain = (
