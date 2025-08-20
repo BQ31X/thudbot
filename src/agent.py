@@ -39,11 +39,11 @@ def initialize_thudbot(api_key=None):
     # Load hint data
     loader = CSVLoader(
         file_path="./data/Thudbot_Hint_Data_1.csv",
-        metadata_columns=[
-            "question", "hint_level", "character", "speaker",
-            "narrative_context", "planet", "location", "category",
-            "tone", "follow_up_hint_id", "answer_keywords", "tags"
-        ]
+            metadata_columns=[
+        "question", "hint_level", "character", "speaker",
+        "narrative_context", "planet", "location", "category",
+        "puzzle_id", "response_must_mention", "response_must_not_mention"
+    ]
     )
     hint_data = loader.load()
     
