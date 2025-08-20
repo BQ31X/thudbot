@@ -50,7 +50,8 @@ def create_cached_embeddings(model="text-embedding-3-small", cache_dir="./cache/
         cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
             base_embeddings, 
             store, 
-            namespace=safe_namespace
+            namespace=safe_namespace,
+            key_encoder="sha256"
         )
         
         print(f"✅ Cached embeddings initialized with cache dir: {cache_dir}")
