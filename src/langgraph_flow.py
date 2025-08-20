@@ -1,5 +1,5 @@
 from state import LangGraphState
-from agent import get_direct_hint
+from find_hint_node import find_hint_node
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langsmith import traceable
@@ -84,20 +84,7 @@ def router_node(state: LangGraphState) -> LangGraphState:
     print(f"🔍 ROUTER OUTPUT: GAME_RELATED -> continuing to hint flow (level {state['hint_level']})")
     return state
 
-@traceable(run_type="chain", name="find_hint_node")  
-def find_hint_node(state: LangGraphState) -> LangGraphState:
-    """Find hint using direct RAG chain (no Agent Executor)"""
-    user_input = state["user_input"]
-    hint_level = state.get("hint_level", 1)
-    
-    print(f"🔍 FIND_HINT INPUT: '{user_input}' (level {hint_level})")
-    print(f"🎮 Finding hint for: {user_input}")
-    hint = get_direct_hint(user_input)
-    
-    state["current_hint"] = hint
-    print(f"📝 Retrieved hint: {hint[:100]}{'...' if len(hint) > 100 else ''}")
-    print(f"🔍 FIND_HINT OUTPUT: '{hint[:50]}...' -> current_hint updated")
-    return state
+
 
 def verify_correctness_node(state: LangGraphState) -> LangGraphState:
     """Stub verification - just pass through for now"""

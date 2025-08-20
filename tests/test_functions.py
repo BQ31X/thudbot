@@ -37,9 +37,9 @@ def test_hint_data_structure():
 def test_agent_imports():
     """Test that agent module imports correctly."""
     try:
-        from agent import get_thud_agent, initialize_thudbot
-        assert callable(get_thud_agent), "get_thud_agent should be callable"
-        assert callable(initialize_thudbot), "initialize_thudbot should be callable"
+        from agent import get_direct_hint, initialize_rag_only
+        assert callable(get_direct_hint), "get_direct_hint should be callable"
+        assert callable(initialize_rag_only), "initialize_rag_only should be callable"
     except ImportError as e:
         pytest.fail(f"Failed to import agent functions: {e}")
 
@@ -64,19 +64,19 @@ def test_required_files_exist():
         assert Path(file_path).exists(), f"Required file {file_path} should exist"
 
 def test_agent_initialization():
-    """Test that agent can be initialized without API calls."""
-    # Test basic agent setup without requiring API keys
+    """Test that RAG system can be initialized without API calls."""
+    # Test basic RAG setup without requiring API keys
     try:
-        from agent import initialize_thudbot
+        from agent import initialize_rag_only
         # This should work even without API keys (validates imports, data loading, etc.)
-        agent = initialize_thudbot()
-        assert agent is not None, "Agent should be created"
+        rag_chain = initialize_rag_only()
+        assert rag_chain is not None, "RAG chain should be created"
     except Exception as e:
         # If it fails due to missing API key, that's expected/ok
         if "API key" in str(e) or "api_key" in str(e):
-            pytest.skip(f"Agent initialization skipped - missing API key: {e}")
+            pytest.skip(f"RAG initialization skipped - missing API key: {e}")
         else:
-            pytest.fail(f"Agent initialization failed unexpectedly: {e}")
+            pytest.fail(f"RAG initialization failed unexpectedly: {e}")
 
 def test_fastapi_app_creation():
     """Test that FastAPI app can be created without starting server."""
