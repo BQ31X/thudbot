@@ -4,17 +4,77 @@
 
 ### 🎯 Progressive Hints Enhancements
 
-#### 1. Semantic Question Matching for Progressive Hints
+#### 1. ✅ Semantic Question Matching for Progressive Hints - COMPLETED
 - **Priority**: Medium
-- **Status**: Ready for implementation
-- **Description**: Enhance progressive hints to escalate on semantically similar questions, not just exact text matches
-- **Current Behavior**: 
-  - "How do I open a locker?" → Level 1
-  - "Why can't I open the locker?" → Level 1 (resets, should escalate to Level 2)
-- **Target Behavior**: Recognize question variants as same intent for proper escalation
-- **Implementation**: Keyword-based matching (low risk, no additional LLM calls)
-- **Effort**: 30-45 minutes
-- **Risk**: Very low
+- **Status**: ✅ Completed (2025-08-21)
+- **Description**: Enhanced progressive hints to escalate on semantically similar questions using keyword matching
+- **Implementation**: 
+  - ✅ Keyword-based matching with 2+ word overlap threshold
+  - ✅ Session persistence for last_question_keywords
+  - ✅ Vague escalation logic fixed to reuse previous question
+  - ✅ Fallback to exact string matching
+- **Result**: Question variants now properly escalate (e.g., "How do I open locker?" → "Why can't I open locker?" = Level 2)
+
+#### 2. Regression Test Verbosity Toggle
+- **Priority**: Low
+- **Status**: Pending
+- **Description**: Add command-line verbosity control to regression test for flexible debugging
+- **Current**: Fixed medium verbosity showing search query mismatches
+- **Requested**: Toggle between quiet/medium/verbose modes
+- **Implementation**: Add argparse with --verbose/-v flag options
+- **Options**:
+  - `--quiet`: Only final summary
+  - `--medium`: Current behavior (search query + basic info)
+  - `--verbose`: Full debug output capture
+- **Files**: `tests/regression/run_regression.py`
+- **Effort**: 15-20 minutes
+- **Benefit**: Flexible debugging without code changes
+
+#### 3. Lower LLM Temperature for Demo Consistency
+- **Priority**: Medium-High (Pre-Demo)
+- **Status**: Pending
+- **Description**: Reduce temperature from default 0.7 to 0.1-0.3 for more deterministic responses
+- **Root Cause**: Temperature 0.7 adds 30% randomness to verification, character maintenance, and classification
+- **Evidence**: "Who is Zelda?" inconsistency likely caused by verification randomness at temp=0.7
+- **Target Temperature**: 0.1 for verification, 0.2 for character maintenance (preserve some personality)
+- **Files to Update**:
+  - `src/verify_correctness_node.py`: `ChatOpenAI(model="gpt-4o-mini", temperature=0.1)`
+  - `src/maintain_character_node.py`: `ChatOpenAI(model="gpt-4o-mini", temperature=0.2)`
+  - `src/generate_error_message_node.py`: `ChatOpenAI(model="gpt-4o-mini", temperature=0.1)`
+  - `src/langgraph_flow.py`: `ChatOpenAI(model="gpt-4.1-nano", temperature=0.1)` (router)
+- **Testing**: Re-run "Who is Zelda?" 10 times to verify consistency improvement
+- **Effort**: 5-10 minutes
+- **Risk**: Very low (easily reversible)
+- **Benefit**: Reliable demo behavior, consistent verification results
+
+#### 4. Enhanced Progressive Hints Architecture (Future Refinement)
+- **Priority**: Low (Post-Demo)
+- **Status**: Design phase
+- **Description**: Refactor progressive hints for better separation of concerns and configurability
+- **Current Issues**:
+  - Router mutates user_input (violates single responsibility)
+  - Hard-coded 2+ keyword threshold
+  - Mixed classification and query transformation logic
+- **Enhanced Architecture**:
+  ```
+  QueryNormalizer → SimilarityMatcher → EscalationManager → SearchQueryBuilder
+  ```
+- **Components**:
+  - **QueryNormalizer**: Extract keywords, handle stop words
+  - **SimilarityMatcher**: Configurable thresholds (keyword count, percentage, semantic)
+  - **EscalationManager**: Pure escalation logic, no state mutation
+  - **SearchQueryBuilder**: Construct search queries for downstream nodes
+- **Configuration Options**:
+  - Similarity thresholds (keyword count, percentage)
+  - Stop word lists per domain
+  - Escalation strategies (linear, exponential, topic-specific)
+- **Benefits**:
+  - Testable components, better maintainability
+  - Configurable without code changes
+  - Support for multiple similarity algorithms
+  - Clean separation of concerns
+- **Effort**: 2-3 hours
+- **Alternative**: Consider semantic similarity with local embeddings (sentence-transformers)
 
 **Implementation Plan:**
 1. **Create keyword extraction function** in `src/langgraph_flow.py`:

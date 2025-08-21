@@ -1,0 +1,6 @@
+question,expected_router,notes
+Who is Zelda?,GAME_RELATED,Reliable - character question
+What is the goal of the game?,GAME_RELATED,Simple factual - should be consistent  
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+How do I interact with objects?,GAME_RELATED,Gameplay mechanics - straightforward
