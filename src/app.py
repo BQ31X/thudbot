@@ -109,7 +109,8 @@ def run_hint_request(user_input: str, session_id: str = "default") -> str:
         _session_storage[session_id] = {
             "chat_history": [],
             "hint_level": 1,
-            "last_question_id": ""
+            "last_question_id": "",
+            "last_question_keywords": set()
         }
         print(f"🆕 New session created: {session_id}")
     
@@ -120,6 +121,7 @@ def run_hint_request(user_input: str, session_id: str = "default") -> str:
         chat_history=session_data["chat_history"],
         hint_level=session_data["hint_level"],
         last_question_id=session_data["last_question_id"],
+        last_question_keywords=session_data["last_question_keywords"],
         user_input=user_input,
         current_hint="",
         formatted_output="",
@@ -140,7 +142,8 @@ def run_hint_request(user_input: str, session_id: str = "default") -> str:
     _session_storage[session_id] = {
         "chat_history": result.get("chat_history", []),
         "hint_level": result.get("hint_level", 1),
-        "last_question_id": result.get("last_question_id", "")
+        "last_question_id": result.get("last_question_id", ""),
+        "last_question_keywords": result.get("last_question_keywords", set())
     }
     
     print("=" * 50)
