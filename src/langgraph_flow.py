@@ -20,7 +20,7 @@ OFF_TOPIC_RESPONSES = [
 def classify_intent(user_input: str) -> str:
     """Use LLM to classify if input is about The Space Bar game or off-topic"""
     
-    chat_model = ChatOpenAI(model="gpt-4o-mini")  # Using mini instead of nano for now
+    chat_model = ChatOpenAI(model="gpt-4.1-nano")  # testing with nano for now
     
     template = ChatPromptTemplate.from_template("""
     You are a classifier for The Space Bar adventure game. Determine if the user's input is:

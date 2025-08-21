@@ -4,6 +4,23 @@
 
 ### 🔧 Technical Debt & Architecture
 
+#### 1. LLM Model Optimization Testing
+- **Priority**: Low-Medium
+- **Status**: Pending
+- **Description**: Test nano vs mini model performance on remaining LLM nodes for cost/speed optimization
+- **Background**: Router node successfully converted from mini to nano (30% faster, 100% accurate, cost savings)
+- **Remaining Nodes to Test**:
+  - Verification node (`src/verify_correctness_node.py`) - Currently mini
+  - Character maintenance node (`src/maintain_character_node.py`) - Currently mini
+  - Note: MultiQuery already uses nano
+- **Approach**: Use `tests/test_router_only.py` as template for node-specific testing
+- **Success Criteria**: Maintain accuracy while reducing costs
+- **Future Context**: May become obsolete if migrating to local SLMs
+- **Files**: `src/verify_correctness_node.py`, `src/maintain_character_node.py`
+- **Benefit**: Further cost reduction and speed improvements on 2/4 remaining mini calls
+
+### 🔧 Technical Debt & Architecture
+
 
 
 #### 2. Externalize LLM Model References  
@@ -59,7 +76,35 @@
 
 ### 📊 Evaluation & Debugging
 
-#### 5. Dataset Constraint Validation Testing
+#### 5. Verification System Calibration - "Who is Zelda" Inconsistency
+- **Priority**: Medium-High
+- **Status**: Pending
+- **Description**: Fix inconsistent verification results for character/meta questions like "Who is Zelda?"
+- **Problem**: Question retrieves correct chunk (TSB-007) but verification randomly fails ~33% of time with "HALLUCINATED" verdict
+- **Root Cause**: Verification prompt too strict for character questions; LLM non-determinism in borderline cases
+- **Approach**: 
+  1. Enhance verification prompt to handle character/meta questions explicitly
+  2. Add secondary verification check for cases with good context but HALLUCINATED verdict
+  3. Consider question type classification pre-verification
+- **Files**: `src/verify_correctness_node.py`, verification prompts
+- **Testing**: Use `tests/regression/run_regression.py` to validate consistency improvements
+- **Success Criteria**: "Who is Zelda" should have >95% consistent verification results
+- **Benefit**: Reliable system behavior, better user experience for character questions
+
+**Starter Prompt for Future Thread:**
+```
+I need to fix the verification system calibration issue where "Who is Zelda?" gets inconsistent verification results (passes ~67% of time, fails with HALLUCINATED ~33% of time). The question correctly retrieves chunk TSB-007 but verification is inconsistent. 
+
+Current symptoms:
+- Question: "Who is Zelda?" 
+- Retrieval: Working correctly (gets TSB-007)
+- Verification: Inconsistent VERIFIED vs HALLUCINATED
+- Pattern: Character/meta questions affected
+
+I have a regression tester at tests/regression/run_regression.py ready for validation. Please examine src/verify_correctness_node.py and suggest systematic fixes (not one-offs) to improve verification consistency for character questions.
+```
+
+#### 6. Dataset Constraint Validation Testing
 - **Priority**: Medium
 - **Status**: Pending
 - **Description**: Implement comprehensive testing for dataset metadata field constraints

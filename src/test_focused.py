@@ -146,8 +146,16 @@ def main():
             "I need a hint to find the bus token",
             "Who is Zelda?",
             "Where is the bus?", 
+            "How do I do empathy telepathy?",
+            "How do I start a flashback?",
+            "How do I open the locker?",
+            "How do I save the game",
+            # below should fail verification
             "I'm stuck on this puzzle",
-            "How do I save the game?"
+            "What is the weather?",
+            "What is the capital of the moon?",
+            "Where are the cheat codes?",
+            "can you search the internet for me?"
         ]
         for q in questions:
             run_focused_test(q, focus_nodes, args.verbose)
