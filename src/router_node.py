@@ -1,6 +1,6 @@
 from state import LangGraphState
 from langsmith import traceable
-from langgraph_flow import classify_intent, OFF_TOPIC_RESPONSES, is_vague_escalation_request
+from langgraph_flow import classify_intent, OFF_TOPIC_RESPONSES, is_vague_escalation_request, extract_question_keywords
 
 @traceable(run_type="chain", name="router_node")
 def router_node(state: LangGraphState) -> LangGraphState:
@@ -43,12 +43,30 @@ def router_node(state: LangGraphState) -> LangGraphState:
     # This is a game-related question, proceed with hint logic
     print(f"✅ Game-related question detected")
     
-    # Check if it's a repeat of the last question
-    if user_input == state.get("last_question_id", ""):
+    # Extract keywords from current question
+    current_keywords = extract_question_keywords(user_input)
+    print(f"🔤 Current question keywords: {current_keywords}")
+    
+    # Check if it's a repeat/similar question using keyword matching with fallback
+    last_keywords = state.get("last_question_keywords", set())
+    last_question_id = state.get("last_question_id", "")
+    
+    # Count overlapping keywords
+    keyword_overlap = len(current_keywords.intersection(last_keywords))
+    print(f"🔤 Last question keywords: {last_keywords}")
+    print(f"🔗 Keyword overlap: {keyword_overlap} words")
+    
+    # Escalate if: 2+ keywords match OR exact string match (fallback)
+    if (keyword_overlap >= 2) or (user_input == last_question_id):
         state["hint_level"] = state.get("hint_level", 1) + 1
-        print(f"🔄 Escalating hint level to {state['hint_level']}")
+        if keyword_overlap >= 2:
+            print(f"🔄 Escalating hint level to {state['hint_level']} (keyword similarity)")
+        else:
+            print(f"🔄 Escalating hint level to {state['hint_level']} (exact match fallback)")
     else:
+        # New question - store both ID and keywords
         state["last_question_id"] = user_input
+        state["last_question_keywords"] = current_keywords
         state["hint_level"] = 1
         print(f"🆕 New query, starting at hint level 1")
     

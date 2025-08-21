@@ -1,0 +1,24 @@
+graph TD
+    A["🚀 START"] --> B["🧭 Router Node<br/>(Hint Request?)"]
+    
+    B -->|"Yes<br/>(GAME_RELATED)"| C["🔍 Find Hint Node<br/>(RAG Chain)"]
+    B -->|"No<br/>(OFF_TOPIC)"| Z["🏁 END<br/>(Direct Response)"]
+    
+    C --> D["🔬 Verify Correctness Node<br/>(LLM Fact-Check)"]
+    
+    D -->|"✅ VERIFIED<br/>(Appropriate & Factual)"| E["🎭 Maintain Character Node<br/>(Zelda Voice + Guardrails)"]
+    D -->|"❌ TOO_SPECIFIC<br/>HALLUCINATED<br/>INSUFFICIENT_CONTEXT"| F["❌ Generate Error Message<br/>(Ask for Clarification)"]
+    
+    E --> G["📋 Format Output Node<br/>(Add Hint Level)"]
+    G --> Z
+    
+    F --> Z
+    
+    style A fill:#e1f5fe
+    style Z fill:#f3e5f5
+    style B fill:#fff3e0
+    style C fill:#e8f5e8
+    style D fill:#fff8e1
+    style E fill:#f1f8e9
+    style F fill:#ffebee
+    style G fill:#e3f2fd

@@ -29,11 +29,46 @@ VAGUE_ESCALATION_PATTERNS = [
     "tell me more"
 ]
 
+# Stop words to remove when extracting meaningful keywords for progressive hints
+STOP_WORDS = {
+    # Question words
+    "how", "where", "what", "why", "when", "who", "which",
+    # Common verbs and auxiliaries
+    "do", "does", "did", "can", "can't", "could", "would", "should",
+    "is", "are", "was", "were", "be", "been", "being",
+    # Pronouns
+    "i", "me", "my", "you", "your", "it", "that", "this", "they", "them",
+    # Articles and prepositions
+    "a", "an", "the", "in", "on", "at", "to", "from", "with", "of", "for",
+    # Common words
+    "please", "help", "still", "again", "and", "or", "but"
+}
+
 # TODO, maybe. 20250820.
 # below template is used to classify if input is about The Space Bar game or off-topic. 
 # it is working well but I am not sure if it is the best way to do this. 
 # If it needs further refinement, we should consider removing the specific examples to avoid bloating the prompt.
 # e.g. a simpler rule like: Simple rule like "GAME_RELATED if asking HOW/WHERE/WHO about specific things, OFF_TOPIC if vague or non-gaming"
+
+def extract_question_keywords(user_input: str) -> set:
+    """Extract meaningful keywords from user input, removing stop words
+    
+    Args:
+        user_input: The user's input text
+        
+    Returns:
+        Set of meaningful keywords (lowercase, no punctuation)
+    """
+    import re
+    
+    # Normalize text: lowercase, remove punctuation, split into words
+    normalized = re.sub(r'[^\w\s]', '', user_input.lower())
+    words = normalized.split()
+    
+    # Remove stop words and empty strings
+    keywords = {word for word in words if word and word not in STOP_WORDS}
+    
+    return keywords
 
 def is_vague_escalation_request(user_input: str) -> bool:
     """Check if user input matches vague escalation patterns (like 'I'm still stuck')
