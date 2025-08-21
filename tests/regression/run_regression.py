@@ -48,6 +48,13 @@ class RawCollector:
             try:
                 result = self._collect_raw_data(question, expected_router, notes)
                 self.results.append(result)
+                
+                # Medium verbosity: Show key debugging info
+                search_query = result['search_query']
+                if search_query != question and search_query != "N/A":
+                    print(f"   🔍 Search Query: '{search_query}' (≠ question)")
+                else:
+                    print(f"   🔍 Search Query: '{search_query}'")
                 print(f"   ✅ Collected: Router={result['router']}, Verify={result['verify']}")
                 
             except Exception as e:

@@ -20,6 +20,14 @@ def router_node(state: LangGraphState) -> LangGraphState:
         # Treat as GAME_RELATED and escalate hint level for the last question
         print(f"🔄 Vague escalation detected with chat history - treating as GAME_RELATED")
         
+        # KEY FIX: Replace vague phrase with previous question for downstream nodes
+        previous_question = state.get("last_question_id", "")
+        if previous_question:
+            print(f"🔄 Replacing vague input '{user_input}' with previous question '{previous_question}'")
+            state["user_input"] = previous_question
+        else:
+            print(f"⚠️ No previous question found, keeping vague input")
+        
         # Keep the existing last_question_id (don't update it)
         # Just escalate the hint level
         state["hint_level"] = state.get("hint_level", 1) + 1
