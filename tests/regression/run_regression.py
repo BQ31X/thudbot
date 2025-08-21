@@ -89,8 +89,25 @@ class RawCollector:
         start_time = time.time()
         timestamp = datetime.now().strftime('%H:%M:%S')
         
-        # Use the simple run_hint_request and infer node decisions from output patterns
-        final_output = run_hint_request(question)
+        # Capture debug output by redirecting stdout temporarily
+        import sys
+        from io import StringIO
+        
+        # Capture both the result and debug output
+        old_stdout = sys.stdout
+        debug_capture = StringIO()
+        sys.stdout = debug_capture
+        
+        try:
+            final_output = run_hint_request(question)
+            debug_output = debug_capture.getvalue()
+        finally:
+            sys.stdout = old_stdout
+        
+        # Parse debug output for detailed routing information
+        hint_level = self._extract_hint_level(debug_output, final_output)
+        escalation_type = self._extract_escalation_type(debug_output)
+        search_query = self._extract_search_query(debug_output)
         
         # Infer router decision from output patterns
         if any(phrase in final_output for phrase in ["Listen sweetie", "Sorry hon", "I appreciate the chat"]):
@@ -98,7 +115,11 @@ class RawCollector:
             hint_text = "N/A"
             verify_result = "N/A"
         else:
-            router_result = "GAME_RELATED"
+            # Enhanced router result with escalation info
+            if escalation_type:
+                router_result = f"GAME_RELATED ({escalation_type}, L{hint_level})"
+            else:
+                router_result = f"GAME_RELATED (L{hint_level})"
             
             # Infer verification status for game-related queries
             if "more detail" in final_output.lower() or "more specific" in final_output.lower() or "Get a bit more specific" in final_output:
@@ -130,12 +151,48 @@ class RawCollector:
             'expected_router': expected_router,
             'notes': notes,
             'router': router_result,
+            'search_query': search_query,
             'hint': hint_text,
             'verify': verify_result,
             'final': final_output,
             'timestamp': timestamp,
             'duration': round(duration, 2)
         }
+    
+    def _extract_hint_level(self, debug_output: str, final_output: str) -> int:
+        """Extract hint level from debug output or final output"""
+        # Try debug output first
+        import re
+        level_match = re.search(r'continuing to hint flow \(level (\d+)\)', debug_output)
+        if level_match:
+            return int(level_match.group(1))
+        
+        # Fallback to final output
+        level_match = re.search(r'🎯 Hint \(Level (\d+)\)', final_output)
+        if level_match:
+            return int(level_match.group(1))
+        
+        return 1  # Default
+    
+    def _extract_escalation_type(self, debug_output: str) -> str:
+        """Extract escalation type from debug output"""
+        if "keyword similarity" in debug_output:
+            return "keyword escalation"
+        elif "exact match fallback" in debug_output:
+            return "exact escalation"
+        elif "Vague escalation detected" in debug_output:
+            return "vague escalation"
+        return ""
+    
+    def _extract_search_query(self, debug_output: str) -> str:
+        """Extract what query was sent to find_hint"""
+        import re
+        # Look for the FIND_HINT INPUT line
+        match = re.search(r"🔍 FIND_HINT INPUT: '([^']+)'", debug_output)
+        if match:
+            query = match.group(1)
+            return query[:50] + "..." if len(query) > 50 else query
+        return "N/A"
     
     def _save_csv(self):
         """Save results as CSV"""
@@ -171,20 +228,22 @@ class RawCollector:
             
             # Results table
             f.write(f"## Detailed Results\n\n")
-            f.write("| Question | Expected | Router | Hint | Verify | Final | Time |\n")
-            f.write("|----------|----------|--------|------|--------|-------|------|\n")
+            f.write("| Question | Expected | Router | Search Query | Hint | Verify | Final | Time |\n")
+            f.write("|----------|----------|--------|--------------|------|--------|-------|------|\n")
             
             for result in self.results:
                 question = result['question'][:40] + "..." if len(result['question']) > 40 else result['question']
+                search_query = result['search_query'][:30] + "..." if len(result['search_query']) > 30 else result['search_query']
                 hint = result['hint'][:30] + "..." if len(result['hint']) > 30 else result['hint']
                 final = result['final'][:50] + "..." if len(result['final']) > 50 else result['final']
                 
                 # Escape pipes for Markdown
                 question = question.replace("|", "\\|")
+                search_query = search_query.replace("|", "\\|")
                 hint = hint.replace("|", "\\|")
                 final = final.replace("|", "\\|")
                 
-                f.write(f"| {question} | {result['expected_router']} | {result['router']} | {hint} | {result['verify']} | {final} | {result['timestamp']} |\n")
+                f.write(f"| {question} | {result['expected_router']} | {result['router']} | {search_query} | {hint} | {result['verify']} | {final} | {result['timestamp']} |\n")
     
     def _create_latest_symlink(self):
         """Create symlink to latest results"""
