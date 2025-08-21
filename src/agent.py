@@ -98,7 +98,7 @@ def initialize_rag_only(api_key=None):
     )
     
     # Create retrievers
-    naive_retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+    naive_retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
     chat_model = ChatOpenAI(model="gpt-4.1-nano")
     multi_query_retriever = MultiQueryRetriever.from_llm(
         retriever=naive_retriever, llm=chat_model
