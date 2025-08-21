@@ -11,8 +11,8 @@ def find_hint_node(state: LangGraphState) -> LangGraphState:
     print(f"🔍 FIND_HINT INPUT: '{user_input}' (level {hint_level})")
     print(f"🎮 Finding hint for: {user_input}")
     
-    # Get both hint and context in one RAG call
-    rag_result = get_direct_hint_with_context(user_input)
+    # Get both hint and context in one RAG call with progressive hint level filtering
+    rag_result = get_direct_hint_with_context(user_input, hint_level)
     hint = rag_result["response"]
     context = rag_result["context"]
     

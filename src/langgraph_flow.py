@@ -11,11 +11,47 @@ OFF_TOPIC_RESPONSES = [
     "I appreciate the chat, but my circuits are dedicated to *The Space Bar* only. Need help finding something in the game? That's my specialty!"
 ]
 
+# Progressive hints: patterns that indicate user wants escalated help
+# These should be treated as GAME_RELATED if chat_history exists
+VAGUE_ESCALATION_PATTERNS = [
+    "i'm still stuck",
+    "still stuck", 
+    "still need help",
+    "more help",
+    "another hint",
+    "different hint",
+    "that didn't work",
+    "tried that",
+    "i tried that",
+    "need more help",
+    "can you help more",
+    "give me more",
+    "tell me more"
+]
+
 # TODO, maybe. 20250820.
 # below template is used to classify if input is about The Space Bar game or off-topic. 
 # it is working well but I am not sure if it is the best way to do this. 
 # If it needs further refinement, we should consider removing the specific examples to avoid bloating the prompt.
 # e.g. a simpler rule like: Simple rule like "GAME_RELATED if asking HOW/WHERE/WHO about specific things, OFF_TOPIC if vague or non-gaming"
+
+def is_vague_escalation_request(user_input: str) -> bool:
+    """Check if user input matches vague escalation patterns (like 'I'm still stuck')
+    
+    Args:
+        user_input: The user's input text
+        
+    Returns:
+        True if input matches escalation patterns, False otherwise
+    """
+    input_lower = user_input.lower().strip()
+    
+    # Check if any escalation pattern is found in the input
+    for pattern in VAGUE_ESCALATION_PATTERNS:
+        if pattern in input_lower:
+            return True
+    
+    return False
 
 def classify_intent(user_input: str) -> str:
     """Use LLM to classify if input is about The Space Bar game or off-topic"""

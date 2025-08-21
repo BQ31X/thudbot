@@ -150,6 +150,26 @@ I have a regression tester at tests/regression/run_regression.py ready for valid
 - **Details**: Create issues for each backlog item, set up labels, milestones
 - **Benefit**: Better tracking, collaboration, integration with PRs
 
+#### 9 Future Enhancement: Topic-Specific Hint Level Tracking
+
+**Current Behavior:** Single hint level counter that resets when user asks about a different topic.
+- User: "How do I find the token?" → level 1
+- User: "How do I open the locker?" → level 1 (new topic, counter resets)
+- User: "I'm still stuck" → level 2 (about locker)
+- User: "How do I find the token?" → level 1 (back to token, counter resets)
+
+### **Enhancement:** Track hint levels per semantic topic to maintain escalation history across topic switches.
+- Would require: Question normalization (LLM), per-topic hint tracking, vague prompt topic resolution
+- Estimated effort: 3-4 hours
+- Value: Handles edge cases where users switch between topics and return to previous questions
+- Priority: Low (current approach works for 90% of conversations)
+
+
+#### Data Cleanup: Fix Duplicate question_ids
+- **Issue:** question_id column has duplicates (TSB-026 appears 3x, should be TSB-026a, TSB-026b, TSB-026c)
+- **Impact:** Low - puzzle_id grouping works correctly for progressive hints
+- **Priority:** Post-demo cleanup
+- **Effort:** 30 minutes to regenerate unique IDs and validate
 ---
 
 ## Completed Items ✅
