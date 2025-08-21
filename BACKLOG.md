@@ -2,6 +2,48 @@
 
 ## Post-Demo Day Improvements
 
+### 🎯 Progressive Hints Enhancements
+
+#### 1. Semantic Question Matching for Progressive Hints
+- **Priority**: Medium
+- **Status**: Ready for implementation
+- **Description**: Enhance progressive hints to escalate on semantically similar questions, not just exact text matches
+- **Current Behavior**: 
+  - "How do I open a locker?" → Level 1
+  - "Why can't I open the locker?" → Level 1 (resets, should escalate to Level 2)
+- **Target Behavior**: Recognize question variants as same intent for proper escalation
+- **Implementation**: Keyword-based matching (low risk, no additional LLM calls)
+- **Effort**: 30-45 minutes
+- **Risk**: Very low
+
+**Implementation Plan:**
+1. **Create keyword extraction function** in `src/langgraph_flow.py`:
+   ```python
+   def extract_question_keywords(user_input: str) -> set:
+       # Extract key game entities from normalized text
+       # Use domain vocabulary from CSV data
+   ```
+
+2. **Enhance router logic** in `src/router_node.py`:
+   - Replace exact string matching with keyword overlap detection
+   - Use 50%+ keyword overlap threshold for escalation
+   - Store `last_question_keywords` in state instead of `last_question_id`
+
+3. **Update state management** in `src/state.py`:
+   - Add `last_question_keywords` field to LangGraphState
+
+4. **Game entity vocabulary** (extracted from existing CSV):
+   - token, bus token, locker, vestibule, zelda, quantelope, lodge
+   - residue printer, box, plane, door, hyperdrive, treasure, money
+
+5. **Expected improvements**:
+   - "How do I open a locker?" + "Why can't I open locker?" → Proper L1→L2 escalation
+   - "How do I find token?" + "Where is the bus token?" → Proper L1→L2 escalation
+   - Maintains reset behavior for genuinely different topics
+
+6. **Testing**: Use existing manual test scenarios that showed reset behavior
+7. **Fallback**: Keep exact string matching as backup for edge cases
+
 ### 🔧 Technical Debt & Architecture
 
 #### 1. LLM Model Optimization Testing
