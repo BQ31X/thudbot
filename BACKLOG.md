@@ -59,9 +59,37 @@
 
 ### 📊 Evaluation & Debugging
 
+#### 5. Dataset Constraint Validation Testing
+- **Priority**: Medium
+- **Status**: Pending
+- **Description**: Implement comprehensive testing for dataset metadata field constraints
+- **Details**: 
+  - Test `response_must_mention` and `response_must_not_mention` field compliance
+  - Validate hint level progression logic within puzzle groups
+  - Check content quality metrics (length, specificity, coherence)
+  - Verify categorical data consistency and completeness
+  - Test edge cases in dataset structure and content
+- **Files**: `src/test_dataset_validation.py`, `data/Thudbot_Hint_Data_1.csv`
+- **Benefit**: Ensure dataset integrity before implementing progressive hints, catch constraint violations early
 
+#### 6. Evaluate MMR (Maximal Marginal Relevance) for Retrieval Diversity
+- **Priority**: Medium
+- **Status**: Pending
+- **Description**: Test MMR to reduce retrieval bias and improve context diversity
+- **Details**: 
+  - **Code Change**: In `src/agent.py` line ~100, update retriever:
+    ```python
+    naive_retriever = vectorstore.as_retriever(
+        search_type="mmr",  # Add this
+        search_kwargs={"k": 10, "lambda_mult": 0.5}  # Balance relevance vs diversity
+    )
+    ```
+  - **Evaluation Needed**: A/B test against current system using RAGAS framework
+  - **Metrics**: Context precision/recall, answer relevance, faithfulness
+  - **Risk**: May reduce precision for specific questions while improving vague query handling
+- **Benefit**: Address potential whac-a-mole effects from repetitive retrieval patterns
 
-#### 5. Implement Full RAGAS Evaluation
+#### 7. Implement Full RAGAS Evaluation
 - **Priority**: Low
 - **Status**: Pending
 - **Description**: Set up comprehensive RAG evaluation with RAGAS framework
@@ -70,7 +98,7 @@
 
 ### 🛠️ Process & Tooling
 
-#### 6. Create GitHub Issue Tracker
+#### 8. Create GitHub Issue Tracker
 - **Priority**: Low
 - **Status**: Pending  
 - **Description**: Migrate backlog from markdown to GitHub Issues for better project management
@@ -102,14 +130,8 @@
 
 
 
-### SHA warning
-# In agent.py, line 50-54
-cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
-    base_embeddings, 
-    store, 
-    namespace=safe_namespace,
-    key_encoder="sha256"  # Add this line
-)
+### Cache Security Enhancement
+- ✅ **SHA-256 Encoder** - Upgraded cached embeddings from SHA-1 to SHA-256 for collision resistance
 ---
 
 ## Notes

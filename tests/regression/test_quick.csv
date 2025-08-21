@@ -1,0 +1,4 @@
+question,expected_router,notes
+"How do I find the bus token?",GAME_RELATED,"Core functionality test"
+"What's the weather like?",OFF_TOPIC,"Off-topic test"
+"Where is the secret treasure room?",GAME_RELATED,"Verification test"

@@ -52,3 +52,8 @@ docs/dev_journey/
 # reference_notebooks/
 # Cache directory for embeddings
 cache/
+
+#test results
+tests/test_results/
+tests/regression/results/
+tests/archive/
