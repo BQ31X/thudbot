@@ -1,0 +1,17 @@
+question,expected_router,notes
+"What should I do first?",GAME_RELATED,"General game guidance; no context"
+"How do I find the bus token?",GAME_RELATED,"Core functionality - known good question"
+"Help me find the bus token?",ESCALATION,"repeat question - level 2"
+"I need more help with that", ESCALATION, "repeat question - level 3"
+"Who is Zelda?",GAME_RELATED,"Character identification question (keeps failing verifier)"
+"How do I open a locker in the vestibule?",GAME_RELATED,"Core functionality"
+"why can't I use any locker in the vestibule?",ESCALATION,"Repeated question"
+"I don't understand that", ESCALATION, "should maintain context - level 3"
+"How do I open a locker in the vestibule?",GAME_RELATED,"Core functionality"
+"How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
+"How do I get my residue printer to work?", GAME_RELATED,"Core functionality"
+"How do I use the box near the plane crash", GAME_RELATED, "Puzzle question"
+"What should I do first?",ESCALATION,"should escalate last question; should have context now"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
+
+
