@@ -43,99 +43,121 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-xl shadow-xl p-6">
-          <h1 className="text-3xl font-bold mb-6 text-center text-gray-800 flex items-center justify-center">
-            <img src="/Thud32x32.png" alt="Thud" className="w-8 h-8 mr-3" />
-            Thudbot: Your Agentic Companion for The Space Bar
-          </h1>
-          
-          {/* API Key Input */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              OpenAI API Key <span className="text-gray-500 font-normal">(optional)</span>
-            </label>
-                               <input
-                     type="password"
-                     value={apiKey}
-                     onChange={(e) => setApiKey(e.target.value)}
-                     placeholder="Enter your OpenAI API key (not needed if set in .env)"
-                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                   />
-          </div>
-
+    <main className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      {/* PDA Interface Container */}
+      <div className="relative w-full max-w-[1623px]">
+        {/* PDA Background Image */}
+        <img 
+          src="/PDA-interface150.png" 
+          alt="PDA Interface" 
+          className="block w-full h-auto"
+        />
+        
+        {/* Main Screen Area - Chat Interface */}
+        <div 
+          className="absolute bg-black overflow-hidden"
+          style={{ 
+            left: '20.08%', 
+            top: '17.5%', 
+            width: '48.7%', 
+            height: '54.2%',
+            borderRadius: '0.25%'
+          }}
+        >
           {/* Messages Display */}
-          <div className="h-[400px] overflow-y-auto mb-6 p-4 bg-gray-50 rounded-lg border">
+          <div className="h-full overflow-y-auto p-[1%] bg-gray-900 text-green-400 font-mono text-[0.9vw]">
             {messages.length === 0 && (
-              <div className="text-center text-gray-500 mt-20">
-                <p className="text-lg">👋 Hi. I'm Thud. I am at The Thirsty Tentacle waiting for my shuttle.</p>
-                <p className="mt-2">Need help with The Space Bar? Ask me a question!</p>
+              <div className="text-center text-green-300 mt-32">
+                <p className="text-base">👋 Zelda here. Ready to assist with The Space Bar.</p>
+                <p className="mt-2 text-sm">Ask me anything about the game!</p>
               </div>
             )}
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`mb-4 p-4 rounded-lg max-w-[80%] ${
+                className={`mb-3 p-2 rounded max-w-[90%] text-sm ${
                   message.role === 'user'
-                    ? 'bg-blue-100 ml-auto border-l-4 border-blue-500'
+                    ? 'bg-blue-900 ml-auto border-l-2 border-blue-400 text-blue-100'
                     : message.role === 'error'
-                    ? 'bg-red-100 border-l-4 border-red-500'
-                    : 'bg-green-100 border-l-4 border-green-500'
+                    ? 'bg-red-900 border-l-2 border-red-400 text-red-100'
+                    : 'bg-green-900 border-l-2 border-green-400 text-green-100'
                 }`}
               >
-                <p className="text-sm font-semibold mb-2 text-gray-700 flex items-center">
-                  {message.role === 'user' ? '🤔 You' : message.role === 'error' ? '❌ Error' : (
-                    <>
-                      <img src="/Thud32x32.png" alt="Thud" className="w-4 h-4 mr-1" />
-                      Thud
-                    </>
-                  )}
+                <p className="text-xs font-semibold mb-1 opacity-80">
+                  {message.role === 'user' ? '> USER' : message.role === 'error' ? '> ERROR' : '> ZELDA'}
                 </p>
-                <p className="whitespace-pre-wrap text-gray-800">{message.content}</p>
+                <p className="whitespace-pre-wrap">{message.content}</p>
               </div>
             ))}
             {isLoading && (
-              <div className="text-center text-gray-500 p-4">
-                <p className="flex items-center justify-center">
-                  <img src="/Thud32x32.png" alt="Thud" className="w-5 h-5 mr-2 animate-spin" />
-                  Thud is thinking...
+              <div className="text-center text-green-300 p-3">
+                <p className="flex items-center justify-center text-sm">
+                  <span className="animate-spin mr-2">⚙</span>
+                  Processing request...
                 </p>
               </div>
             )}
             {/* Invisible element to scroll to */}
             <div ref={messagesEndRef} />
           </div>
+        </div>
 
-          {/* Input Form */}
-          <form onSubmit={handleSubmit} className="flex gap-3">
+        {/* Small Status Screen Area */}
+        <div 
+          className="absolute bg-black overflow-hidden"
+          style={{ 
+            left: '75.0%', 
+            top: '26%', 
+            width: '17.8%', 
+            height: '16.8%',
+            borderRadius: '0.12%'
+          }}
+        >
+          <div className="h-full p-[1%] bg-gray-900 text-green-400 font-mono text-[0.9vw]">
+            <div className="text-left">
+              <p className="font-bold mb-2">💡 How to chat with Zelda:</p>
+              <p className="text-[0.8vw] mb-1">• "How do I get a token for the bus?"</p>
+              <p className="text-[0.8vw] mb-1">• "How do I use the voice printer?"</p>
+              <p className="text-[0.8vw]">• Ask about puzzles & locations</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Input Area - Positioned over first 4 buttons */}
+        <div 
+          className="absolute"
+          style={{ 
+            left: '20.6%', 
+            bottom: '12.6%', 
+            width: '38.3%',
+          }}
+        >
+          <form onSubmit={handleSubmit}>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask Thud about The Space Bar..."
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Ask Zelda about The Space Bar..."
+              className="w-full p-[1%] bg-gray-800 text-green-400 border border-green-600 rounded text-[0.9vw] font-mono focus:ring-1 focus:ring-green-500 focus:border-green-500"
               disabled={isLoading}
             />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors font-medium"
-            >
-              Send
-            </button>
           </form>
-
-          {/* Instructions */}
-          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h3 className="font-semibold text-yellow-800 mb-2">💡 How to chat with Thud:</h3>
-            <ul className="text-sm text-yellow-700 space-y-1">
-              <li>• Ask about puzzles: "How do I get a token for the bus?"</li>
-              <li>• Get general game help: "How do I use the voice printer"</li>
-              <li>• Talk about the weather: "What's the weather in Boston?"</li>
-            </ul>
-          </div>
         </div>
+
+        {/* Send Button - Positioned independently over LOG button */}
+        <button
+          onClick={handleSubmit}
+          disabled={isLoading}
+          className="absolute bg-green-700 text-green-100 rounded hover:bg-green-600 disabled:bg-gray-600 transition-colors font-mono text-[0.9vw]"
+          style={{
+            left: '60.3%',
+            bottom: '12.6%',
+            width: '5.5%',
+            height: '5.3%'
+          }}
+        >
+          SEND
+        </button>
       </div>
     </main>
   );

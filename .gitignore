@@ -48,3 +48,12 @@ docs/dev_journey/DEVLOG.md
 docs/MERGE.md
 # AI session context summaries (working notes, not project documentation)
 docs/dev_journey/*Context*Summary*.md
+docs/dev_journey/
+# reference_notebooks/
+# Cache directory for embeddings
+cache/
+
+#test results
+tests/test_results/
+tests/regression/results/
+tests/archive/

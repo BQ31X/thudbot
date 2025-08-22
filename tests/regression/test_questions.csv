@@ -1,0 +1,37 @@
+question,expected_router,notes
+Who is Zelda?,GAME_RELATED,Reliable - character question
+who is Zelda?,GAME_RELATED
+Who is Zelda?,GAME_RELATED,Reliable - character question
+Who is Zelda?,GAME_RELATED,Reliable - character question
+Who is Zelda?,GAME_RELATED,Reliable - character question
+What is the time limit of the game?,GAME_RELATED,Simple factual - should be consistent  
+What is the time limit of the game?,GAME_RELATED,Simple factual - should be consistent  
+What is the time limit of the game?,GAME_RELATED,Simple factual - should be consistent  
+What is the time limit of the game?,GAME_RELATED,Simple factual - should be consistent  
+What is the time limit of the game?,GAME_RELATED,Simple factual - should be consistent  
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+How do I interact with objects?,GAME_RELATED,Gameplay mechanics - straightforward
+How do I open a locker in the vestibule?",GAME_RELATED,"Core functionality"
+How do I open a locker in the vestibule?,GAME_RELATED,"Core functionality"
+How do I open a locker in the vestibule?,GAME_RELATED,"Core functionality"
+How do I open a locker in the vestibule?,GAME_RELATED,"Core functionality"
+How do I open a locker in the vestibule?,GAME_RELATED,"Core functionality"
+"How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
+"How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
+"How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
+"How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
+"How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
