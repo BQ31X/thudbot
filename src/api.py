@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
-from app import run_hint_request
+from app import run_hint_request, clear_session
 
 # Load environment variables
 load_dotenv()
@@ -14,6 +14,10 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 class ChatRequest(BaseModel):
     user_message: str
     api_key: str = ""  # Optional - will fall back to .env if empty
+    session_id: str = "default"  # Session ID for chat history persistence
+
+class ClearSessionRequest(BaseModel):
+    session_id: str = "default"
 
 @app.post("/api/chat")
 async def chat_with_thud(request: ChatRequest):
@@ -27,11 +31,37 @@ async def chat_with_thud(request: ChatRequest):
         if api_key:
             os.environ['OPENAI_API_KEY'] = api_key
         
-        # Use the new LangGraph implementation
-        response = run_hint_request(request.user_message)
-        return {"response": response}
+        # Use the new LangGraph implementation with session support
+        response = run_hint_request(request.user_message, request.session_id)
+        return {"response": response, "session_id": request.session_id}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log the full error for debugging (you can see this in server logs)
+        print(f"🚨 API Error in chat endpoint: {type(e).__name__}: {str(e)}")
+        
+        # Return user-friendly message without exposing internals
+        raise HTTPException(
+            status_code=500, 
+            detail="I'm having trouble processing your request right now. Please try again, and if the problem persists, check that your API key is valid."
+        )
+
+@app.post("/api/clear-session")
+async def clear_chat_session(request: ClearSessionRequest):
+    """Clear a specific session's chat history and reset hint levels"""
+    try:
+        cleared = clear_session(request.session_id)
+        if cleared:
+            return {"message": f"Session {request.session_id} cleared successfully"}
+        else:
+            return {"message": f"Session {request.session_id} not found (may already be empty)"}
+    except Exception as e:
+        # Log the full error for debugging (you can see this in server logs)
+        print(f"🚨 API Error in clear-session endpoint: {type(e).__name__}: {str(e)}")
+        
+        # Return user-friendly message without exposing internals
+        raise HTTPException(
+            status_code=500, 
+            detail="Unable to clear session. Please try again."
+        )
 
 if __name__ == "__main__":
     import uvicorn

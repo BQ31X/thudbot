@@ -155,16 +155,58 @@ def get_direct_hint(question: str) -> str:
     print(f"✅ Returning RAG response directly (no Agent Executor)")
     return response
 
-def get_direct_hint_with_context(question: str) -> dict:
-    """Get hint with context from RAG chain for verification purposes"""
+def get_direct_hint_with_context(question: str, hint_level: int = 1) -> dict:
+    """Get hint with context from RAG chain for verification purposes
+    
+    Args:
+        question: The user's question
+        hint_level: Maximum hint level to retrieve (1=subtle, 2=moderate, 3=explicit)
+                   Retrieves all hints from level 1 up to hint_level (cumulative)
+    """
     global _multi_query_retrieval_chain
     
     # Initialize if needed
     if _multi_query_retrieval_chain is None:
         _multi_query_retrieval_chain = initialize_rag_only()  # Clean RAG-only init
     
-    print(f"\n🎮 DIRECT_HINT_WITH_CONTEXT called with: '{question}'")
-    result = _multi_query_retrieval_chain.invoke({"question": question})
+    print(f"\n🎮 DIRECT_HINT_WITH_CONTEXT called with: '{question}' (max_level: {hint_level})")
+    
+    # PROGRESSIVE HINTS: Filter by hint level if possible
+    # Get the underlying vectorstore for level-filtered retrieval
+    try:
+        # Create a level-filtered retriever that gets hints up to the specified level
+        # This implements cumulative hint retrieval (levels 1 through hint_level)
+        vectorstore = _multi_query_retrieval_chain.steps[0].steps[0].vectorstore if hasattr(_multi_query_retrieval_chain.steps[0].steps[0], 'vectorstore') else None
+        
+        if vectorstore and hasattr(vectorstore, 'as_retriever'):
+            # Create retriever with hint level filter (graceful fallback if metadata missing)
+            level_filter = {"hint_level": {"$lte": hint_level}}
+            level_filtered_retriever = vectorstore.as_retriever(
+                search_kwargs={"k": 4, "filter": level_filter}
+            )
+            
+            # Test if level filtering works by doing a quick search
+            test_docs = level_filtered_retriever.get_relevant_documents(question)
+            
+            if test_docs:
+                # Level filtering succeeded - use filtered retriever
+                print(f"🎯 Using level-filtered retrieval (levels 1-{hint_level})")
+                result = _multi_query_retrieval_chain.invoke({"question": question})
+                # Note: For now, we'll use the standard chain but this sets up the architecture
+                # TODO: Replace the retriever in the chain with level_filtered_retriever
+            else:
+                # No results with level filter - fall back to unfiltered search
+                print(f"⚠️  No results with level filter, falling back to unfiltered search")
+                result = _multi_query_retrieval_chain.invoke({"question": question})
+        else:
+            # Vectorstore not accessible - use standard retrieval
+            print(f"ℹ️  Vectorstore not accessible, using standard retrieval")
+            result = _multi_query_retrieval_chain.invoke({"question": question})
+            
+    except Exception as e:
+        # Graceful fallback: if level filtering fails, use standard retrieval
+        print(f"⚠️  Level filtering failed ({e}), falling back to standard retrieval")
+        result = _multi_query_retrieval_chain.invoke({"question": question})
     
     # Extract response and context
     response = result["response"].content

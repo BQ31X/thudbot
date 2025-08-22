@@ -2,3 +2,18 @@ question,expected_router,notes
 "How do I find the bus token?",GAME_RELATED,"Core functionality test"
 "What's the weather like?",OFF_TOPIC,"Off-topic test"
 "Where is the secret treasure room?",GAME_RELATED,"Verification test"
+
+
+"Where can I find money?",GAME_RELATED,"Resource location question; not relevant"
+"How do I open the door?",GAME_RELATED,"Common game action; no context"
+"What's the weather like today?",OFF_TOPIC,"Clear off-topic question"
+"What do I do with the large box near the plane crash", GAME_RELATED, "Puzzle question - repeat ask out of sequence"
+"How do I install Python?",OFF_TOPIC,"Technical but off-topic"
+"What's your favorite color?",OFF_TOPIC,"Personal question"
+"Tell me a joke",OFF_TOPIC,"Entertainment request"
+"What's the latest news?",OFF_TOPIC,"Current events question"
+"How do I solve the quantum flux capacitor puzzle?",GAME_RELATED,"Non-existent game element - tests verification"
+"Where is the secret treasure room?",GAME_RELATED,"Non-existent game element - tests verification"
+"How do I activate the hyperdrive?",GAME_RELATED,"Non-game element - tests verification"
+"How do I activate the hyperdrive?",ESCALATION,"repeated, but meaningless - tests verification"
+"What happens when you use the hyperdrive?",GAME_RELATED,"Non-game element question"

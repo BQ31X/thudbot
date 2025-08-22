@@ -2,6 +2,108 @@
 
 ## Post-Demo Day Improvements
 
+### 🎯 Progressive Hints Enhancements
+
+#### 1. ✅ Semantic Question Matching for Progressive Hints - COMPLETED
+- **Priority**: Medium
+- **Status**: ✅ Completed (2025-08-21)
+- **Description**: Enhanced progressive hints to escalate on semantically similar questions using keyword matching
+- **Implementation**: 
+  - ✅ Keyword-based matching with 2+ word overlap threshold
+  - ✅ Session persistence for last_question_keywords
+  - ✅ Vague escalation logic fixed to reuse previous question
+  - ✅ Fallback to exact string matching
+- **Result**: Question variants now properly escalate (e.g., "How do I open locker?" → "Why can't I open locker?" = Level 2)
+
+#### 2. Regression Test Verbosity Toggle
+- **Priority**: Low
+- **Status**: Pending
+- **Description**: Add command-line verbosity control to regression test for flexible debugging
+- **Current**: Fixed medium verbosity showing search query mismatches
+- **Requested**: Toggle between quiet/medium/verbose modes
+- **Implementation**: Add argparse with --verbose/-v flag options
+- **Options**:
+  - `--quiet`: Only final summary
+  - `--medium`: Current behavior (search query + basic info)
+  - `--verbose`: Full debug output capture
+- **Files**: `tests/regression/run_regression.py`
+- **Effort**: 15-20 minutes
+- **Benefit**: Flexible debugging without code changes
+
+#### 3. Lower LLM Temperature for Demo Consistency
+- **Priority**: Medium-High (Pre-Demo)
+- **Status**: Pending
+- **Description**: Reduce temperature from default 0.7 to 0.1-0.3 for more deterministic responses
+- **Root Cause**: Temperature 0.7 adds 30% randomness to verification, character maintenance, and classification
+- **Evidence**: "Who is Zelda?" inconsistency likely caused by verification randomness at temp=0.7
+- **Target Temperature**: 0.1 for verification, 0.2 for character maintenance (preserve some personality)
+- **Files to Update**:
+  - `src/verify_correctness_node.py`: `ChatOpenAI(model="gpt-4o-mini", temperature=0.1)`
+  - `src/maintain_character_node.py`: `ChatOpenAI(model="gpt-4o-mini", temperature=0.2)`
+  - `src/generate_error_message_node.py`: `ChatOpenAI(model="gpt-4o-mini", temperature=0.1)`
+  - `src/langgraph_flow.py`: `ChatOpenAI(model="gpt-4.1-nano", temperature=0.1)` (router)
+- **Testing**: Re-run "Who is Zelda?" 10 times to verify consistency improvement
+- **Effort**: 5-10 minutes
+- **Risk**: Very low (easily reversible)
+- **Benefit**: Reliable demo behavior, consistent verification results
+
+#### 4. Enhanced Progressive Hints Architecture (Future Refinement)
+- **Priority**: Low (Post-Demo)
+- **Status**: Design phase
+- **Description**: Refactor progressive hints for better separation of concerns and configurability
+- **Current Issues**:
+  - Router mutates user_input (violates single responsibility)
+  - Hard-coded 2+ keyword threshold
+  - Mixed classification and query transformation logic
+- **Enhanced Architecture**:
+  ```
+  QueryNormalizer → SimilarityMatcher → EscalationManager → SearchQueryBuilder
+  ```
+- **Components**:
+  - **QueryNormalizer**: Extract keywords, handle stop words
+  - **SimilarityMatcher**: Configurable thresholds (keyword count, percentage, semantic)
+  - **EscalationManager**: Pure escalation logic, no state mutation
+  - **SearchQueryBuilder**: Construct search queries for downstream nodes
+- **Configuration Options**:
+  - Similarity thresholds (keyword count, percentage)
+  - Stop word lists per domain
+  - Escalation strategies (linear, exponential, topic-specific)
+- **Benefits**:
+  - Testable components, better maintainability
+  - Configurable without code changes
+  - Support for multiple similarity algorithms
+  - Clean separation of concerns
+- **Effort**: 2-3 hours
+- **Alternative**: Consider semantic similarity with local embeddings (sentence-transformers)
+
+**Implementation Plan:**
+1. **Create keyword extraction function** in `src/langgraph_flow.py`:
+   ```python
+   def extract_question_keywords(user_input: str) -> set:
+       # Extract key game entities from normalized text
+       # Use domain vocabulary from CSV data
+   ```
+
+2. **Enhance router logic** in `src/router_node.py`:
+   - Replace exact string matching with keyword overlap detection
+   - Use 50%+ keyword overlap threshold for escalation
+   - Store `last_question_keywords` in state instead of `last_question_id`
+
+3. **Update state management** in `src/state.py`:
+   - Add `last_question_keywords` field to LangGraphState
+
+4. **Game entity vocabulary** (extracted from existing CSV):
+   - token, bus token, locker, vestibule, zelda, quantelope, lodge
+   - residue printer, box, plane, door, hyperdrive, treasure, money
+
+5. **Expected improvements**:
+   - "How do I open a locker?" + "Why can't I open locker?" → Proper L1→L2 escalation
+   - "How do I find token?" + "Where is the bus token?" → Proper L1→L2 escalation
+   - Maintains reset behavior for genuinely different topics
+
+6. **Testing**: Use existing manual test scenarios that showed reset behavior
+7. **Fallback**: Keep exact string matching as backup for edge cases
+
 ### 🔧 Technical Debt & Architecture
 
 #### 1. LLM Model Optimization Testing
@@ -150,6 +252,26 @@ I have a regression tester at tests/regression/run_regression.py ready for valid
 - **Details**: Create issues for each backlog item, set up labels, milestones
 - **Benefit**: Better tracking, collaboration, integration with PRs
 
+#### 9 Future Enhancement: Topic-Specific Hint Level Tracking
+
+**Current Behavior:** Single hint level counter that resets when user asks about a different topic.
+- User: "How do I find the token?" → level 1
+- User: "How do I open the locker?" → level 1 (new topic, counter resets)
+- User: "I'm still stuck" → level 2 (about locker)
+- User: "How do I find the token?" → level 1 (back to token, counter resets)
+
+### **Enhancement:** Track hint levels per semantic topic to maintain escalation history across topic switches.
+- Would require: Question normalization (LLM), per-topic hint tracking, vague prompt topic resolution
+- Estimated effort: 3-4 hours
+- Value: Handles edge cases where users switch between topics and return to previous questions
+- Priority: Low (current approach works for 90% of conversations)
+
+
+#### Data Cleanup: Fix Duplicate question_ids
+- **Issue:** question_id column has duplicates (TSB-026 appears 3x, should be TSB-026a, TSB-026b, TSB-026c)
+- **Impact:** Low - puzzle_id grouping works correctly for progressive hints
+- **Priority:** Post-demo cleanup
+- **Effort:** 30 minutes to regenerate unique IDs and validate
 ---
 
 ## Completed Items ✅

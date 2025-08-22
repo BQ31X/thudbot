@@ -1,20 +1,37 @@
 question,expected_router,notes
-"How do I find the bus token?",GAME_RELATED,"Core functionality - known good question"
-"Who is Zelda?",GAME_RELATED,"Character identification question"
-"What should I do first?",GAME_RELATED,"General game guidance"
-"How do I open the door?",GAME_RELATED,"Common game action"
-"How do I open a locker in the vestibule?",GAME_RELATED,"Core functionality"
+Who is Zelda?,GAME_RELATED,Reliable - character question
+who is Zelda?,GAME_RELATED
+Who is Zelda?,GAME_RELATED,Reliable - character question
+Who is Zelda?,GAME_RELATED,Reliable - character question
+Who is Zelda?,GAME_RELATED,Reliable - character question
+What is the time limit of the game?,GAME_RELATED,Simple factual - should be consistent  
+What is the time limit of the game?,GAME_RELATED,Simple factual - should be consistent  
+What is the time limit of the game?,GAME_RELATED,Simple factual - should be consistent  
+What is the time limit of the game?,GAME_RELATED,Simple factual - should be consistent  
+What is the time limit of the game?,GAME_RELATED,Simple factual - should be consistent  
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+How do I save the game?,GAME_RELATED,Clear direct answer - game mechanics
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+What is the Thirsty Tentacle?,GAME_RELATED,Basic game knowledge - location
+How do I interact with objects?,GAME_RELATED,Gameplay mechanics - straightforward
+How do I open a locker in the vestibule?",GAME_RELATED,"Core functionality"
+How do I open a locker in the vestibule?,GAME_RELATED,"Core functionality"
+How do I open a locker in the vestibule?,GAME_RELATED,"Core functionality"
+How do I open a locker in the vestibule?,GAME_RELATED,"Core functionality"
+How do I open a locker in the vestibule?,GAME_RELATED,"Core functionality"
 "How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
-"How do I get my residue printer to work?", GAME_RELATED,"Core functionality"
-"What do I do with the large box near the plane crash", GAME_RELATED, "Puzzle question"
-"Where can I find money?",GAME_RELATED,"Resource location question"
-"What's the weather like today?",OFF_TOPIC,"Clear off-topic question"
-"How do I install Python?",OFF_TOPIC,"Technical but off-topic"
-"What's your favorite color?",OFF_TOPIC,"Personal question"
-"Tell me a joke",OFF_TOPIC,"Entertainment request"
-"What's the latest news?",OFF_TOPIC,"Current events question"
-"How do I solve the quantum flux capacitor puzzle?",GAME_RELATED,"Non-existent game element - tests verification"
-"Where is the secret treasure room?",GAME_RELATED,"Non-existent game element - tests verification"
-"How do I activate the hyperdrive?",GAME_RELATED,"Non-game element - tests verification"
-"What happens when you use the hyperdrive?",GAME_RELATED,"Non-game element question"
-"How do I cast spells?",GAME_RELATED,"Fantasy element in sci-fi game - tests verification"
+"How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
+"How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
+"How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
+"How do I get to Quantelope Lodge", GAME_RELATED,"Puzzle question"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
+"What do I do with the large box near the plane crash", ESCALATION, "Repeat question"
