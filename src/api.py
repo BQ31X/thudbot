@@ -35,7 +35,14 @@ async def chat_with_thud(request: ChatRequest):
         response = run_hint_request(request.user_message, request.session_id)
         return {"response": response, "session_id": request.session_id}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log the full error for debugging (you can see this in server logs)
+        print(f"🚨 API Error in chat endpoint: {type(e).__name__}: {str(e)}")
+        
+        # Return user-friendly message without exposing internals
+        raise HTTPException(
+            status_code=500, 
+            detail="I'm having trouble processing your request right now. Please try again, and if the problem persists, check that your API key is valid."
+        )
 
 @app.post("/api/clear-session")
 async def clear_chat_session(request: ClearSessionRequest):
@@ -47,7 +54,14 @@ async def clear_chat_session(request: ClearSessionRequest):
         else:
             return {"message": f"Session {request.session_id} not found (may already be empty)"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Log the full error for debugging (you can see this in server logs)
+        print(f"🚨 API Error in clear-session endpoint: {type(e).__name__}: {str(e)}")
+        
+        # Return user-friendly message without exposing internals
+        raise HTTPException(
+            status_code=500, 
+            detail="Unable to clear session. Please try again."
+        )
 
 if __name__ == "__main__":
     import uvicorn

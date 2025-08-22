@@ -2,6 +2,7 @@ from state import LangGraphState
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langsmith import traceable
+import openai
 
 @traceable(run_type="chain", name="verify_correctness_node")
 def verify_correctness_node(state: LangGraphState) -> LangGraphState:
@@ -15,7 +16,6 @@ def verify_correctness_node(state: LangGraphState) -> LangGraphState:
     print(f"📄 Using cached context: {len(retrieved_context)} chars")
     
     try:
-        
         # Use LLM to verify if the current hint aligns with retrieved context
         chat_model = ChatOpenAI(model="gpt-4o-mini")
         
@@ -80,9 +80,16 @@ def verify_correctness_node(state: LangGraphState) -> LangGraphState:
             state["verification_reason"] = verdict
             return state
             
+    except (openai.AuthenticationError, openai.APIError) as e:
+        print(f"⚠️  OpenAI API error during verification: {type(e).__name__}")
+        # On API error, fail verification gracefully and continue to error generation
+        state["verification_passed"] = False
+        state["verification_reason"] = "API_ERROR"
+        return state
+        
     except Exception as e:
-        print(f"⚠️  Verification failed due to error: {e}")
-        # On error, assume verification failed for safety
+        print(f"⚠️  Verification failed due to unexpected error: {type(e).__name__}")
+        # On other errors, assume verification failed for safety
         state["verification_passed"] = False
         state["verification_reason"] = "VERIFICATION_ERROR"
         return state

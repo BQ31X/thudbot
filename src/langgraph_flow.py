@@ -3,6 +3,7 @@
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
+import openai
 
 # Canned responses for off-topic questions
 OFF_TOPIC_RESPONSES = [
@@ -91,48 +92,61 @@ def is_vague_escalation_request(user_input: str) -> bool:
 def classify_intent(user_input: str) -> str:
     """Use LLM to classify if input is about The Space Bar game or off-topic"""
     
-    chat_model = ChatOpenAI(model="gpt-4.1-nano")  # testing with nano for now
+    try:
+        chat_model = ChatOpenAI(model="gpt-4.1-nano")  # testing with nano for now
     
-    template = ChatPromptTemplate.from_template("""
-    You are a classifier for The Space Bar adventure game. Determine if the user's input is:
-    1. GAME_RELATED: Appears to be asking about a specific game element, action, or mechanic (give benefit of the doubt)
-    2. OFF_TOPIC: Clearly not about gaming, OR too vague to be actionable
+        template = ChatPromptTemplate.from_template("""
+        You are a classifier for The Space Bar adventure game. Determine if the user's input is:
+        1. GAME_RELATED: Appears to be asking about a specific game element, action, or mechanic (give benefit of the doubt)
+        2. OFF_TOPIC: Clearly not about gaming, OR too vague to be actionable
 
-    GAME_RELATED (be permissive - let downstream systems handle if it's not actually in the game):
-    - Any question asking HOW to do something specific
-    - Any question asking WHERE something is
-    - Any question asking about a specific item, character, location, or action
-    - Game mechanics questions, even if unfamiliar
-    - Questions about specific puzzles or challenges
+        GAME_RELATED (be permissive - let downstream systems handle if it's not actually in the game):
+        - Any question asking HOW to do something specific
+        - Any question asking WHERE something is
+        - Any question asking about a specific item, character, location, or action
+        - Game mechanics questions, even if unfamiliar
+        - Questions about specific puzzles or challenges
 
-    Examples of GAME_RELATED:
-    - "How do I find the token?"
-    - "How do I open the locker?" 
-    - "How do I do empathy telepathy?"
-    - "How do I start a flashback?"
-    - "Where is the bus?"
-    - "Who is Zelda?"
-    - "How do I save the game?"
-    - "What do I do in the Thirsty Tentacle?"
-    - "How do I interact with objects?"
+        Examples of GAME_RELATED:
+        - "How do I find the token?"
+        - "How do I open the locker?" 
+        - "How do I do empathy telepathy?"
+        - "How do I start a flashback?"
+        - "Where is the bus?"
+        - "Who is Zelda?"
+        - "How do I save the game?"
+        - "What do I do in the Thirsty Tentacle?"
+        - "How do I interact with objects?"
 
-    Examples of OFF_TOPIC:
-    - "What's the weather like?" (not about gaming)
-    - "Tell me a joke" (not about gaming)
-    - "How do I play Minecraft?" (different game)
-    - "I'm stuck on this puzzle" (too vague - no specific element mentioned)
-    - "How do I solve a puzzle?" (too vague - no specific element mentioned)  
-    - "Help me with this" (too vague)
-    - "What should I do?" (too vague)
-    - "Hello, how are you?" (social, not gaming)
+        Examples of OFF_TOPIC:
+        - "What's the weather like?" (not about gaming)
+        - "Tell me a joke" (not about gaming)
+        - "How do I play Minecraft?" (different game)
+        - "I'm stuck on this puzzle" (too vague - no specific element mentioned)
+        - "How do I solve a puzzle?" (too vague - no specific element mentioned)  
+        - "Help me with this" (too vague)
+        - "What should I do?" (too vague)
+        - "Hello, how are you?" (social, not gaming)
 
-    User input: "{user_input}"
-    
-    Respond with exactly: GAME_RELATED or OFF_TOPIC
-    """)
-    
-    response = chat_model.invoke(template.format(user_input=user_input))
-    classification = response.content.strip()
-    
-    print(f"🤖 Intent classification: {classification}")
-    return classification
+        User input: "{user_input}"
+        
+        Respond with exactly: GAME_RELATED or OFF_TOPIC
+        """)
+        
+        response = chat_model.invoke(template.format(user_input=user_input))
+        classification = response.content.strip()
+        
+        print(f"🤖 Intent classification: {classification}")
+        return classification
+        
+    except (openai.AuthenticationError, openai.APIError) as e:
+        print(f"🚨 OpenAI API error in intent classification: {type(e).__name__}")
+        # Conservative fallback - assume it's game-related to avoid blocking legitimate questions
+        print(f"🛡️ Using fallback classification: GAME_RELATED")
+        return "GAME_RELATED"
+        
+    except Exception as e:
+        print(f"🚨 Unexpected error in intent classification: {type(e).__name__}")
+        # Conservative fallback - assume it's game-related
+        print(f"🛡️ Using fallback classification: GAME_RELATED")
+        return "GAME_RELATED"
