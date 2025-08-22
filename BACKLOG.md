@@ -2,6 +2,25 @@
 
 ## Post-Demo Day Improvements
 
+### 🎯 High Priority - Robust Smalltalk Question Handling
+#### 1. LLM Classifier with smalltalk Category  
+- **Priority**: High (Post-Demo)
+- **Status**: Pending
+- **Description**: Replace demo-day META_GAME_PATTERNS allowlist with robust LLM classification
+- **Current Issue**: Exact pattern matching only catches "what can you do" but misses variations like "what are you capable of", "tell me about your features"
+- **Solution**: Add third category to LLM classifier:
+  - GAME_RELATED: Specific game questions
+  - META_GAME: Questions about Zelda's role/capabilities  
+  - OFF_TOPIC: Everything else
+- **Implementation**: 
+  - Update `classify_intent()` in `src/langgraph_flow.py` with META_GAME examples
+  - Modify router logic to treat META_GAME same as GAME_RELATED
+  - Remove META_GAME_PATTERNS temporary allowlist
+- **Benefits**: Handles natural language variations, future-proof, consistent with existing LLM approach
+- **Files**: `src/langgraph_flow.py`, `src/router_node.py`
+- **Effort**: 30-45 minutes
+- **Testing**: Validate with "what can you do", "what are you capable of", "how can you help me"
+
 ### 🎯 Progressive Hints Enhancements
 
 #### 1. ✅ Semantic Question Matching for Progressive Hints - COMPLETED
