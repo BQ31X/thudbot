@@ -121,14 +121,14 @@ export default function Home() {
             left: '75.0%', 
             top: '26%', 
             width: '17.8%', 
-            height: '16.8%',
+            height: '18.5%',
             borderRadius: '0.12%'
           }}
         >
           <div className="h-full p-[1%] bg-gray-900 text-green-400 font-mono text-[0.9vw] flex flex-col">
             <div className="text-left">
               <p className="font-bold mb-2">📡 COMMS ONLINE</p>
-              <p className="text-[0.8vw] mb-1">• Status: {processingStage}</p>
+              <p className="text-[0.8vw] mb-1">STATUS: {processingStage}</p>
               
               {messages.length === 0 && (
                 <div className="mt-2">
@@ -138,9 +138,9 @@ export default function Home() {
             </div>
             
             {/* System Health Components - positioned at bottom */}
-            <div className="mt-auto text-[0.65vw] space-y-0.5">
+            <div className="mt-4 text-[0.65vw] space-y-0.5">
               <div className="flex justify-between items-center">
-                <span className="w-16">CONTROL:</span>
+                <span className="w-16">NETWORK:</span>
                 <span className={isLoading ? "animate-pulse" : ""}>
                   {isLoading ? "█▓▒░" : "████"}
                 </span>
