@@ -8,6 +8,7 @@ export default function Home() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [processingStage, setProcessingStage] = useState<string>('Ready');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when messages change
@@ -23,6 +24,13 @@ export default function Home() {
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
+    
+    // Start processing stages
+    setProcessingStage('Analyzing request...');
+    
+    // Simulate processing stages with timeouts
+    const stage1Timer = setTimeout(() => setProcessingStage('Finding hint...'), 500);
+    const stage2Timer = setTimeout(() => setProcessingStage('Verifying...'), 2000);
 
     try {
       // Chat with Thudbot
@@ -38,7 +46,11 @@ export default function Home() {
       const errorMessage = error.response?.data?.detail || 'An error occurred while fetching the response.';
       setMessages(prev => [...prev, { role: 'error', content: errorMessage }]);
     } finally {
+      // Clear all timers
+      clearTimeout(stage1Timer);
+      clearTimeout(stage2Timer);
       setIsLoading(false);
+      setProcessingStage('Ready');
     }
   };
 
@@ -113,12 +125,36 @@ export default function Home() {
             borderRadius: '0.12%'
           }}
         >
-          <div className="h-full p-[1%] bg-gray-900 text-green-400 font-mono text-[0.9vw]">
+          <div className="h-full p-[1%] bg-gray-900 text-green-400 font-mono text-[0.9vw] flex flex-col">
             <div className="text-left">
-              <p className="font-bold mb-2">💡 How to chat with Zelda:</p>
-              <p className="text-[0.8vw] mb-1">• "How do I get a token for the bus?"</p>
-              <p className="text-[0.8vw] mb-1">• "How do I use the voice printer?"</p>
-              <p className="text-[0.8vw]">• Ask about puzzles & locations</p>
+              <p className="font-bold mb-2">📡 COMMS ONLINE</p>
+              <p className="text-[0.8vw] mb-1">• Status: {processingStage}</p>
+              
+              {messages.length === 0 && (
+                <div className="mt-2">
+                  <p className="text-[0.6vw] opacity-60">Ask about puzzles & locations</p>
+                </div>
+              )}
+            </div>
+            
+            {/* System Health Components - positioned at bottom */}
+            <div className="mt-auto text-[0.65vw] space-y-0.5">
+              <div className="flex justify-between items-center">
+                <span className="w-16">CONTROL:</span>
+                <span className={isLoading ? "animate-pulse" : ""}>
+                  {isLoading ? "█▓▒░" : "████"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="w-16">POWER:</span>
+                <span className="text-green-300">▓▓▓▓░</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="w-16">DIAG:</span>
+                <span className={processingStage === 'Verifying...' ? "animate-pulse text-yellow-400" : "text-green-400"}>
+                  {processingStage === 'Verifying...' ? "SCAN" : "OK"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
