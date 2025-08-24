@@ -2,6 +2,13 @@
 
 ## Post-Demo Day Improvements
 
+### Critical priority: Security & hardening
+S security issue to the empty Security & hardening section:
+
+
+### Critical priority: Security & hardening
+see [HARDENING.md](./HARDENING.md)
+
 ### 🎯 High Priority - Robust Smalltalk Question Handling
 #### 1. LLM Classifier with smalltalk Category  
 - **Priority**: High (Post-Demo)
