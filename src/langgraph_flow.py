@@ -30,6 +30,18 @@ VAGUE_ESCALATION_PATTERNS = [
     "tell me more"
 ]
 
+# Smalltalk patterns: Questions about Zelda's capabilities that should get direct response
+# Demo-day fix - exact pattern matching (to be replaced with LLM classification post-demo)
+SMALLTALK_PATTERNS = [
+    "what can you do",
+    "What can you do",
+    "what do you do", 
+    "who are you",
+    "what are your abilities",
+    "how can you help",
+    "what help can you give"
+]
+
 # Stop words to remove when extracting meaningful keywords for progressive hints
 STOP_WORDS = {
     # Question words
@@ -84,6 +96,24 @@ def is_vague_escalation_request(user_input: str) -> bool:
     
     # Check if any escalation pattern is found in the input
     for pattern in VAGUE_ESCALATION_PATTERNS:
+        if pattern in input_lower:
+            return True
+    
+    return False
+
+def is_smalltalk_question(user_input: str) -> bool:
+    """Check if user input matches smalltalk question patterns (like 'what can you do')
+    
+    Args:
+        user_input: The user's input text
+        
+    Returns:
+        True if input matches smalltalk patterns, False otherwise
+    """
+    input_lower = user_input.lower().strip()
+    
+    # Check if any smalltalk pattern is found in the input
+    for pattern in SMALLTALK_PATTERNS:
         if pattern in input_lower:
             return True
     

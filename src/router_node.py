@@ -1,6 +1,6 @@
 from state import LangGraphState
 from langsmith import traceable
-from langgraph_flow import classify_intent, OFF_TOPIC_RESPONSES, is_vague_escalation_request, extract_question_keywords
+from langgraph_flow import classify_intent, OFF_TOPIC_RESPONSES, is_vague_escalation_request, extract_question_keywords, is_smalltalk_question
 
 @traceable(run_type="chain", name="router_node")
 def router_node(state: LangGraphState) -> LangGraphState:
@@ -33,6 +33,15 @@ def router_node(state: LangGraphState) -> LangGraphState:
         state["hint_level"] = state.get("hint_level", 1) + 1
         print(f"🔄 Escalating hint level to {state['hint_level']} for previous question")
         print(f"🔍 ROUTER OUTPUT: VAGUE_ESCALATION -> continuing to hint flow (level {state['hint_level']})")
+        return state
+    
+    # Check for smalltalk questions first (demo-day allowlist)
+    if is_smalltalk_question(user_input):
+        # Direct response for smalltalk about Zelda's capabilities
+        smalltalk_response = "I'm Zelda, your personal digital assistant here in *The Space Bar*! I help players navigate puzzles, find objects, and understand game mechanics. Ask me about specific locations, characters, or what to do when you're stuck!"
+        state["formatted_output"] = smalltalk_response
+        print(f"💬 Smalltalk question detected, using direct response")
+        print(f"🔍 ROUTER OUTPUT: SMALLTALK -> '{smalltalk_response[:50]}...'")
         return state
     
     # Use LLM to classify intent for non-escalation requests
