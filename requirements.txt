@@ -1,4 +1,4 @@
-# This file is used by `uv sync` to install and manage project dependencies.
+# This file is currently unused - dependencies are managed in pyproject.toml
 # Add your required packages here, one per line.
 #
 # Core LangChain and AI dependencies
