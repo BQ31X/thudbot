@@ -49,7 +49,7 @@ docs/MERGE.md
 # AI session context summaries (working notes, not project documentation)
 docs/dev_journey/*Context*Summary*.md
 docs/dev_journey/
-# reference_notebooks/
+reference_notebooks/
 # Cache directory for embeddings
 cache/
 
