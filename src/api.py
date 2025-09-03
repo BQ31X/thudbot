@@ -9,7 +9,22 @@ from app import run_hint_request, clear_session
 load_dotenv()
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# Environment-based CORS configuration
+env = os.getenv("ENV", "dev")  # defaults to "dev" 
+if env == "dev":
+    # Development: allow localhost
+    allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+else:
+    # Production: use explicit allowlist
+    allowed_origins = os.getenv("ALLOWED_ORIGINS", "https://boffo.games").split(",")
+
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins=allowed_origins,
+    allow_methods=["POST"],  # Only allow POST (more restrictive)
+    allow_headers=["*"]
+)
 
 class ChatRequest(BaseModel):
     user_message: str
