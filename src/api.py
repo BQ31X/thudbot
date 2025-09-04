@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 import os
 from dotenv import load_dotenv
 from app import run_hint_request, clear_session
@@ -29,6 +29,17 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     user_message: str
     session_id: str = "default"  # Session ID for chat history persistence
+    
+    @field_validator('user_message')
+    @classmethod
+    def validate_user_message(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Message cannot be empty")
+        
+        if len(v) > 5000:
+            raise ValueError("Message too long. Please keep your message under 5000 characters")
+        
+        return v.strip()
 
 class ClearSessionRequest(BaseModel):
     session_id: str = "default"

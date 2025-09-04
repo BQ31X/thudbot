@@ -185,22 +185,69 @@ class ErrorInjectionTester:
         """Test malformed state and input scenarios"""
         print("  🔬 Testing: State Corruption Scenarios")
         
-        # Test extremely long input
+        # Test input validation limits - should handle gracefully
+        
+        # Test empty input via API (should get 422 validation error)
+        response = self.client.post("/api/chat", 
+            json={"user_message": "", "session_id": "test"})
+        
+        result = {
+            "test": "empty_input_api",
+            "status": "PASS" if response.status_code == 422 else "FAIL",  # Should reject with 422
+            "status_code": response.status_code,
+            "response_preview": response.text[:100]
+        }
+        self.results.append(result)
+        print(f"    {'✅' if result['status'] == 'PASS' else '❌'} Empty Input API: {result['status']}")
+        
+        # Test max allowed input (5000 chars) - should work
+        max_input = "Help me " * 625  # ~5000 characters  
+        try:
+            response = run_hint_request(max_input)
+            result = {
+                "test": "max_allowed_input",
+                "status": "PASS" if not self._contains_stack_trace(response) else "FAIL",
+                "input_length": len(max_input),
+                "response_preview": response[:100]
+            }
+            self.results.append(result)
+            print(f"    {'✅' if result['status'] == 'PASS' else '❌'} Max Allowed Input (5K): {result['status']}")
+        except Exception as e:
+            result = {"test": "max_allowed_input", "status": "FAIL", "error": str(e)}
+            self.results.append(result)
+            print(f"    ❌ Max Allowed Input: Uncaught exception")
+        
+        # Test oversized input via API (should get 422 validation error)
+        oversized_input = "Attack " * 1000  # ~7K characters
+        response = self.client.post("/api/chat", 
+            json={"user_message": oversized_input, "session_id": "test"})
+        
+        result = {
+            "test": "oversized_input_api",
+            "status": "PASS" if response.status_code == 422 else "FAIL",  # Should reject with 422
+            "status_code": response.status_code,
+            "input_length": len(oversized_input),
+            "response_preview": response.text[:100]
+        }
+        self.results.append(result)
+        print(f"    {'✅' if result['status'] == 'PASS' else '❌'} Oversized Input API (7K): {result['status']}")
+        
+        # Test direct function with oversized input (should handle gracefully or raise)
         massive_input = "Help me " * 10000  # ~70K characters
         try:
             response = run_hint_request(massive_input)
             result = {
-                "test": "massive_input",
+                "test": "massive_input_direct",
                 "status": "PASS" if not self._contains_stack_trace(response) else "FAIL",
                 "input_length": len(massive_input),
                 "response_preview": response[:100]
             }
             self.results.append(result)
-            print(f"    {'✅' if result['status'] == 'PASS' else '❌'} Massive Input: {result['status']}")
+            print(f"    {'✅' if result['status'] == 'PASS' else '❌'} Massive Input Direct (70K): {result['status']}")
         except Exception as e:
-            result = {"test": "massive_input", "status": "FAIL", "error": str(e)}
+            result = {"test": "massive_input_direct", "status": "FAIL", "error": str(e)}
             self.results.append(result)
-            print(f"    ❌ Massive Input: Uncaught exception")
+            print(f"    ❌ Massive Input Direct: Uncaught exception")
         
         # Test special characters and encoding issues
         special_inputs = [
