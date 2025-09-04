@@ -39,11 +39,14 @@ async def chat_with_thud(request: ChatRequest):
         # Use API key from .env only - no environment pollution
         api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
-            raise HTTPException(status_code=400, detail="OpenAI API key required (set OPENAI_API_KEY in .env)")
+            raise HTTPException(status_code=503, detail="Chat service unavailable: Missing API key configuration.")
         
         # Use the new LangGraph implementation with session support
         response = run_hint_request(request.user_message, request.session_id)
         return {"response": response, "session_id": request.session_id}
+    except HTTPException:
+        # Re-raise HTTPExceptions unchanged (these are intentional API responses)
+        raise
     except Exception as e:
         # Log the full error for debugging (you can see this in server logs)
         print(f"🚨 API Error in chat endpoint: {type(e).__name__}: {str(e)}")
@@ -51,7 +54,7 @@ async def chat_with_thud(request: ChatRequest):
         # Return user-friendly message without exposing internals
         raise HTTPException(
             status_code=500, 
-            detail="I'm having trouble processing your request right now. Please try again, and if the problem persists, check that your API key is valid."
+            detail="I'm experiencing technical difficulties. Please try again."
         )
 
 @app.post("/api/clear-session")
