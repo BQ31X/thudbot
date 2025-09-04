@@ -28,7 +28,6 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     user_message: str
-    api_key: str = ""  # Optional - will fall back to .env if empty
     session_id: str = "default"  # Session ID for chat history persistence
 
 class ClearSessionRequest(BaseModel):
@@ -37,14 +36,10 @@ class ClearSessionRequest(BaseModel):
 @app.post("/api/chat")
 async def chat_with_thud(request: ChatRequest):
     try:
-        # Use API key from request OR fall back to .env
-        api_key = request.api_key or os.getenv('OPENAI_API_KEY')
+        # Use API key from .env only - no environment pollution
+        api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
-            raise HTTPException(status_code=400, detail="OpenAI API key required (provide in request or set OPENAI_API_KEY in .env)")
-        
-        # Set the API key in environment for the LangGraph to use
-        if api_key:
-            os.environ['OPENAI_API_KEY'] = api_key
+            raise HTTPException(status_code=400, detail="OpenAI API key required (set OPENAI_API_KEY in .env)")
         
         # Use the new LangGraph implementation with session support
         response = run_hint_request(request.user_message, request.session_id)
