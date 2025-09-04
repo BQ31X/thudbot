@@ -7,8 +7,11 @@ export default function Home() {
   const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState('');
   const [processingStage, setProcessingStage] = useState<string>('Ready');
+  const [sessionId] = useState(() => {
+    // Generate a cryptographically secure unique session ID when component mounts
+    return crypto.randomUUID();
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when messages change
@@ -36,7 +39,7 @@ export default function Home() {
       // Chat with Thudbot
       const response = await axios.post('/api/chat', {
         user_message: userMessage,
-        api_key: apiKey
+        session_id: sessionId
       }, {
         responseType: 'json'
       });
