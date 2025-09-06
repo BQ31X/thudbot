@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 import os
 from dotenv import load_dotenv
 from app import run_hint_request, clear_session
@@ -9,12 +9,37 @@ from app import run_hint_request, clear_session
 load_dotenv()
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# Environment-based CORS configuration
+env = os.getenv("ENV", "dev")  # defaults to "dev" 
+if env == "dev":
+    # Development: allow localhost
+    allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+else:
+    # Production: use explicit allowlist
+    allowed_origins = os.getenv("ALLOWED_ORIGINS", "https://boffo.games").split(",")
+
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins=allowed_origins,
+    allow_methods=["POST"],  # Only allow POST (more restrictive)
+    allow_headers=["*"]
+)
 
 class ChatRequest(BaseModel):
     user_message: str
-    api_key: str = ""  # Optional - will fall back to .env if empty
     session_id: str = "default"  # Session ID for chat history persistence
+    
+    @field_validator('user_message')
+    @classmethod
+    def validate_user_message(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Message cannot be empty")
+        
+        if len(v) > 5000:
+            raise ValueError("Message too long. Please keep your message under 5000 characters")
+        
+        return v.strip()
 
 class ClearSessionRequest(BaseModel):
     session_id: str = "default"
@@ -22,18 +47,17 @@ class ClearSessionRequest(BaseModel):
 @app.post("/api/chat")
 async def chat_with_thud(request: ChatRequest):
     try:
-        # Use API key from request OR fall back to .env
-        api_key = request.api_key or os.getenv('OPENAI_API_KEY')
+        # Use API key from .env only - no environment pollution
+        api_key = os.getenv('OPENAI_API_KEY')
         if not api_key:
-            raise HTTPException(status_code=400, detail="OpenAI API key required (provide in request or set OPENAI_API_KEY in .env)")
-        
-        # Set the API key in environment for the LangGraph to use
-        if api_key:
-            os.environ['OPENAI_API_KEY'] = api_key
+            raise HTTPException(status_code=503, detail="Chat service unavailable: Missing API key configuration.")
         
         # Use the new LangGraph implementation with session support
         response = run_hint_request(request.user_message, request.session_id)
         return {"response": response, "session_id": request.session_id}
+    except HTTPException:
+        # Re-raise HTTPExceptions unchanged (these are intentional API responses)
+        raise
     except Exception as e:
         # Log the full error for debugging (you can see this in server logs)
         print(f"🚨 API Error in chat endpoint: {type(e).__name__}: {str(e)}")
@@ -41,7 +65,7 @@ async def chat_with_thud(request: ChatRequest):
         # Return user-friendly message without exposing internals
         raise HTTPException(
             status_code=500, 
-            detail="I'm having trouble processing your request right now. Please try again, and if the problem persists, check that your API key is valid."
+            detail="I'm experiencing technical difficulties. Please try again."
         )
 
 @app.post("/api/clear-session")

@@ -2,6 +2,8 @@
 
 import os
 from dotenv import load_dotenv
+from fastapi import HTTPException
+from config import MAX_SESSIONS
 from langgraph.graph import StateGraph, START, END
 from state import LangGraphState
 from langsmith import traceable
@@ -105,6 +107,13 @@ def run_hint_request(user_input: str, session_id: str = "default") -> str:
     
     # Get or create session state
     if session_id not in _session_storage:
+        # Check session limit before creating new session
+        if len(_session_storage) >= MAX_SESSIONS:
+            raise HTTPException(
+                status_code=503,
+                detail="Service temporarily at capacity. Please try again in a few minutes."
+            )
+        
         # New session - initialize with empty state
         _session_storage[session_id] = {
             "chat_history": [],
@@ -112,7 +121,7 @@ def run_hint_request(user_input: str, session_id: str = "default") -> str:
             "last_question_id": "",
             "last_question_keywords": set()
         }
-        print(f"🆕 New session created: {session_id}")
+        print(f"🆕 New session created: {session_id} (total sessions: {len(_session_storage)})")
     
     session_data = _session_storage[session_id]
     
