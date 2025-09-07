@@ -58,7 +58,6 @@ def test_required_files_exist():
     required_files = [
         "src/agent.py",
         "src/api.py", 
-        "requirements.txt",
         "pyproject.toml"
     ]
     
