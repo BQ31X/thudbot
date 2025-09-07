@@ -8,6 +8,12 @@ Perfect for testing nano vs mini model performance
 import os
 import sys
 import time
+import pytest
+
+skip_in_ci = pytest.mark.skipif(
+    os.getenv("CI") == "true",
+    reason="Skip OpenAI-dependent test in CI (no API key)"
+)
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -21,6 +27,7 @@ except ImportError:
 
 from langgraph_flow import classify_intent
 
+@skip_in_ci
 def test_router_classification():
     """Test router classification on a variety of questions"""
     
@@ -90,7 +97,11 @@ def test_router_classification():
     else:
         print("❌ ISSUE: Router needs attention")
     
-    return accuracy, duration
+    # Use assertions instead of return for pytest compatibility
+    assert accuracy >= 80, f"Router accuracy too low: {accuracy:.1f}% (expected >= 80%)"
+    assert duration < 30, f"Router too slow: {duration:.2f}s (expected < 30s)"
+    
+
 
 def test_consistency():
     """Test the same question multiple times to check for consistency"""
@@ -114,7 +125,9 @@ def test_consistency():
     if not consistency:
         print(f"   Got different results: {list(unique_results)}")
     
-    return consistency
+    # Use assertion instead of return for pytest compatibility
+    assert consistency, f"Router inconsistent: got different results {list(unique_results)}"
+    
 
 def main():
     """Main test runner"""

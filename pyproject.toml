@@ -23,8 +23,6 @@ dependencies = [
     "unstructured>=0.14.8",
     "nltk==3.8.1",
     "pymupdf>=1.26.3",
-    "streamlit>=1.28.0", # UI Framework for the chatbot interface
-    "qdrant-client>=1.6.0",
     "pydantic>=2.5.0", # For parsing documents and data
     "pandas>=2.1.0",
     "pytest>=7.4.0", # Testing and evaluation dependencies
@@ -42,6 +40,9 @@ dependencies = [
     "uvicorn[standard]>=0.24.0", # ASGI server for FastAPI
     "requests>=2.31.0", # For external API calls (weather)
     "python-dotenv>=1.0.0", # For loading .env files
+    "slowapi>=0.1.9",
+    "redis>=5.0.4",
+    "types-redis>=4.6.0",
     "openai>=1.0.0" # OpenAI API client
 ]
 
@@ -50,5 +51,3 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-# Ignore the manual test script in src/
-addopts = "--ignore=src/test_langgraph.py"
