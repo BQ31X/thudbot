@@ -51,5 +51,3 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-# Ignore the manual test script in src/
-addopts = "--ignore=src/test_langgraph.py"
