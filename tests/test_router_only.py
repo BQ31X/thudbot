@@ -8,6 +8,12 @@ Perfect for testing nano vs mini model performance
 import os
 import sys
 import time
+import pytest
+
+skip_in_ci = pytest.mark.skipif(
+    os.getenv("CI") == "true",
+    reason="Skip OpenAI-dependent test in CI (no API key)"
+)
 
 # Add src to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -21,6 +27,7 @@ except ImportError:
 
 from langgraph_flow import classify_intent
 
+@skip_in_ci
 def test_router_classification():
     """Test router classification on a variety of questions"""
     
