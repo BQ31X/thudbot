@@ -56,9 +56,40 @@ def test_api_imports():
 def test_required_files_exist():
     """Test that all required project files exist."""
     required_files = [
+        # Core application files
         "src/agent.py",
         "src/api.py", 
-        "pyproject.toml"
+        "src/app.py",
+        "src/config.py",
+        "src/state.py",
+        
+        # LangGraph node files (critical for pipeline)
+        "src/router_node.py",
+        "src/find_hint_node.py",
+        "src/verify_correctness_node.py",
+        "src/maintain_character_node.py",
+        "src/format_output_node.py",
+        "src/generate_error_message_node.py",
+        
+        # Supporting modules
+        "src/langgraph_flow.py",
+        "src/rate_limiter.py",
+        
+        # Configuration and dependencies
+        "pyproject.toml",
+        "uv.lock",
+        
+        # Essential data files
+        "data/Thudbot_Hint_Data_1.csv",
+        
+        # Frontend files (Next.js)
+        "src/app/layout.tsx",
+        "src/app/page.tsx",
+        "package.json",
+        "next.config.js",
+        
+        # Documentation (critical for setup)
+        "README.md"
     ]
     
     for file_path in required_files:

@@ -4,27 +4,42 @@
 
 echo "🧪 Running tests before commit..."
 
-# The `uv run pytest` command will find and execute all tests.
-# This assumes pytest is installed and your tests are correctly formatted.
+# Phase 1: Run fast pytest suite
+echo "🔬 Running pytest suite..."
 uv run pytest
 
-# Check if tests passed
+# Check if basic tests passed
 if [ $? -eq 0 ]; then
+    echo "✅ Basic tests passed!"
     echo ""
-    echo "✅ Tests passed! Proceeding with commit..."
+    echo "🔍 Running critical regression check..."
     
-    # Stage all changes and commit
-    git add .
+    # Phase 2: Run quick regression test (10 questions)
+    python tests/regression/run_quick_regression.py
     
-    if [ -n "$1" ]; then
-        git commit -m "$1"
-        echo "🎉 Committed with message: $1"
+    # Check if regression tests passed
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo "✅ All tests passed! Proceeding with commit..."
+        
+        # Stage all changes and commit
+        git add .
+        
+        if [ -n "$1" ]; then
+            git commit -m "$1"
+            echo "🎉 Committed with message: $1"
+        else
+            echo "ℹ️  No commit message provided. Staging files only."
+            echo "   Run: git commit -m 'your message' to complete"
+        fi
     else
-        echo "ℹ️  No commit message provided. Staging files only."
-        echo "   Run: git commit -m 'your message' to complete"
+        echo ""
+        echo "❌ Critical regression test failed! Fix issues before committing."
+        echo "   Check the regression test output above for details."
+        exit 1
     fi
 else
     echo ""
-    echo "❌ Tests failed! Fix issues before committing."
+    echo "❌ Basic tests failed! Fix issues before committing."
     exit 1
 fi
