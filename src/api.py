@@ -1,14 +1,31 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
 import os
 from dotenv import load_dotenv
 from app import run_hint_request, clear_session
+from slowapi.errors import RateLimitExceeded
+from rate_limiter import limiter, IP_RATE_LIMIT, GLOBAL_RATE_LIMIT
 
 # Load environment variables
 load_dotenv()
 
 app = FastAPI()
+
+# Add rate limiter to app
+app.state.limiter = limiter
+
+# Custom rate limit exceeded handler
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    response = JSONResponse(
+        status_code=429,
+        content={"detail": f"Rate limit exceeded. Please wait before making another request. (Limit: {exc.detail})"}
+    )
+    return response
+
+
 # app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 # Environment-based CORS configuration
 env = os.getenv("ENV", "dev")  # defaults to "dev" 
@@ -45,7 +62,9 @@ class ClearSessionRequest(BaseModel):
     session_id: str = "default"
 
 @app.post("/api/chat")
-async def chat_with_thud(request: ChatRequest):
+@limiter.limit(IP_RATE_LIMIT)
+@limiter.limit(GLOBAL_RATE_LIMIT, key_func=lambda request: "global")
+async def chat_with_thud(request: Request, chat_user_data: ChatRequest):
     try:
         # Use API key from .env only - no environment pollution
         api_key = os.getenv('OPENAI_API_KEY')
@@ -53,8 +72,8 @@ async def chat_with_thud(request: ChatRequest):
             raise HTTPException(status_code=503, detail="Chat service unavailable: Missing API key configuration.")
         
         # Use the new LangGraph implementation with session support
-        response = run_hint_request(request.user_message, request.session_id)
-        return {"response": response, "session_id": request.session_id}
+        response = run_hint_request(chat_user_data.user_message, chat_user_data.session_id)
+        return {"response": response, "session_id": chat_user_data.session_id}
     except HTTPException:
         # Re-raise HTTPExceptions unchanged (these are intentional API responses)
         raise

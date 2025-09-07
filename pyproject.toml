@@ -42,6 +42,9 @@ dependencies = [
     "uvicorn[standard]>=0.24.0", # ASGI server for FastAPI
     "requests>=2.31.0", # For external API calls (weather)
     "python-dotenv>=1.0.0", # For loading .env files
+    "slowapi>=0.1.9",
+    "redis>=5.0.4",
+    "types-redis>=4.6.0",
     "openai>=1.0.0" # OpenAI API client
 ]
 
