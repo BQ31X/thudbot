@@ -34,6 +34,7 @@ class RawCollector:
         
     def run_collection(self):
         """Run all test questions and collect raw outputs"""
+        start_time = time.time()
         print(f"🚀 Starting Raw Collection - {self.timestamp}")
         print("=" * 60)
         
@@ -72,6 +73,10 @@ class RawCollector:
                 self.results.append(error_result)
                 print(f"   ❌ Error: {str(e)}")
         
+        # Calculate total duration
+        total_duration = time.time() - start_time
+        self.total_duration = total_duration
+        
         # Save results
         self._save_csv()
         self._save_markdown()
@@ -79,6 +84,7 @@ class RawCollector:
         
         print(f"\n🎉 Collection complete!")
         print(f"📊 Results: {len([r for r in self.results if r['router'] != 'ERROR'])} successful, {len([r for r in self.results if r['router'] == 'ERROR'])} errors")
+        print(f"⏱️ Total duration: {total_duration:.1f}s")
         print(f"📄 Saved to: tests/regression/results/regression_{self.timestamp}.csv")
         print(f"📄 Saved to: tests/regression/results/regression_{self.timestamp}.md")
         
@@ -224,14 +230,45 @@ class RawCollector:
             # Summary stats
             successful = len([r for r in self.results if r['router'] != 'ERROR'])
             errors = len([r for r in self.results if r['router'] == 'ERROR'])
-            game_related = len([r for r in self.results if r['router'] == 'GAME_RELATED'])
+            game_related = len([r for r in self.results if r['router'].startswith('GAME_RELATED')])
             off_topic = len([r for r in self.results if r['router'] == 'OFF_TOPIC'])
+            
+            # Timing analysis
+            off_topic_times = [r['duration'] for r in self.results if r['router'] == 'OFF_TOPIC']
+            game_related_times = [r['duration'] for r in self.results if r['router'].startswith('GAME_RELATED')]
+            verified_times = [r['duration'] for r in self.results if r['router'].startswith('GAME_RELATED') and r['verify'] == 'VERIFIED']
+            insufficient_context_times = [r['duration'] for r in self.results if r['router'].startswith('GAME_RELATED') and r['verify'] == 'INSUFFICIENT_CONTEXT']
+            
+            # Calculate averages with proper precision
+            def calc_avg(times_list):
+                if not times_list:
+                    return "n/a"
+                avg = sum(times_list) / len(times_list)
+                # Use 2 decimals if we have enough precision, else 1
+                if len(times_list) >= 3:
+                    return f"{avg:.2f}s"
+                else:
+                    return f"{avg:.1f}s"
+            
+            avg_off_topic = calc_avg(off_topic_times)
+            avg_game_related = calc_avg(game_related_times)
+            avg_verified = calc_avg(verified_times)
+            avg_insufficient = calc_avg(insufficient_context_times)
             
             f.write(f"## Summary\n\n")
             f.write(f"- ✅ Successful: {successful}\n")
             f.write(f"- ❌ Errors: {errors}\n")
             f.write(f"- 🎮 Game Related: {game_related}\n")
             f.write(f"- 🚫 Off Topic: {off_topic}\n\n")
+            # Format total duration
+            total_duration_str = f"{self.total_duration:.1f}s" if hasattr(self, 'total_duration') else "n/a"
+            
+            f.write(f"### Timing Analysis\n")
+            f.write(f"- ⏱️ Total Test Duration: {total_duration_str}\n")
+            f.write(f"- 🚫 Off Topic (avg): {avg_off_topic}\n")
+            f.write(f"- 🎮 Game Related (avg): {avg_game_related}\n")
+            f.write(f"- ✅ Verified (avg): {avg_verified}\n")
+            f.write(f"- ⚠️ Insufficient Context (avg): {avg_insufficient}\n\n")
             
             # Results table
             f.write(f"## Detailed Results\n\n")
