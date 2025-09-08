@@ -6,6 +6,7 @@
 __pycache__/
 *.py[cod]
 *.pyo
+.pytest_cache/
 
 # Virtual environment folders
 env/
@@ -58,3 +59,27 @@ tests/test_results/
 tests/regression/results/
 tests/security/results/
 tests/archive/
+
+# backup and temporary files
+*.backup
+*.tmp
+*.temp
+*.bak
+*.old
+*.orig
+*.rej
+*.orig.bak
+*.orig.tmp
+
+#jupyter checkpoints
+.ipynb_checkpoints/
+
+#jupyter metadata
+.jupyter_metadata/
+
+#jupyter metadata
+.jupyter_metadata/
+
+#cursor metadata
+.cursor/
+*.mdc
