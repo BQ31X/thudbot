@@ -6,11 +6,18 @@ Validates hint level escalation, repeat question detection, and multi-level resp
 """
 
 import os
+import sys
 import time
+
+# Add the src directory to the Python path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
+
 from typing import Dict, List, Tuple
 from app import run_hint_request
 from state import LangGraphState
 from test_queries import PROGRESSIVE_HINTS_QUESTIONS
+
 
 class ProgressiveHintsValidator:
     """Validate readiness for progressive hints implementation"""
