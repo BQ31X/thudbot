@@ -9,13 +9,13 @@ import os
 import sys
 import time
 
-# Add the src directory to the Python path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'thudbot_core')))
+# Add backend directory to path for package imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 from typing import Dict, List, Tuple
-from app import run_hint_request
-from state import LangGraphState
+from thudbot_core.app import run_hint_request
+from thudbot_core.state import LangGraphState
 from test_queries import PROGRESSIVE_HINTS_QUESTIONS
 
 

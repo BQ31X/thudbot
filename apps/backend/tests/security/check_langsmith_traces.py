@@ -22,13 +22,11 @@ import re
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 
-# Load environment variables from .env file
-try:
-    from dotenv import load_dotenv
-    load_dotenv(dotenv_path=".env", override=True)
-except ImportError:
-    # python-dotenv not installed - that's fine, use system environment
-    pass
+# Add backend directory to path for package imports  
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+from thudbot_core.config import load_env  # Import robust .env loader
+load_env()
 
 try:
     from langsmith import Client

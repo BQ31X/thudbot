@@ -42,12 +42,7 @@ def main():
         create_limited_csv(original_csv, LIMIT, temp_csv)
         print(f"🔧 Running regression test with first {LIMIT} questions...")
         
-        # Load environment
-        try:
-            from dotenv import load_dotenv
-            load_dotenv(dotenv_path="../../../.env", override=True)
-        except ImportError:
-            print("⚠️  Warning: dotenv not available, ensure OPENAI_API_KEY is set")
+        # Environment already loaded by run_regression module
         
         # Run the collector with limited questions
         collector = RawCollector(temp_csv)

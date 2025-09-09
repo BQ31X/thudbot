@@ -6,8 +6,8 @@ import sys
 import pandas as pd
 from pathlib import Path
 
-# Add the src directory to the Python path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'thudbot_core')))
+# Add backend directory to path for package imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 def test_hint_data_exists():
     """Test that the hint CSV file exists and is not empty."""
@@ -37,7 +37,7 @@ def test_hint_data_structure():
 def test_agent_imports():
     """Test that agent module imports correctly."""
     try:
-        from agent import get_direct_hint, initialize_rag_only
+        from thudbot_core.agent import get_direct_hint, initialize_rag_only
         assert callable(get_direct_hint), "get_direct_hint should be callable"
         assert callable(initialize_rag_only), "initialize_rag_only should be callable"
     except ImportError as e:
@@ -46,9 +46,7 @@ def test_agent_imports():
 def test_api_imports():
     """Test that API module imports correctly."""
     try:
-        import sys
-        sys.path.append('src')
-        from api import app
+        from thudbot_core.api import app
         assert app is not None, "FastAPI app should be created"
     except ImportError as e:
         pytest.fail(f"Failed to import API components: {e}")
@@ -57,23 +55,23 @@ def test_required_files_exist():
     """Test that all required project files exist."""
     required_files = [
         # Core application files
-        "src/agent.py",
-        "src/api.py", 
-        "src/app.py",
-        "src/config.py",
-        "src/state.py",
-        
+        "thudbot_core/agent.py",
+        "thudbot_core/api.py",
+        "thudbot_core/app.py",
+        "thudbot_core/config.py",
+        "thudbot_core/state.py",
+
         # LangGraph node files (critical for pipeline)
-        "src/router_node.py",
-        "src/find_hint_node.py",
-        "src/verify_correctness_node.py",
-        "src/maintain_character_node.py",
-        "src/format_output_node.py",
-        "src/generate_error_message_node.py",
-        
+        "thudbot_core/router_node.py",
+        "thudbot_core/find_hint_node.py",
+        "thudbot_core/verify_correctness_node.py",
+        "thudbot_core/maintain_character_node.py",
+        "thudbot_core/format_output_node.py",
+        "thudbot_core/generate_error_message_node.py",
+
         # Supporting modules
-        "src/langgraph_flow.py",
-        "src/rate_limiter.py",
+        "thudbot_core/langgraph_flow.py",
+        "thudbot_core/rate_limiter.py",
         
         # Configuration and dependencies
         "pyproject.toml",
@@ -100,7 +98,7 @@ def test_agent_initialization():
     """Test that RAG system can be initialized without API calls."""
     # Test basic RAG setup without requiring API keys
     try:
-        from agent import initialize_rag_only
+        from thudbot_core.agent import initialize_rag_only
         # This should work even without API keys (validates imports, data loading, etc.)
         rag_chain = initialize_rag_only()
         assert rag_chain is not None, "RAG chain should be created"
@@ -114,9 +112,7 @@ def test_agent_initialization():
 def test_fastapi_app_creation():
     """Test that FastAPI app can be created without starting server."""
     try:
-        import sys
-        sys.path.append('src')
-        from api import app
+        from thudbot_core.api import app
         assert app is not None, "FastAPI app should be created"
         # Check that basic routes exist
         routes = [route.path for route in app.routes]

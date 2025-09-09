@@ -3,12 +3,15 @@ import os
 import sys
 from fastapi.testclient import TestClient
 
-# Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'thudbot_core'))
+# Add backend directory to path for package imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+from thudbot_core.config import load_env  # Import robust .env loader
+load_env()
 
 def test_cors_configuration():
     """Test CORS headers are properly restricted"""
-    from api import app
+    from thudbot_core.api import app
     client = TestClient(app)
     
     # Test that CORS headers are set correctly based on environment
@@ -45,7 +48,7 @@ def test_cors_configuration():
 
 def test_api_key_not_in_request_body():
     """Ensure API keys are not sent from frontend and are ignored if sent"""
-    from api import app
+    from thudbot_core.api import app
     client = TestClient(app)
     
     # Test that sending api_key field is ignored (FastAPI/Pydantic ignores extra fields by default)
@@ -72,7 +75,7 @@ def test_api_key_not_in_request_body():
 
 def test_environment_not_polluted():
     """Verify os.environ is not modified during requests"""
-    from api import app
+    from thudbot_core.api import app
     client = TestClient(app)
     
     # Save original environment
@@ -100,7 +103,7 @@ def test_environment_not_polluted():
 
 def test_cors_methods_restricted():
     """Test that only POST methods are allowed"""
-    from api import app
+    from thudbot_core.api import app
     client = TestClient(app)
     
     # Test that GET is not allowed
@@ -113,7 +116,7 @@ def test_cors_methods_restricted():
 
 def test_session_hijacking_protection():
     """Test that session IDs are properly validated"""
-    from api import app
+    from thudbot_core.api import app
     client = TestClient(app)
     
     # Test with predictable session ID

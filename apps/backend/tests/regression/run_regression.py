@@ -313,13 +313,7 @@ def main():
         print("Create test_questions.csv with columns: question,expected_router,notes")
         sys.exit(1)
     
-    # Load environment
-    # this path change is brittle, and needs to be fixed next
-    try:
-        from dotenv import load_dotenv
-        load_dotenv(dotenv_path="../../../.env", override=True)
-    except ImportError:
-        print("⚠️  Warning: dotenv not available, ensure OPENAI_API_KEY is set")
+    # Environment already loaded via load_env() at top of file
     
     collector = RawCollector(input_csv)
     collector.run_collection()

@@ -15,12 +15,15 @@ from pathlib import Path
 # Add current directory to path for test imports
 sys.path.insert(0, os.path.dirname(__file__))
 
-# Add src to path for imports (same pattern as regression runner)
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'thudbot_core'))
+# Add backend directory to path for package imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+from thudbot_core.config import load_env  # Import robust .env loader
+load_env()
 
 try:
     # Test that we can import the API for testing
-    from api import app
+    from thudbot_core.api import app
 except ImportError as e:
     print(f"❌ Import error: {e}")
     print("Make sure you're running from the project root with the venv activated")
