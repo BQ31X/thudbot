@@ -81,15 +81,16 @@ def test_required_files_exist():
         
         # Essential data files
         "data/Thudbot_Hint_Data_1.csv",
-        
-        # Frontend files (Next.js)
-        "src/app/layout.tsx",
-        "src/app/page.tsx",
-        "package.json",
-        "next.config.js",
+
+        # Remove these frontend file checks since they're not in the backend:
+        # # Frontend files (Next.js)
+        # "src/app/layout.tsx",
+        # "src/app/page.tsx",
+        # "package.json",
+        # "next.config.js",
         
         # Documentation (critical for setup)
-        "README.md"
+        "../../README.md" # README is still in project root
     ]
     
     for file_path in required_files:
