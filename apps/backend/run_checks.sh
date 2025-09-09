@@ -27,7 +27,7 @@ if [ $? -eq 0 ]; then
     # Check if regression tests passed
     if [ $? -eq 0 ]; then
         echo ""
-        echo "✅ All backendtests passed!"
+        echo "✅ All backend tests passed!"
         exit 0
     else
         echo ""
