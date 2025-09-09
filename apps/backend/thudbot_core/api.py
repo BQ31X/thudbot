@@ -105,7 +105,9 @@ async def clear_chat_session(request: ClearSessionRequest):
             status_code=500, 
             detail="Unable to clear session. Please try again."
         )
+# This module is not intended to be run directly.
+# Use `python -m thudbot_core` instead.
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
