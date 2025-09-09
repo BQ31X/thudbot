@@ -7,6 +7,8 @@ __pycache__/
 *.py[cod]
 *.pyo
 .pytest_cache/
+apps/backend/.pytest_cache/
+apps/backend/__pycache__/
 
 # Virtual environment folders
 env/
@@ -28,8 +30,11 @@ venv/
 *.log
 *.tmp
 *.egg-info/
+apps/backend/*.egg-info/
 dist/
+apps/backend/dist/
 build/
+apps/backend/build/
 
 # IDE files
 .idea/
@@ -53,12 +58,17 @@ docs/dev_journey/
 reference_notebooks/
 # Cache directory for embeddings
 cache/
+apps/backend/cache/
 
 #test results
 tests/test_results/
 tests/regression/results/
 tests/security/results/
 tests/archive/
+apps/backend/tests/archive/
+apps/backend/tests/regression/results/
+apps/backend/tests/security/results/
+apps/backend/tests/test_results/
 
 # backup and temporary files
 *.backup
