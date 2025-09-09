@@ -4,7 +4,7 @@ import sys
 from fastapi.testclient import TestClient
 
 # Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'thudbot_core'))
 
 def test_cors_configuration():
     """Test CORS headers are properly restricted"""

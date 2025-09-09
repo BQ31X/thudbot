@@ -5,7 +5,7 @@ import logging
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from redis import Redis, ConnectionError, TimeoutError
-from config import REDIS_HOST, REDIS_PORT, REQUESTS_PER_MINUTE_IP, REQUESTS_PER_MINUTE_GLOBAL
+from thudbot_core.config import REDIS_HOST, REDIS_PORT, REQUESTS_PER_MINUTE_IP, REQUESTS_PER_MINUTE_GLOBAL
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 from langsmith import traceable
-from agent import get_direct_hint_with_context
-from state import LangGraphState
+from thudbot_core.agent import get_direct_hint_with_context
+from thudbot_core.state import LangGraphState
 
 @traceable(run_type="chain", name="find_hint_node")  
 def find_hint_node(state: LangGraphState) -> LangGraphState:

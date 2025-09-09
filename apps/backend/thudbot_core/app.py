@@ -3,16 +3,16 @@
 import os
 from dotenv import load_dotenv
 from fastapi import HTTPException
-from config import MAX_SESSIONS
+from thudbot_core.config import MAX_SESSIONS
 from langgraph.graph import StateGraph, START, END
-from state import LangGraphState
+from thudbot_core.state import LangGraphState
 from langsmith import traceable
-from router_node import router_node
-from find_hint_node import find_hint_node  
-from verify_correctness_node import verify_correctness_node
-from maintain_character_node import maintain_character_node
-from format_output_node import format_output_node
-from generate_error_message_node import generate_error_message_node
+from thudbot_core.router_node import router_node
+from thudbot_core.find_hint_node import find_hint_node  
+from thudbot_core.verify_correctness_node import verify_correctness_node
+from thudbot_core.maintain_character_node import maintain_character_node
+from thudbot_core.format_output_node import format_output_node
+from thudbot_core.generate_error_message_node import generate_error_message_node
 
 # Load environment variables
 load_dotenv()

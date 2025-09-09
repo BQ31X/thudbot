@@ -6,6 +6,11 @@ Quick regression tester - runs only first N questions
 import csv
 import tempfile
 import os
+import sys
+
+# Add backend directory to path for package imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
 from run_regression import RawCollector
 
 def create_limited_csv(original_csv: str, limit: int, output_csv: str):
@@ -40,7 +45,7 @@ def main():
         # Load environment
         try:
             from dotenv import load_dotenv
-            load_dotenv(dotenv_path=".env", override=True)
+            load_dotenv(dotenv_path="../../../.env", override=True)
         except ImportError:
             print("⚠️  Warning: dotenv not available, ensure OPENAI_API_KEY is set")
         

@@ -4,9 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
 import os
 from dotenv import load_dotenv
-from app import run_hint_request, clear_session
+from thudbot_core.app import run_hint_request, clear_session
 from slowapi.errors import RateLimitExceeded
-from rate_limiter import limiter, IP_RATE_LIMIT, GLOBAL_RATE_LIMIT
+from thudbot_core.rate_limiter import limiter, IP_RATE_LIMIT, GLOBAL_RATE_LIMIT
 
 # Load environment variables
 load_dotenv()

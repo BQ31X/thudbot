@@ -17,7 +17,7 @@ import time
 from datetime import datetime
 
 # Add src to path for imports (from tests/security/ perspective)
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'thudbot_core'))
 
 try:
     from app import run_hint_request

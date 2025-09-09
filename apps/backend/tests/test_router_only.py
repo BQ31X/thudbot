@@ -16,12 +16,13 @@ skip_in_ci = pytest.mark.skipif(
 )
 
 # Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'thudbot_core'))
 
 # Load environment
+# this needs to be fixed soon
 try:
     from dotenv import load_dotenv
-    load_dotenv(dotenv_path=".env", override=True)
+    load_dotenv(dotenv_path="../../.env", override=True)
 except ImportError:
     pass
 

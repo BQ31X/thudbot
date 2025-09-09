@@ -1,4 +1,4 @@
-from state import LangGraphState
+from thudbot_core.state import LangGraphState
 from langchain_core.messages import HumanMessage, AIMessage
 
 def format_output_node(state: LangGraphState) -> LangGraphState:

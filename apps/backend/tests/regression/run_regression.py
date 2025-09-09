@@ -13,12 +13,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-# Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+# Add backend directory to path for package imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 try:
-    from app import run_hint_request, create_thud_graph
-    from state import LangGraphState
+    from thudbot_core.app import run_hint_request, create_thud_graph
+    from thudbot_core.state import LangGraphState
 except ImportError as e:
     print(f"❌ Import error: {e}")
     print("Make sure you're running from the project root with the venv activated")
@@ -311,9 +311,10 @@ def main():
         sys.exit(1)
     
     # Load environment
+    # this path change is brittle, and needs to be fixed next
     try:
         from dotenv import load_dotenv
-        load_dotenv(dotenv_path=".env", override=True)
+        load_dotenv(dotenv_path="../../../.env", override=True)
     except ImportError:
         print("⚠️  Warning: dotenv not available, ensure OPENAI_API_KEY is set")
     

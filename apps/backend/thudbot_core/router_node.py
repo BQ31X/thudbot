@@ -1,6 +1,6 @@
-from state import LangGraphState
+from thudbot_core.state import LangGraphState
 from langsmith import traceable
-from langgraph_flow import classify_intent, OFF_TOPIC_RESPONSES, is_vague_escalation_request, extract_question_keywords, is_smalltalk_question
+from thudbot_core.langgraph_flow import classify_intent, OFF_TOPIC_RESPONSES, is_vague_escalation_request, extract_question_keywords, is_smalltalk_question
 
 @traceable(run_type="chain", name="router_node")
 def router_node(state: LangGraphState) -> LangGraphState:

@@ -7,7 +7,7 @@ import pandas as pd
 from pathlib import Path
 
 # Add the src directory to the Python path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'thudbot_core')))
 
 def test_hint_data_exists():
     """Test that the hint CSV file exists and is not empty."""

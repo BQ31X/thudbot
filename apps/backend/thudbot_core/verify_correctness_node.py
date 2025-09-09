@@ -1,4 +1,4 @@
-from state import LangGraphState
+from thudbot_core.state import LangGraphState
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langsmith import traceable
