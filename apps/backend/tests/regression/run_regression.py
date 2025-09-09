@@ -16,6 +16,9 @@ from pathlib import Path
 # Add backend directory to path for package imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
+from thudbot_core.config import load_env  # Import robust .env loader
+load_env()
+
 try:
     from thudbot_core.app import run_hint_request, create_thud_graph
     from thudbot_core.state import LangGraphState
