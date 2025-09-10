@@ -17,13 +17,9 @@ Requirements:
 import os
 import sys
 import argparse
-import json
 import re
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
-
-# Add backend directory to path for package imports  
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from thudbot_core.config import load_env  # Import robust .env loader
 load_env()

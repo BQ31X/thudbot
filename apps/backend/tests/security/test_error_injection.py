@@ -8,21 +8,17 @@ different components to ensure the user never sees raw stack traces.
 
 import os
 import sys
-import tempfile
 import shutil
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from contextlib import contextmanager
-from typing import Generator
 import time
 from datetime import datetime
 
-# Add src to path for imports (from tests/security/ perspective)
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'thudbot_core'))
 
 try:
-    from app import run_hint_request
-    from api import app as fastapi_app
-    from agent import get_direct_hint_with_context
+    from thudbot_core.app import run_hint_request
+    from thudbot_core.api import app as fastapi_app
+    from thudbot_core.agent import get_direct_hint_with_context
     from fastapi.testclient import TestClient
 except ImportError as e:
     print(f"❌ Import error: {e}")

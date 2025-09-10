@@ -6,7 +6,6 @@ Perfect for testing nano vs mini model performance
 """
 
 import os
-import sys
 import time
 import pytest
 
@@ -15,12 +14,9 @@ skip_in_ci = pytest.mark.skipif(
     reason="Skip OpenAI-dependent test in CI (no API key)"
 )
 
-# Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'thudbot_core'))
-
 # Environment loading handled by conftest.py
 
-from langgraph_flow import classify_intent
+from thudbot_core.langgraph_flow import classify_intent
 
 @skip_in_ci
 def test_router_classification():

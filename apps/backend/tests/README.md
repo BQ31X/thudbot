@@ -5,7 +5,7 @@
 ### **Primary Regression Testing (Recommended)**
 ```bash
 # Run the simple, no-interpretation regression test
-python tests/regression/run_regression.py
+python -m tests.regression.run_regression
 
 # Results automatically saved to:
 # - tests/regression/results/regression_YYYYMMDD_HHMMSS.csv (raw data)
@@ -81,7 +81,7 @@ question,expected_router,notes
 ## ⚠️ Important Notes
 
 - **No interpretation**: This test suite just collects raw data - YOU decide what's good/bad
-- **Run from project root**: Always `python tests/regression/run_regression.py`
+- **Run from project root**: Always `python -m tests.regression.run_regression`
 - **LangSmith correlation**: Use timestamps to find traces for deep debugging
 - **Consistency testing**: Run same question multiple times to check for LLM non-determinism
 

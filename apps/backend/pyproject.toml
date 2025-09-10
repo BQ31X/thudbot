@@ -1,6 +1,10 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 # project.toml
 [project]
-name = "project-title"
+name = "thudbot_core"
 version = "0.1.0"
 description = "Thudbot: hint system for The Space Bar"
 readme = "README.md"

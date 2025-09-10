@@ -6,12 +6,13 @@ Quick regression tester - runs only first N questions
 import csv
 import tempfile
 import os
-import sys
 
-# Add backend directory to path for package imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-
-from run_regression import RawCollector
+try:
+    # When run as module: python -m tests.regression.run_quick_regression
+    from tests.regression.run_regression import RawCollector
+except ModuleNotFoundError:
+    # When run as script: python tests/regression/run_quick_regression.py
+    from run_regression import RawCollector
 
 def create_limited_csv(original_csv: str, limit: int, output_csv: str):
     """Create a CSV with only the first N questions"""

@@ -1,10 +1,6 @@
 # /tests/security/test_security.py
 import os
-import sys
 from fastapi.testclient import TestClient
-
-# Add backend directory to path for package imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from thudbot_core.config import load_env  # Import robust .env loader
 load_env()

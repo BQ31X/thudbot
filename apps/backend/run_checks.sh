@@ -19,7 +19,7 @@ if [ $? -eq 0 ]; then
     # Phase 2: Run quick regression test (10 questions) - only outside CI
     if [ "$CI" != "true" ]; then
         echo "🔍 Running critical regression check..."
-        python tests/regression/run_quick_regression.py
+        python -m tests.regression.run_quick_regression
     else
         echo "🚫 Skipping regression test in CI (needs API key)"
     fi

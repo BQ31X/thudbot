@@ -1705,62 +1705,6 @@ wheels = [
 ]
 
 [[package]]
-name = "project-title"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "fastapi" },
-    { name = "langchain" },
-    { name = "langchain-community" },
-    { name = "langchain-core" },
-    { name = "langchain-openai" },
-    { name = "langchain-qdrant" },
-    { name = "langgraph" },
-    { name = "openai" },
-    { name = "pydantic" },
-    { name = "python-dotenv" },
-    { name = "qdrant-client" },
-    { name = "redis" },
-    { name = "requests" },
-    { name = "slowapi" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "jupyter" },
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "pytest" },
-    { name = "types-redis" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "fastapi", specifier = ">=0.100.0" },
-    { name = "jupyter", marker = "extra == 'dev'", specifier = ">=1.1.1" },
-    { name = "langchain", specifier = ">=0.3.19" },
-    { name = "langchain-community", specifier = ">=0.3.16" },
-    { name = "langchain-core", specifier = ">=0.3.0" },
-    { name = "langchain-openai", specifier = ">=0.3.7" },
-    { name = "langchain-qdrant", specifier = ">=0.2.0" },
-    { name = "langgraph", specifier = ">=0.2.69" },
-    { name = "numpy", marker = "extra == 'dev'", specifier = ">=2.2.2" },
-    { name = "openai", specifier = ">=1.0.0" },
-    { name = "pandas", marker = "extra == 'dev'", specifier = ">=2.1.0" },
-    { name = "pydantic", specifier = ">=2.5.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
-    { name = "python-dotenv", specifier = ">=1.0.0" },
-    { name = "qdrant-client", specifier = ">=1.13.2" },
-    { name = "redis", specifier = ">=5.0.4" },
-    { name = "requests", specifier = ">=2.31.0" },
-    { name = "slowapi", specifier = ">=0.1.9" },
-    { name = "types-redis", marker = "extra == 'dev'", specifier = ">=4.6.0" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.24.0" },
-]
-provides-extras = ["dev"]
-
-[[package]]
 name = "prometheus-client"
 version = "0.22.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2410,6 +2354,62 @@ sdist = { url = "https://files.pythonhosted.org/packages/8a/11/965c6fd8e5cc254f1
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6a/9e/2064975477fdc887e47ad42157e214526dcad8f317a948dee17e1659a62f/terminado-0.18.1-py3-none-any.whl", hash = "sha256:a4468e1b37bb318f8a86514f65814e1afc977cf29b3992a4500d9dd305dcceb0", size = 14154, upload-time = "2024-03-12T14:34:36.569Z" },
 ]
+
+[[package]]
+name = "thudbot-core"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "fastapi" },
+    { name = "langchain" },
+    { name = "langchain-community" },
+    { name = "langchain-core" },
+    { name = "langchain-openai" },
+    { name = "langchain-qdrant" },
+    { name = "langgraph" },
+    { name = "openai" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+    { name = "qdrant-client" },
+    { name = "redis" },
+    { name = "requests" },
+    { name = "slowapi" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "jupyter" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "pytest" },
+    { name = "types-redis" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.100.0" },
+    { name = "jupyter", marker = "extra == 'dev'", specifier = ">=1.1.1" },
+    { name = "langchain", specifier = ">=0.3.19" },
+    { name = "langchain-community", specifier = ">=0.3.16" },
+    { name = "langchain-core", specifier = ">=0.3.0" },
+    { name = "langchain-openai", specifier = ">=0.3.7" },
+    { name = "langchain-qdrant", specifier = ">=0.2.0" },
+    { name = "langgraph", specifier = ">=0.2.69" },
+    { name = "numpy", marker = "extra == 'dev'", specifier = ">=2.2.2" },
+    { name = "openai", specifier = ">=1.0.0" },
+    { name = "pandas", marker = "extra == 'dev'", specifier = ">=2.1.0" },
+    { name = "pydantic", specifier = ">=2.5.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "qdrant-client", specifier = ">=1.13.2" },
+    { name = "redis", specifier = ">=5.0.4" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "slowapi", specifier = ">=0.1.9" },
+    { name = "types-redis", marker = "extra == 'dev'", specifier = ">=4.6.0" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.24.0" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "tiktoken"
