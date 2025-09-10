@@ -24,6 +24,7 @@ def load_env(verbose: bool = False):
     current_path = Path(__file__).resolve()
     for parent in [current_path] + list(current_path.parents):
         env_path = parent / ".env"
+        print(f"🔧 DEBUG: Checking .env file at: {env_path}")
         if env_path.exists():
             load_dotenv(dotenv_path=env_path, override=True)
             if verbose:
@@ -46,14 +47,21 @@ def _set_redis_host(verbose: bool = False):
     """Helper function to set Redis host based on environment"""
     global REDIS_HOST
     print("🔧 _set_redis_host() called!")
-    
-    # Always check Docker status, regardless of .env setting
-    if is_in_docker():
+
+    # Manual override always wins
+    redis_host_env = os.getenv("REDIS_HOST")
+    compose_mode = os.getenv("COMPOSE_MODE", "false").lower() == "true"
+
+    if redis_host_env:
+        REDIS_HOST = redis_host_env
+    elif compose_mode:
+        REDIS_HOST = "redis"
+    elif is_in_docker():
         REDIS_HOST = "host.docker.internal"
     else:
-        REDIS_HOST = "localhost"  # Override .env for local testing
-    
-    print(f"🔧 DEBUG: is_in_docker()={is_in_docker()}, REDIS_HOST={REDIS_HOST}")
+        REDIS_HOST = "localhost"
+
+    print(f"🔧 DEBUG: is_in_docker()={is_in_docker()}, COMPOSE_MODE={compose_mode}, REDIS_HOST={REDIS_HOST}")
 
 # Load .env variables before accessing any of them
 load_env()

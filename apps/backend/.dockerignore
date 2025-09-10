@@ -81,12 +81,13 @@ test_*.csv
 **/test_results/
 
 # Documentation and development journals (not needed in runtime)
-README.md
-*.md
 docs/
 docs/dev_journey/
 reference_notebooks/
 notebooks/
+*.md
+#except for README.md (this is the only one that is needed by the Dockerfile)
+!README.md
 
 # Build artifacts
 Dockerfile

@@ -156,9 +156,39 @@ python -m tests.security.run_security_tests
 
   
 
-## 🐳 Docker Optimization
+## 🐳 Docker & Docker Compose
 
-  
+### **🚀 Quick Start with Docker Compose**
+
+**From project root:**
+```bash
+# Start the full stack (Redis + Backend)
+cd infra
+docker compose -f compose.dev.yml up --build
+
+# Backend available at: http://localhost:8000
+# Redis available at: localhost:6379
+```
+
+**Environment Configuration:**
+- Automatically uses `COMPOSE_MODE=true` for service discovery
+- Backend connects to Redis via service name `redis`
+- Mounts your root `.env` file for API keys
+
+**Useful Commands:**
+```bash
+# View logs
+docker compose -f compose.dev.yml logs -f backend
+docker compose -f compose.dev.yml logs -f redis
+
+# Stop services
+docker compose -f compose.dev.yml down
+
+# Rebuild and restart
+docker compose -f compose.dev.yml up --build --force-recreate
+```
+
+### **🐳 Standalone Docker (Advanced)**
 
 **Production image optimizations:**
 

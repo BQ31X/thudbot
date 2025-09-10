@@ -19,7 +19,9 @@ ENV UV_LINK_MODE=copy
 WORKDIR /app
 
 # Copy dependency management files first (for layer caching)
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock README.md ./
+COPY thudbot_core/ ./thudbot_core/
+COPY data/ ./data/
 
 # Install dependencies into a virtual environment
 RUN --mount=type=cache,target=/root/.cache/uv \
