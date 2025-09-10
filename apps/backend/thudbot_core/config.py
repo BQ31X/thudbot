@@ -46,19 +46,20 @@ def load_env(verbose: bool = False):
 def _set_redis_host(verbose: bool = False):
     """Helper function to set Redis host based on environment"""
     global REDIS_HOST
+    REDIS_HOST = None # to clear any cached value?
     print("🔧 _set_redis_host() called!")
 
-    # Manual override always wins
-    redis_host_env = os.getenv("REDIS_HOST")
     compose_mode = os.getenv("COMPOSE_MODE", "false").lower() == "true"
+    print(f"🔧 COMPOSE_MODE env var: '{os.getenv('COMPOSE_MODE')}', compose_mode bool: {compose_mode}")
 
-    if redis_host_env:
-        REDIS_HOST = redis_host_env
-    elif compose_mode:
+    if compose_mode:
+        print("🔧 Taking COMPOSE branch -> redis")
         REDIS_HOST = "redis"
     elif is_in_docker():
+        print("🔧 Taking DOCKER branch -> host.docker.internal") 
         REDIS_HOST = "host.docker.internal"
     else:
+        print("🔧 Taking LOCAL branch -> localhost")
         REDIS_HOST = "localhost"
 
     print(f"🔧 DEBUG: is_in_docker()={is_in_docker()}, COMPOSE_MODE={compose_mode}, REDIS_HOST={REDIS_HOST}")
