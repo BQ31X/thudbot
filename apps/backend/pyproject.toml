@@ -9,41 +9,38 @@ authors = [
     {name = "Leo", email = "ldc31@mac.com"}
 ]
 
-# This is where you declare your project's dependencies.
-# Example:
-# "streamlit" = "^1.28.0"
-# "langchain" = ">=0.0.300"
+# PRODUCTION DEPENDENCIES - included in Docker images
 dependencies = [
-    "jupyter>=1.1.1",
+    # Web framework
+    "fastapi>=0.100.0", # Web framework for API backend
+    "uvicorn[standard]>=0.24.0", # ASGI server for FastAPI
+    "pydantic>=2.5.0", # For parsing documents and data
+    "slowapi>=0.1.9",
+    
+    # Core utilities
+    "python-dotenv>=1.0.0", # For loading .env files
+    "requests>=2.31.0", # For external API calls (weather)
+    "redis>=5.0.4",
+    "openai>=1.0.0", # OpenAI API client
+    
+    # LangChain stack (core functionality)
+    "langchain>=0.3.19",
+    "langchain-core>=0.3.0",
     "langchain-community>=0.3.16", # Core framework for building agentic and RAG applications
     "langchain-openai>=0.3.7",
     "langchain-qdrant>=0.2.0",
     "langgraph>=0.2.69",
-    "numpy>=2.2.2",
-    "unstructured>=0.14.8",
-    "nltk==3.8.1",
-    "pymupdf>=1.26.3",
-    "pydantic>=2.5.0", # For parsing documents and data
-    "pandas>=2.1.0",
-    "pytest>=7.4.0", # Testing and evaluation dependencies
-    "ragas==0.2.10",
-    "langchain-experimental>=0.3.4",
-    "langchain>=0.3.19",
-    "langchain-core>=0.3.0",
-    "langchain-cohere==0.4.4",
-    "cohere>=5.12.0,<5.13.0",
-    "rank-bm25>=0.2.2",
-    "langchain-anthropic>=0.3.18",
-    "rapidfuzz>=3.13.0",
-    "qdrant-client>=1.13.2",
-    "fastapi>=0.100.0", # Web framework for API backend
-    "uvicorn[standard]>=0.24.0", # ASGI server for FastAPI
-    "requests>=2.31.0", # For external API calls (weather)
-    "python-dotenv>=1.0.0", # For loading .env files
-    "slowapi>=0.1.9",
-    "redis>=5.0.4",
-    "types-redis>=4.6.0",
-    "openai>=1.0.0" # OpenAI API client
+    "qdrant-client>=1.13.2"
+]
+
+# DEVELOPMENT DEPENDENCIES - excluded from Docker with --no-dev
+[project.optional-dependencies]
+dev = [
+    "jupyter>=1.1.1",         # Notebooks for data exploration
+    "pytest>=7.4.0",          # Testing and evaluation dependencies
+    "pandas>=2.1.0",          # Data analysis and CSV manipulation
+    "numpy>=2.2.2",           # Numerical computing (transitive from pandas)
+    "types-redis>=4.6.0",     # Type hints for Redis development
 ]
 
 [tool.pytest.ini_options]
@@ -51,3 +48,30 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+
+# =============================================================================
+# REMOVED DEPENDENCIES - Commented out to save Docker image size
+# Uncomment and move to appropriate section if needed
+# =============================================================================
+
+# Document Processing (heavy ML dependencies ~300MB+)
+# "unstructured>=0.14.8",     # Reintroduce if: processing PDFs, Word docs, or complex documents
+# "pymupdf>=1.26.3",          # Reintroduce if: handling PDF files specifically
+
+# Natural Language Processing (heavy data files ~200MB+)  
+# "nltk==3.8.1",              # Reintroduce if: doing NLP tasks like tokenization, POS tagging
+
+# Alternative LLM Providers (unused integrations)
+# "langchain-cohere==0.4.4",  # Reintroduce if: switching to Cohere LLM instead of OpenAI
+# "cohere>=5.12.0,<5.13.0",   # Reintroduce if: using Cohere API directly
+# "langchain-anthropic>=0.3.18", # Reintroduce if: adding Claude/Anthropic integration
+
+# Advanced Retrieval & Search 
+# "rank-bm25>=0.2.2",         # Reintroduce if: implementing BM25 keyword search alongside vector search
+# "rapidfuzz>=3.13.0",        # Reintroduce if: adding fuzzy string matching for user queries
+
+# Experimental Features
+# "langchain-experimental>=0.3.4", # Reintroduce if: using cutting-edge LangChain features
+
+# Evaluation & Testing (specialized)
+# "ragas==0.2.10",            # Reintroduce if: implementing RAG evaluation metrics and benchmarking

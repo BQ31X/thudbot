@@ -5,7 +5,7 @@
 # --------------------------------------
 # Stage 1: Builder - installs UV and dependencies
 # --------------------------------------
-FROM python:3.13-slim AS builder
+FROM python:3.13-slim-bookworm AS builder
 
 # Install UV using the official installation script (cache-friendly)
 RUN --mount=type=cache,target=/root/.cache/pip \
@@ -47,10 +47,8 @@ COPY data/ /app/data/
 # Add virtual environment to PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Create non-root user for security
-RUN groupadd -r thudbot && useradd -r -g thudbot thudbot
-RUN chown -R thudbot:thudbot /app
-USER thudbot
+# Note: Running as root for simplicity in single-service container
+# In production, consider using non-root user with proper ownership setup
 
 # Expose FastAPI port
 EXPOSE 8000
