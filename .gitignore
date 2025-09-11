@@ -1,6 +1,8 @@
 # Ignore environment files
 .env
 *.env
+*.env.*
+*.envrc
 
 # Python cache files and compiled bytecode
 __pycache__/

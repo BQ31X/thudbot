@@ -64,11 +64,10 @@ Thumbs.db
 *.log
 
 # Environment files (secrets should not be in image)
+*.env
+.env.*
 .env
-.env.local
-.env.development
-.env.test
-.env.production
+.envrc
 
 # Cache directories
 cache/
