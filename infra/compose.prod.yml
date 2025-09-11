@@ -24,7 +24,7 @@ services:
 
   backend:
     # Use pre-built image from registry instead of building
-    image: your-registry/thudbot-backend:latest
+    image: bq31/thudbot-backend:latest
     container_name: thudbot-backend-prod
     ports:
       - "8000:8000"

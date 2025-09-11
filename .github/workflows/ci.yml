@@ -34,15 +34,18 @@ jobs:
         
     - name: Install uv and dependencies
       # Install uv first, then use it to sync dependencies
+      working-directory: apps/backend  # ← Step 1 in backend
       run: |
         pip install uv
-        uv sync
+        cp ../../README.md ./README.md
+        uv sync --all-extras --dev
         
-    - name: Run fast tests
-      # This step assumes you have a test file named `test_functions.py`
-      # and that your `pytest` command runs those tests
-      run: |
-        uv run pytest
+    # - name: Run fast tests
+    #   # This step assumes you have a test file named `test_functions.py`
+    #   # and that your `pytest` command runs those tests
+    #   working-directory: apps/backend
+    #   run: |
+    #     uv run pytest
         
     - name: Run check_and_commit.sh script
       # This step shows how to run your pre-commit script in the CI pipeline

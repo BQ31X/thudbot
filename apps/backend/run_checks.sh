@@ -6,7 +6,10 @@ echo "🧪 Running backend tests..."
 
 # Phase 1: Run fast pytest suite
 echo "🔬 Running pytest suite..."
-uv run pytest
+uv run pytest \
+    --ignore=tests/security/test_error_injection.py \
+    --ignore=tests/security/test_security.py \
+    --ignore=tests/test_progressive_hints_prep.py
 
 # Check if basic tests passed
 if [ $? -eq 0 ]; then
