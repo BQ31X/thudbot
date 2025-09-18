@@ -65,7 +65,12 @@ def _set_redis_host(verbose: bool = False):
     print(f"🔧 DEBUG: is_in_docker()={is_in_docker()}, COMPOSE_MODE={compose_mode}, REDIS_HOST={REDIS_HOST}")
 
 # Load .env variables before accessing any of them
-load_env()
+if os.getenv("CI") != "true":
+    load_env(verbose=True)
+else:
+    print("🧪 CI detected — skipping load_env() in config.py")
+    # Still set Redis host for CI
+    _set_redis_host(verbose=True)
 
 # Maximum number of concurrent sessions allowed
 # Session limits to prevent memory exhaustion DoS; can override in .env
