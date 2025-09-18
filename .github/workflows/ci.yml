@@ -37,7 +37,8 @@ jobs:
       working-directory: apps/backend  # ← Step 1 in backend
       run: |
         pip install uv
-        cp ../../README.md ./README.md
+        ls -la README* #debug: what README files exist?
+        pwd #debug: what directory are we in?
         uv sync --all-extras --dev
         
     # - name: Run fast tests
