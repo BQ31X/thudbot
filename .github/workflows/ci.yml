@@ -37,10 +37,9 @@ jobs:
       working-directory: apps/backend  # ← Step 1 in backend
       run: |
         pip install uv
-        cp ../../README.md ./README.md
         uv sync --all-extras --dev
         
-    # - name: Run fast tests
+    # - name: Run fast tests - not needed because we're running pytest in run_checks.sh
     #   # This step assumes you have a test file named `test_functions.py`
     #   # and that your `pytest` command runs those tests
     #   working-directory: apps/backend
