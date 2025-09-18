@@ -24,6 +24,8 @@ COPY thudbot_core/ ./thudbot_core/
 COPY data/ ./data/
 
 # Install dependencies into a virtual environment
+# --no-dev excludes dev dependencies to keep image lean (~547MB vs ~600MB+)
+# --frozen ensures reproducible builds by freezing dependency versions
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev
 
