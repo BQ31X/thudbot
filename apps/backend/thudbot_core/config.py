@@ -64,7 +64,7 @@ def _set_redis_host(verbose: bool = False):
 
     print(f"🔧 DEBUG: is_in_docker()={is_in_docker()}, COMPOSE_MODE={compose_mode}, REDIS_HOST={REDIS_HOST}")
 
-# Load .env variables before accessing any of them
+# Load .env variables before accessing any of them but skip in CI
 if os.getenv("CI") != "true":
     load_env(verbose=True)
 else:
