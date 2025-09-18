@@ -16,7 +16,7 @@ An intelligent AI assistant for **The Space Bar** adventure game that provides c
     
 2. 🧪 **Try out Thudbot locally**
     
-    1. Follow the [Setup & Installation](#-setup--installation) steps below
+    1. Follow the [Quick Start](#-quick-start) steps below
         
     2. Try these [Example Questions](#-testing-thudbot) 
         
@@ -65,50 +65,71 @@ Expected: Specific time (22:50) with character commentary about checking monitor
 
 ## ⚡ Quick Start
 
+### 🐳 **Fastest Way: Docker Compose**
+
+```bash
+# Clone the repo
+git clone https://github.com/BQ31X/thudbot.git
+cd thudbot
+
+# Add your API keys to .env (copy from .env.example)
+cp .env.example .env
+# Edit .env with your OPENAI_API_KEY
+
+# Start everything with Docker
+cd infra
+docker compose up --build
+
+# ✨ Thudbot backend now at: http://localhost:8000
+```
+
+### 📦 **Traditional Setup**
+
 ### Prerequisites
 
-- Python 3.12+
-- Node.js 18+
+- Python 3.13+
+- Node.js 20+
 
 ### 1. Environment Setup
 
 ```bash
-# 📦 Clone the repo (check latest stable branch)
+# 📦 Clone the repo
 git clone https://github.com/BQ31X/thudbot.git
 cd thudbot
 
 
-# Create Python virtual environment  
-uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install Python dependencies
+# Install Python dependencies (backend)
+cd apps/backend
 uv sync
 
-# Install Node.js dependencies
+# Install Node.js dependencies (frontend)
+cd ../frontend
 npm install
 ```
 
 ### 2. Configuration
 
 ```bash
-# Copy environment template
+# Return to project root and copy environment template
+cd ../..
 cp .env.example .env
 
-# Add your OpenAI API key to .env
-OPENAI_API_KEY=your_api_key_here
+# Edit .env and add your API keys:
+# OPENAI_API_KEY=your_api_key_here
+# LANGCHAIN_API_KEY=your_langchain_key_here  # Optional: for LangSmith tracing
 ```
 
 ### 3. Run the Application
 
 **Terminal 1 - Backend:**
 ```bash
-source .venv/bin/activate
-uv run python src/api.py
+cd apps/backend
+uv run python -m thudbot_core
 ```
 
 **Terminal 2 - Frontend:**  
 ```bash
+cd apps/frontend
 npm run dev
 ```
 
@@ -178,32 +199,39 @@ uv run pytest
 ## 📖 Project Structure
 
 ```
-thudbot/
-├── src/                     # Core application code
-│   ├── *_node.py           # LangGraph workflow nodes
-│   ├── api.py              # FastAPI backend server
-│   ├── langgraph_flow.py   # Main workflow orchestration
-│   ├── state.py            # Shared state management
-│   └── app/                # Next.js frontend
-├── tests/                  # Test suite
-│   ├── regression/         # Regression testing
-│   └── node_specific/      # Component-specific tests
-├── data/                   # CSV hint database
+thudbot2/
+├── apps/
+│   ├── backend/            # Python FastAPI backend
+│   │   ├── thudbot_core/   # Core application code
+│   │   │   ├── *_node.py   # LangGraph workflow nodes
+│   │   │   ├── api.py      # FastAPI backend server
+│   │   │   ├── langgraph_flow.py # Main workflow orchestration
+│   │   │   └── state.py    # Shared state management
+│   │   ├── data/           # CSV hint database
+│   │   ├── tests/          # Backend test suite
+│   │   ├── pyproject.toml  # Python dependencies & config
+│   │   └── Dockerfile      # Backend container image
+│   └── frontend/           # Next.js frontend
+│       ├── app/            # Next.js app directory
+│       ├── public/         # Static assets (PDA interface)
+│       └── package.json    # Node.js dependencies
+├── infra/
+│   ├── compose.yml         # Docker Compose (default)
+│   └── compose.prod.yml    # Production Docker Compose
 ├── docs/                   # Project documentation
-├── public/                 # Static assets (PDA interface)
-├── pyproject.toml          # Python dependencies & config
-└── package.json            # Node.js dependencies
+├── notebooks/              # Jupyter notebooks used for prototype development
+├── .env                    # Environment variables (not in git)
+├── README.md               # This file
+└── check_and_commit.sh     # Test runner and commit script
 ```
-
-
-> ⚠️ **Note:** Test organization is currently being refactored. Some test files are temporarily located in `src/` and will be consolidated into the `tests/` directory structure.
 
 
 ## 🚨 Troubleshooting Tips
 
 - Make sure `.env` is properly configured with a valid OpenAI key.
 - Restart both frontend and backend if switching API keys or files.
-- Logs appear in the terminal where you run `src/api.py`.
+- Backend logs appear in the terminal where you run `uv run python -m thudbot_core`.
+- For Docker Compose issues, try `docker compose down` then `docker compose up --build`.
 
 
 ## 📄 License
