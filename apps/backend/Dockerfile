@@ -48,6 +48,10 @@ COPY --from=builder /app/.venv /app/.venv
 COPY thudbot_core/ /app/thudbot_core/
 COPY data/ /app/data/
 
+# Copy and set up entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Add virtual environment to PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
@@ -60,6 +64,9 @@ EXPOSE 8000
 # Health check to ensure the container is running properly
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/docs', timeout=5)" || exit 1
+
+# Set the entrypoint (runs before CMD)
+ENTRYPOINT ["/entrypoint.sh"]
 
 # Entry point using thudbot_core.__main__ module
 CMD ["python", "-m", "thudbot_core"]
