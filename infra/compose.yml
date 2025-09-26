@@ -1,45 +1,79 @@
 # Docker Compose for Thudbot Development
+#
+# This configuration is designed for local development with:
+# - Local builds from source code for rapid iteration
+# - Direct .env file usage (no Docker secrets needed)
+# - Exposed Redis port for debugging and inspection
+# - Bridge networking for single-host development
+# - Health checks and auto-restart for reliability
+#
+# Key differences from production (compose.prod.yml):
+# - Builds backend from source vs. using Docker Hub image
+# - Uses .env file vs. Docker Swarm secrets
+# - Exposes Redis port 6379 vs. internal-only
+# - Bridge network vs. overlay network
+# - Standard docker compose vs. docker stack deploy
+#
+# Usage:
+# 1. Ensure .env file exists in project root with API keys
+# 2. Run: docker compose up --build
+# 3. Backend available at: http://localhost:8000
+# 4. Redis available at: localhost:6379 (for debugging)
+#
+# Useful commands:
+# - View logs: docker compose logs -f backend
+# - Rebuild: docker compose up --build --force-recreate
+# - Stop: docker compose down
+#
 
 services:
   redis:
-    image: redis:7-alpine
+    image: redis:7-alpine # Use the official Redis image
     container_name: thudbot-redis
     ports:
-      - "6379:6379"
+      - "6379:6379" # Expose Redis for debugging tools (redis-cli, GUI clients)
     command: redis-server
+
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 3s
       retries: 3
       start_period: 10s
+
     networks:
-      - thudbot-network
+      - thudbot-network # Use the bridge network
 
   backend:
-    build: 
+    build:  # Build the backend from source code
       context: ../apps/backend
       dockerfile: Dockerfile
+
     container_name: thudbot-backend
+
     ports:
       - "8000:8000"
+
     environment:
-      - COMPOSE_MODE=true
+      - COMPOSE_MODE=true # Enables Docker service discovery for Redis connection
+
     env_file:
-      - ../.env
-    depends_on:
+      - ../.env # Load API keys from project root .env file
+    depends_on: # Ensure Redis is healthy before starting the backend
       redis:
         condition: service_healthy
-    healthcheck:
+
+    healthcheck: # Ensure the backend is running properly
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/docs"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 15s
+
     networks:
       - thudbot-network
-    restart: unless-stopped
+    restart: unless-stopped # Auto-restart containers (simpler than Swarm deploy policies)
 
 networks:
   thudbot-network:
-    driver: bridge
+    driver: bridge # Single-host networking for development

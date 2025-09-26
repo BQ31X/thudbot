@@ -224,7 +224,20 @@ RATE_LIMIT_GLOBAL=1000 # Global requests per minute
 
 ```
 
-  
+  ### **🚀 Production Deployment**
+
+For production deployment with Docker Swarm, secure secrets management, and production best practices:
+
+**👉 See the main project README: [Production Deployment Guide](../../README.md#-production-deployment-docker-swarm)**
+
+Key production differences:
+- Uses Docker Swarm for orchestration
+- Secure API key management via Docker secrets
+- Pre-built Docker Hub images for consistency
+- Overlay networking for multi-host deployments
+- Production-grade restart policies and health checks
+
+---
 
 ## 📈 Performance
 

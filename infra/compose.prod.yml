@@ -1,55 +1,63 @@
-# Docker Compose for Thudbot Production
-# Usage: docker compose -f compose.prod.yml up -d
+# Production Docker Compose for Docker Swarm deployment
+# Uses Docker secrets for API keys and overlay networking
+# Deploy: docker stack deploy -c compose.prod.yml thudbot
+
+# Prerequisites:
+# - Docker Swarm initialized: docker swarm init
+# - Secrets created: 
+#   - echo "your_key" | docker secret create openai_api_key -
+#   - echo "your_key" | docker secret create langchain_api_key -
+#
+
+version: '3.8'
 
 services:
   redis:
     image: redis:7-alpine
-    container_name: thudbot-redis-prod
-    # No external port exposure in production
     command: redis-server
+    
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
       timeout: 5s
       retries: 5
       start_period: 30s
+    
     networks:
       - thudbot-network
-    restart: always
+    
     deploy:
-      resources:
-        limits:
-          memory: 128M
-          cpus: '0.5'
+      restart_policy:
+        condition: any
 
   backend:
-    # Use pre-built image from registry instead of building
-    image: bq31/thudbot-backend:latest
-    container_name: thudbot-backend-prod
+    image: bq31/thudbot-backend:latest  # Use Docker Hub image for production
     ports:
-      - "8000:8000"
+      - "8000:8000" # Expose API on port 8000
+    
+    secrets:
+      - openai_api_key # Docker Swarm Secret for OpenAI API key
+      - langchain_api_key # Docker Swarm Secret for LangChain API key
+    
     environment:
       - COMPOSE_MODE=true
-    env_file:
-      - ../.env.prod  # Production environment file
-    depends_on:
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/docs"]
-      interval: 60s
-      timeout: 15s
-      retries: 3
-      start_period: 60s
+      - ENV=prod
+    
     networks:
       - thudbot-network
-    restart: always
+    
     deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '1.0'
+      restart_policy:
+        condition: any # Always restart on failure
+        max_attempts: 3 # Limit the number of restarts to prevent endless loops
+        window: 60s
+
+secrets:
+  openai_api_key:
+    external: true
+  langchain_api_key:
+    external: true
 
 networks:
   thudbot-network:
-    driver: bridge
+    driver: overlay # Multi-host networking for Docker Swarm (encrypted by default)
