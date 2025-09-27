@@ -54,7 +54,8 @@ services:
 
   frontend:
     image: bq31/thudbot-frontend:latest  # Use Docker Hub image for production
-    
+    ports:
+      - "3000:3000"  # Expose frontend port for nginx reverse proxy    
     environment:
       - NEXT_PUBLIC_API_URL=http://backend:8000  # Backend service URL for API calls
     
