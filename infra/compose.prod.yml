@@ -52,6 +52,24 @@ services:
         max_attempts: 3 # Limit the number of restarts to prevent endless loops
         window: 60s
 
+  frontend:
+    image: bq31/thudbot-frontend:latest  # Use Docker Hub image for production
+    
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000  # Backend service URL for API calls
+    
+    networks:
+      - thudbot-network
+    
+    deploy:
+      restart_policy:
+        condition: any  # Always restart on failure (matches backend)
+        max_attempts: 3  # Limit restarts to prevent endless loops
+        window: 60s
+    
+    # Note: No ports exposed - nginx reverse proxy handles external access
+    # Health check defined in Dockerfile will be used automatically
+
 secrets:
   openai_api_key:
     external: true
