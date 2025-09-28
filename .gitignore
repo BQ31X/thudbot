@@ -95,3 +95,6 @@ apps/backend/tests/test_results/
 #cursor metadata
 .cursor/
 *.mdc
+
+#Makefile
+Makefile
