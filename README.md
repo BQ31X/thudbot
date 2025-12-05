@@ -135,6 +135,66 @@ npm run dev
 
 **Access:** Open `http://localhost:3000` in your browser!
 
+### 🚀 **Production Deployment (Docker Swarm)**
+
+For production deployment using Docker Swarm with secure secret management:
+
+#### Prerequisites
+```bash
+# Initialize Docker Swarm (if not already done)
+docker swarm init
+
+# Create Docker secrets for API keys
+echo "your_openai_api_key_here" | docker secret create openai_api_key -
+echo "your_langchain_api_key_here" | docker secret create langchain_api_key -
+```
+
+#### Deploy to Production
+```bash
+# Navigate to infrastructure directory
+cd infra
+
+# Deploy the stack using Docker Swarm
+docker stack deploy -c compose.prod.yml thudbot
+
+# Verify deployment
+docker service ls
+docker service logs thudbot_backend
+```
+
+#### Production Features
+- **🔐 Docker Secrets**: Secure API key management (no env files)
+- **🌐 Overlay Networking**: Multi-host container communication
+- **📦 Pre-built Images**: Uses `bq31/thudbot-backend:latest` from Docker Hub
+- **🔄 Auto-restart**: Automatic service recovery with restart policies
+- **📊 Health Checks**: Built-in service monitoring
+
+#### Management Commands
+```bash
+# View service status
+docker service ls
+docker service ps thudbot_backend
+
+# View logs
+docker service logs -f thudbot_backend
+docker service logs -f thudbot_redis
+
+# Scale services (if needed)
+docker service scale thudbot_backend=2
+
+# Update deployment
+docker stack deploy -c compose.prod.yml thudbot
+
+# Remove deployment
+docker stack rm thudbot
+```
+
+**🌐 Production Access:** Backend available at `http://your-server:8000` 
+⚠️ **Security Note:** Restrict access via firewall, VPN, or reverse proxy in production
+
+---
+
+
 ## 🏗️ Architecture
 
 ```
