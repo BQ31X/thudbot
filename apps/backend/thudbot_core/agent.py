@@ -67,7 +67,7 @@ def create_cached_embeddings(model="text-embedding-3-small", cache_dir="./cache/
         return OpenAIEmbeddings(model=model)
 
 def initialize_rag_only(api_key=None):
-    """Initialize only the RAG components without AgentExecutor"""
+    """Load existing Qdrant collection - fail fast if missing"""
     
     # Use provided API key or fall back to environment
     if api_key:
@@ -77,25 +77,38 @@ def initialize_rag_only(api_key=None):
     if not os.getenv('OPENAI_API_KEY'):
         raise ValueError("OpenAI API key required - provide via parameter or environment variable")
     
-    # Load hint data
-    loader = CSVLoader(
-        file_path="./data/Thudbot_Hint_Data_1.csv",
-        metadata_columns=[
-            "question", "hint_level", "character", "speaker",
-            "narrative_context", "planet", "location", "category",
-            "puzzle_id", "response_must_mention", "response_must_not_mention"
-        ]
-    )
-    hint_data = loader.load()
+    # Get Qdrant path from config
+    from thudbot_core.config import QDRANT_DB_PATH
+    qdrant_path = QDRANT_DB_PATH
     
-    # Create vector store with cached embeddings
+    print(f"📂 Loading Qdrant from: {qdrant_path}")
+    
+    # Create client and check collection exists
+    from qdrant_client import QdrantClient
+    client = QdrantClient(path=qdrant_path)
+    collection_name = "Thudbot_Hints"
+    
+    # Fail fast if collection doesn't exist
+    if not client.collection_exists(collection_name):
+        raise RuntimeError(
+            f"❌ Qdrant collection '{collection_name}' not found at {qdrant_path}\n"
+            f"   Build the collection before starting:\n"
+            f"   python tools/build_qdrant_collection.py"
+        )
+    
+    print(f"✅ Found collection '{collection_name}' with existing data")
+    
+    # Load embeddings (used for query embedding only, not document embedding)
     embeddings = create_cached_embeddings(model="text-embedding-3-small")
-    vectorstore = Qdrant.from_documents(
-        documents=hint_data,
-        embedding=embeddings,
-        location=":memory:",
-        collection_name="Thudbot_Hints"
+    
+    # Load existing collection (NO CSV, NO document embedding)
+    vectorstore = Qdrant(
+        client=client,
+        collection_name=collection_name,
+        embeddings=embeddings
     )
+    
+    print(f"✅ Vectorstore loaded successfully")
     
     # Create retrievers
     naive_retriever = vectorstore.as_retriever(search_kwargs={"k": 4})

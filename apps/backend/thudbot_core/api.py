@@ -13,6 +13,22 @@ load_dotenv()
 
 app = FastAPI()
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize Qdrant at startup - fail fast if collection missing"""
+    print("🚀 Validating Qdrant collection at startup...")
+    from thudbot_core.agent import initialize_rag_only
+    try:
+        initialize_rag_only()
+        print("✅ Qdrant collection loaded successfully - backend ready")
+    except RuntimeError as e:
+        print(f"❌ FATAL: {e}")
+        print("⚠️  Backend cannot start without Qdrant collection")
+        raise
+    except Exception as e:
+        print(f"❌ FATAL: Unexpected error loading Qdrant: {e}")
+        raise
+
 # Add rate limiter to app
 app.state.limiter = limiter
 
