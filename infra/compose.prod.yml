@@ -43,6 +43,9 @@ services:
       - COMPOSE_MODE=true
       - ENV=prod
     
+    volumes:
+      - qdrant_data:/app/qdrant_db:ro  # Read-only access to persistent datastore
+    
     networks:
       - thudbot-network
     
@@ -80,3 +83,7 @@ secrets:
 networks:
   thudbot-network:
     driver: overlay # Multi-host networking for Docker Swarm (encrypted by default)
+
+volumes:
+  qdrant_data:
+    external: true  # Must be pre-populated before deployment
