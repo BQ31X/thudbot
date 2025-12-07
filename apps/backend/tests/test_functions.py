@@ -98,9 +98,18 @@ def test_agent_initialization():
         rag_chain = initialize_rag_only()
         assert rag_chain is not None, "RAG chain should be created"
     except Exception as e:
-        # If it fails due to missing API key, that's expected/ok
-        if "API key" in str(e) or "api_key" in str(e):
+        msg = str(e)
+        
+        # Skip if backend is running and has the database locked
+        if "already accessed by another instance" in msg:
+            pytest.skip(
+                "Qdrant DB is locked (backend is running). "
+                "This is expected - shut down backend to test isolated initialization."
+            )
+        # Skip if API key is missing
+        elif "API key" in msg or "api_key" in msg:
             pytest.skip(f"RAG initialization skipped - missing API key: {e}")
+        # Fail for any other unexpected error
         else:
             pytest.fail(f"RAG initialization failed unexpectedly: {e}")
 
