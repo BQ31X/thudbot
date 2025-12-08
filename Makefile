@@ -27,21 +27,65 @@ QDRANT_STAGING = ~/qdrant_db
 # Declare non-file targets (prevents filename collision issues)
 .PHONY: help deploy-prod deploy-all push-compose ssh-deploy logs logs-frontend remove
 .PHONY: deploy-qdrant push-qdrant update-qdrant restart-backend
+.PHONY: build-all build-backend build-frontend inspect-images
 
 # 📖 Show available commands
 help:
-	@echo "Available commands:"
+	@echo "Build commands:"
+	@echo "  make build-backend   - Build and push backend image"
+	@echo "  make build-frontend  - Build and push frontend image"
+	@echo "  make build-all       - Build and push both images"
+	@echo "  make inspect-images  - Verify multi-arch images"
+	@echo ""
+	@echo "Deploy commands:"
 	@echo "  make deploy-prod     - Deploy code changes (compose + images)"
 	@echo "  make deploy-qdrant   - Deploy Qdrant collection updates"
 	@echo "  make deploy-all      - Deploy both code and data"
+	@echo ""
+	@echo "Monitoring commands:"
 	@echo "  make logs            - View backend logs"
 	@echo "  make logs-frontend   - View frontend logs"
-	@echo "  make remove          - Remove the stack"
 	@echo ""
-	@echo "Individual Qdrant steps:"
+	@echo "Qdrant management:"
 	@echo "  make push-qdrant     - Transfer collection to Linode"
 	@echo "  make update-qdrant   - Update Docker volume"
 	@echo "  make restart-backend - Restart backend service"
+	@echo ""
+	@echo "Other:"
+	@echo "  make remove          - Remove the stack"
+
+# === Docker Image Build Targets ===
+
+# 🏗️  Build and push both images
+build-all: build-backend build-frontend
+
+# 🐍 Build and push backend image
+build-backend:
+	@echo "🏗️  Building and pushing backend image (multi-arch)..."
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		-t bq31/thudbot-backend:latest \
+		--push \
+		apps/backend/
+	@echo "✅ Backend image pushed to Docker Hub"
+
+# ⚛️  Build and push frontend image
+build-frontend:
+	@echo "🏗️  Building and pushing frontend image (multi-arch)..."
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		-t bq31/thudbot-frontend:latest \
+		--push \
+		apps/frontend/
+	@echo "✅ Frontend image pushed to Docker Hub"
+
+# 🔍 Verify multi-arch images
+inspect-images:
+	@echo "🔍 Backend image:"
+	@docker buildx imagetools inspect bq31/thudbot-backend:latest
+	@echo ""
+	@echo "🔍 Frontend image:"
+	@docker buildx imagetools inspect bq31/thudbot-frontend:latest
+
+# === Deployment Targets ===
 
 # 🟢 Full deployment pipeline: scp + ssh deploy
 deploy-prod: push-compose ssh-deploy
