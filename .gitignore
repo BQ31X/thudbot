@@ -104,4 +104,4 @@ apps/backend/tests/test_results/
 *.mdc
 
 #Makefile
-Makefile
+# Makefile is used for deployment, so it should not be ignored (20251208)
