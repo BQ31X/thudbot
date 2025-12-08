@@ -18,7 +18,13 @@ The **FastAPI backend** for Thudbot - providing the AI-powered hint API for The 
 
 uv sync --frozen --extra dev
 
-  
+# Make sure Redis is running
+
+# Option A: Run Redis via Docker (recommended for local dev)
+docker run -p 6379:6379 --name thudbot-redis -d redis:7-alpine
+
+# Option B: If Redis is installed on your system
+redis-server
 
 # Run the backend server
 

@@ -44,8 +44,8 @@ services:
       - ENV=prod
     
     volumes:
-      - qdrant_data:/app/qdrant_db:ro  # Read-only access to persistent datastore
-    
+      - qdrant_data:/app/qdrant_db # Mount persistent datastore (Qdrant needs lock file access)
+      
     networks:
       - thudbot-network
     
