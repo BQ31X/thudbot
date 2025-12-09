@@ -12,7 +12,6 @@ except ImportError:
     pass
 
 # Core imports
-from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.vectorstores import Qdrant
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.retrievers.multi_query import MultiQueryRetriever
