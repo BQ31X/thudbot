@@ -201,10 +201,17 @@ docker stack rm thudbot
 Frontend (Next.js) → Backend (FastAPI) → Agent (LangGraph)
 ```
 
+
 **Built with:**
 - **Backend**: FastAPI + LangChain + OpenAI GPT-4
 - **Frontend**: Next.js + React + Tailwind CSS  
-- **Data**: CSV hint database + Qdrant vector store
+- **Data**: Qdrant vector store (persistent) + Multi-query retrieval
+- **Build**: Offline collection builder from CSV hint database
+
+**Storage Architecture:**
+- **Build-time**: `tools/build_qdrant_collection.py` creates vectorstore from CSV
+- **Run-time**: Backend loads pre-built collection (no embedding, fail-fast validation)
+
 
 ## 📊 RAG Evaluation & Performance
 

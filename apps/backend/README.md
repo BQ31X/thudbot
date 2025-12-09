@@ -18,7 +18,13 @@ The **FastAPI backend** for Thudbot - providing the AI-powered hint API for The 
 
 uv sync --frozen --extra dev
 
-  
+# Make sure Redis is running
+
+# Option A: Run Redis via Docker (recommended for local dev)
+docker run -p 6379:6379 --name thudbot-redis -d redis:7-alpine
+
+# Option B: If Redis is installed on your system
+redis-server
 
 # Run the backend server
 
@@ -32,7 +38,42 @@ uvicorn thudbot_core.api:app --reload --host 0.0.0.0 --port 8000
 
 ```
 
-  
+
+## 🗄️ Qdrant Collection Management
+
+Thudbot uses a **persistent Qdrant vectorstore** that must be built before starting the backend.
+
+### Initial Setup
+
+```bash
+# Build the Qdrant collection from CSV data
+cd apps/backend
+python tools/build_qdrant_collection.py
+
+# This creates: apps/backend/qdrant_db/
+```
+
+### Rebuilding After Data Changes
+
+If you update `data/Thudbot_Hint_Data_1.csv`:
+
+```bash
+# Force recreate the collection
+python tools/build_qdrant_collection.py --force-recreate
+```
+
+### Production Deployment
+
+The collection must be built and transferred to the production server:
+
+```bash
+# See Makefile targets:
+make deploy-qdrant  # Build and transfer to production
+make push-qdrant    # Transfer existing collection
+make update-qdrant  # Update and restart backend service
+```
+
+**Note:** The backend will fail at startup if the collection is missing (fail-fast design).  
 
 ### Production (Docker)
 
@@ -73,39 +114,22 @@ docker run -p 8000:8000 --env-file .env thudbot-backend
 ```
 
 FastAPI ── LangGraph ── RAG Pipeline
-
 │ │ │
-
 │ │ ├── OpenAI GPT-4
-
-│ │ ├── Qdrant Vector Store
-
-│ │ └── CSV Hint Database
-
+│ │ ├── Qdrant Vector Store (persistent)
+│ │ └── Multi-query Retrieval
 │ │
-
 │ └── Workflow Nodes:
-
 │ ├── Router (intent classification)
-
 │ ├── Find Hint (RAG retrieval)
-
 │ ├── Verify Correctness
-
 │ ├── Maintain Character
-
 │ └── Format Output
-
 │
-
 └── Features:
-
 ├── Rate Limiting (Redis)
-
 ├── Session Management
-
 ├── CORS Protection
-
 └── Error Handling
 
 ```

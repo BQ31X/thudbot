@@ -57,6 +57,9 @@ services:
     environment:
       - COMPOSE_MODE=true # Enables Docker service discovery for Redis connection
 
+    volumes:
+      - ../apps/backend/qdrant_db:/app/qdrant_db  # Bind mount local datastore (read-write for rebuilding)
+
     env_file:
       - ../.env # Load API keys from project root .env file
     depends_on: # Ensure Redis is healthy before starting the backend

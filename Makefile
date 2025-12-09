@@ -1,0 +1,151 @@
+# === Config ===
+
+# Your Linode login info
+LINODE_USER = bq
+LINODE_HOST = 45.33.65.116
+
+# Remote path on Linode where compose file is deployed (file-only, no repo)
+REMOTE_DIR = ~/thudbot
+
+# Path to compose file relative to this Makefile (Mac/local path)
+COMPOSE_FILE = infra/compose.prod.yml
+
+# Just the filename (for remote use)
+COMPOSE_FILENAME = compose.prod.yml
+
+# Docker stack name (on Linode)
+STACK_NAME = thudbot-prod
+
+# Path to local Qdrant collection
+QDRANT_LOCAL = apps/backend/qdrant_db
+
+# Staging path on Linode (temporary, before copying to Docker volume)
+QDRANT_STAGING = ~/qdrant_db
+
+# === Targets ===
+
+# Declare non-file targets (prevents filename collision issues)
+.PHONY: help deploy-prod deploy-all push-compose ssh-deploy logs logs-frontend remove
+.PHONY: deploy-qdrant push-qdrant update-qdrant restart-backend
+.PHONY: build-all build-backend build-frontend inspect-images
+
+# 📖 Show available commands
+help:
+	@echo "Build commands:"
+	@echo "  make build-backend   - Build and push backend image"
+	@echo "  make build-frontend  - Build and push frontend image"
+	@echo "  make build-all       - Build and push both images"
+	@echo "  make inspect-images  - Verify multi-arch images"
+	@echo ""
+	@echo "Deploy commands:"
+	@echo "  make deploy-prod     - Deploy code changes (compose + images)"
+	@echo "  make deploy-qdrant   - Deploy Qdrant collection updates"
+	@echo "  make deploy-all      - Deploy both code and data"
+	@echo ""
+	@echo "Monitoring commands:"
+	@echo "  make logs            - View backend logs"
+	@echo "  make logs-frontend   - View frontend logs"
+	@echo ""
+	@echo "Qdrant management:"
+	@echo "  make push-qdrant     - Transfer collection to Linode"
+	@echo "  make update-qdrant   - Update Docker volume"
+	@echo "  make restart-backend - Restart backend service"
+	@echo ""
+	@echo "Other:"
+	@echo "  make remove          - Remove the stack"
+
+# === Docker Image Build Targets ===
+
+# 🏗️  Build and push both images
+build-all: build-backend build-frontend
+
+# 🐍 Build and push backend image
+build-backend:
+	@echo "🏗️  Building and pushing backend image (multi-arch)..."
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		-t bq31/thudbot-backend:latest \
+		--push \
+		apps/backend/
+	@echo "✅ Backend image pushed to Docker Hub"
+
+# ⚛️  Build and push frontend image
+build-frontend:
+	@echo "🏗️  Building and pushing frontend image (multi-arch)..."
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		-t bq31/thudbot-frontend:latest \
+		--push \
+		apps/frontend/
+	@echo "✅ Frontend image pushed to Docker Hub"
+
+# 🔍 Verify multi-arch images
+inspect-images:
+	@echo "🔍 Backend image:"
+	@docker buildx imagetools inspect bq31/thudbot-backend:latest
+	@echo ""
+	@echo "🔍 Frontend image:"
+	@docker buildx imagetools inspect bq31/thudbot-frontend:latest
+
+# === Deployment Targets ===
+
+# 🟢 Full deployment pipeline: scp + ssh deploy
+deploy-prod: push-compose ssh-deploy
+
+# 🚀 Full deployment: code + data (use when both changed)
+deploy-all: deploy-prod deploy-qdrant
+	@echo ""
+	@echo "🎉 Full deployment complete!"
+	@echo "📋 Monitor with: make logs"
+
+# 📤 Push updated compose file to Linode
+push-compose:
+	scp $(COMPOSE_FILE) $(LINODE_USER)@$(LINODE_HOST):$(REMOTE_DIR)/
+
+# 🚀 SSH into Linode and redeploy the stack
+ssh-deploy:
+	ssh $(LINODE_USER)@$(LINODE_HOST) 'cd $(REMOTE_DIR) && docker stack deploy -c $(COMPOSE_FILENAME) $(STACK_NAME)'
+
+# 📄 Show backend logs
+logs:
+	ssh $(LINODE_USER)@$(LINODE_HOST) 'docker service logs $(STACK_NAME)_backend --tail=50'
+
+# 📄 Show frontend logs
+logs-frontend:
+	ssh $(LINODE_USER)@$(LINODE_HOST) 'docker service logs $(STACK_NAME)_frontend --tail=50'
+
+# === Qdrant Collection Management ===
+
+# 🗄️  Deploy Qdrant collection to production
+deploy-qdrant: push-qdrant update-qdrant restart-backend
+
+# 📤 Transfer Qdrant collection to Linode
+push-qdrant:
+	@echo "📤 Transferring Qdrant collection to Linode..."
+	scp -r $(QDRANT_LOCAL) $(LINODE_USER)@$(LINODE_HOST):$(QDRANT_STAGING)
+	@echo "✅ Transfer complete"
+
+# 🔄 Update Qdrant volume and cleanup
+update-qdrant:
+	@echo "🔄 Updating Qdrant Docker volume..."
+	ssh $(LINODE_USER)@$(LINODE_HOST) '\
+		docker run --rm \
+			-v qdrant_data:/dst \
+			-v $(QDRANT_STAGING):/src \
+			busybox cp -r /src/. /dst/ && \
+		rm -rf $(QDRANT_STAGING) \
+	'
+	@echo "✅ Volume updated and staging files cleaned"
+
+# 🔄 Restart backend to load new collection
+restart-backend:
+	@echo "🔄 Restarting backend service..."
+	ssh $(LINODE_USER)@$(LINODE_HOST) 'docker service update --force $(STACK_NAME)_backend'
+	@echo "✅ Backend restarting..."
+	@echo ""
+	@echo "📋 Monitor with: make logs"
+
+# ❌ Tear down the running stack
+remove:
+	@echo "⚠️  WARNING: This will remove the PRODUCTION stack ($(STACK_NAME))"
+	@echo "Press Ctrl-C to abort..."
+	@sleep 5
+	ssh $(LINODE_USER)@$(LINODE_HOST) 'docker stack rm $(STACK_NAME)'
