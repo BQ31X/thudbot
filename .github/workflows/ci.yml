@@ -3,6 +3,7 @@ name: CI - Python Project Template
 
 # Trigger the workflow on pushes and pull requests to the main branch
 on:
+  workflow_dispatch:
   push:
     branches: [ "main", "develop" ]
   pull_request:
