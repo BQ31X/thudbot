@@ -24,6 +24,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Add project root to Python path for rag_utils imports
+# Minimal path bootstrap for standalone execution.
+# This script is an offline build tool, not runtime code,
+# so a small sys.path adjustment is going to havea to suffice here.
 script_dir = Path(__file__).resolve().parent
 project_root = script_dir.parent
 sys.path.insert(0, str(project_root))

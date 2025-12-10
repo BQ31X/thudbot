@@ -2,12 +2,10 @@
 """
 Quick regression tester - runs only first N questions
 """
-import sys
-from pathlib import Path
+# Use centralized path utilities
+from tests.utils.paths import add_project_root_to_path, REGRESSION_ROOT
+add_project_root_to_path()
 
-# Ensure project root is on sys.path
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(PROJECT_ROOT))
 
 import csv
 import tempfile
@@ -39,7 +37,7 @@ def create_limited_csv(original_csv: str, limit: int, output_csv: str):
 def main():
     # Configuration
     LIMIT = 10  # Change this to test more/fewer questions
-    original_csv = "tests/regression/test_questions.csv"
+    original_csv = REGRESSION_ROOT / "test_questions.csv"
     
     # Create temporary limited CSV
     with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as temp_file:
