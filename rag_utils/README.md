@@ -1,0 +1,4 @@
+- rag_utils is the shared RAG domain layer.
+- runtime uses loader + embedding_utils.
+- tools use build_utils.
+- no code in rag_utils may import from apps/backend or apps/tools.

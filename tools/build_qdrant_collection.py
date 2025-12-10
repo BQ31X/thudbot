@@ -23,6 +23,11 @@ import argparse
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Add project root to Python path for rag_utils imports
+script_dir = Path(__file__).resolve().parent
+project_root = script_dir.parent
+sys.path.insert(0, str(project_root))
+
 # Suppress verbose library output
 os.environ["TOKENIZERS_PARALLELISM"] = "false"  # Suppress tokenizer warnings
 warnings.filterwarnings("ignore")  # Suppress all warnings
@@ -34,13 +39,11 @@ logging.getLogger("openai").setLevel(logging.ERROR)
 logging.getLogger("httpx").setLevel(logging.ERROR)
 logging.getLogger("httpcore").setLevel(logging.ERROR)
 
-from langchain_community.document_loaders.csv_loader import CSVLoader
-from langchain_community.vectorstores import Qdrant
-from langchain_openai import OpenAIEmbeddings
-from langchain.embeddings import CacheBackedEmbeddings
-from langchain.storage import LocalFileStore
 from qdrant_client import QdrantClient
-import hashlib
+
+# Import from shared rag_utils
+from rag_utils.embedding_utils import get_embedding_function
+from rag_utils.build_utils import load_csv_documents, upsert_documents_to_collection
 
 
 def load_dotenv_from_path():
@@ -52,24 +55,6 @@ def load_dotenv_from_path():
             load_dotenv(dotenv_path=env_path, override=True)
             return
     # Silently continue if no .env found - may be using environment variables
-
-
-def create_cached_embeddings(model="text-embedding-3-small", cache_dir="./cache/embeddings"):
-    """Create cached embeddings (copied from agent.py to avoid loading entire package)"""
-    try:
-        base_embeddings = OpenAIEmbeddings(model=model)
-        safe_namespace = hashlib.md5(model.encode()).hexdigest()
-        store = LocalFileStore(cache_dir)
-        cached_embeddings = CacheBackedEmbeddings.from_bytes_store(
-            base_embeddings, 
-            store, 
-            namespace=safe_namespace,
-            key_encoder="sha256"
-        )
-        return cached_embeddings
-    except Exception:
-        # Fallback to direct embeddings if caching fails
-        return OpenAIEmbeddings(model=model)
 
 
 def main():
@@ -125,28 +110,27 @@ Examples:
         print(f"   rm -rf {qdrant_path}")
         return
     
-    # Load CSV (exactly like agent.py does)
-    loader = CSVLoader(
-        file_path=csv_path,
+    # Load CSV using rag_utils
+    hint_data = load_csv_documents(
+        csv_path=csv_path,
         metadata_columns=[
             "question", "hint_level", "character", "speaker",
             "narrative_context", "planet", "location", "category",
             "puzzle_id", "response_must_mention", "response_must_not_mention"
         ]
     )
-    hint_data = loader.load()
     print(f"✅ Loaded {len(hint_data)} documents")
     
-    # Create embeddings (exactly like agent.py does)
-    embeddings = create_cached_embeddings(model="text-embedding-3-small")
+    # Create embeddings using rag_utils
+    embeddings = get_embedding_function(model_name="text-embedding-3-small")
     
-    # Create persistent vectorstore (only difference: path instead of :memory:)
+    # Create persistent vectorstore using rag_utils
     print(f"🔨 Creating collection...")
-    vectorstore = Qdrant.from_documents(
+    vectorstore = upsert_documents_to_collection(
+        qdrant_path=qdrant_path,
+        collection_name="Thudbot_Hints",
         documents=hint_data,
-        embedding=embeddings,
-        path=qdrant_path,  # <-- This is the only change from agent.py!
-        collection_name="Thudbot_Hints"
+        embeddings=embeddings
     )
     
     # Show where files are
