@@ -5,13 +5,9 @@ Simple Raw Collector for Thudbot Regression Testing
 This script runs test questions through the Thudbot system and captures
 raw outputs from each node without interpretation. Human analysis required.
 """
-# Ensure project root is on sys.path
-import sys
-from pathlib import Path
-
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+# Use centralized path utilities
+from tests.utils.paths import add_project_root_to_path, REGRESSION_ROOT, REGRESSION_RESULTS_ROOT
+add_project_root_to_path()
 
 import csv
 import sys
@@ -92,8 +88,8 @@ class RawCollector:
         print(f"\n🎉 Collection complete!")
         print(f"📊 Results: {len([r for r in self.results if r['router'] != 'ERROR'])} successful, {len([r for r in self.results if r['router'] == 'ERROR'])} errors")
         print(f"⏱️ Total duration: {total_duration:.1f}s")
-        print(f"📄 Saved to: tests/regression/results/regression_{self.timestamp}.csv")
-        print(f"📄 Saved to: tests/regression/results/regression_{self.timestamp}.md")
+        print(f"📄 Saved to: {REGRESSION_RESULTS_ROOT / f'regression_{self.timestamp}.csv'}")
+        print(f"📄 Saved to: {REGRESSION_RESULTS_ROOT / f'regression_{self.timestamp}.md'}")
         
     def _load_questions(self):
         """Load questions from CSV file"""
@@ -216,7 +212,7 @@ class RawCollector:
     
     def _save_csv(self):
         """Save results as CSV"""
-        output_file = f"tests/regression/results/regression_{self.timestamp}.csv"
+        output_file = REGRESSION_RESULTS_ROOT / f"regression_{self.timestamp}.csv"
         
         with open(output_file, 'w', newline='') as f:
             if self.results:
@@ -227,7 +223,7 @@ class RawCollector:
     
     def _save_markdown(self):
         """Save results as Markdown table"""
-        output_file = f"tests/regression/results/regression_{self.timestamp}.md"
+        output_file = REGRESSION_RESULTS_ROOT / f"regression_{self.timestamp}.md"
         
         with open(output_file, 'w') as f:
             f.write(f"# Thudbot Regression Test Results\n\n")
@@ -299,7 +295,7 @@ class RawCollector:
     def _create_latest_symlink(self):
         """Create symlink to latest results"""
         csv_file = f"regression_{self.timestamp}.csv"
-        symlink_path = "tests/regression/results/latest_regression.csv"
+        symlink_path = REGRESSION_RESULTS_ROOT / "latest_regression.csv"
         
         # Remove existing symlink if it exists
         if os.path.exists(symlink_path):
@@ -310,7 +306,7 @@ class RawCollector:
 
 def main():
     """Main entry point"""
-    input_csv = "tests/regression/test_questions.csv"
+    input_csv = REGRESSION_ROOT / "test_questions.csv"
     
     if not os.path.exists(input_csv):
         print(f"❌ Input file not found: {input_csv}")

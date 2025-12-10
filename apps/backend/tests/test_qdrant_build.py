@@ -4,13 +4,14 @@ Simple test to verify the build script creates a persistent Qdrant collection.
 
 import pytest
 import os
-from pathlib import Path
+import sys
 from qdrant_client import QdrantClient
 
+# Use centralized path utilities
+from tests.utils.paths import TOOLS_ROOT, DATA_ROOT
+
 # Import build function from tools directory
-import sys
-tools_path = Path(__file__).resolve().parents[3] / "tools"
-sys.path.insert(0, str(tools_path))
+sys.path.insert(0, str(TOOLS_ROOT))
 from build_qdrant_collection import main as build_main
 
 
@@ -25,7 +26,7 @@ def temp_qdrant_path(tmp_path):
 @pytest.fixture
 def csv_path():
     """Path to test CSV file"""
-    csv = Path(__file__).parent.parent / "data" / "Thudbot_Hint_Data_1.csv"
+    csv = DATA_ROOT / "Thudbot_Hint_Data_1.csv"
     if not csv.exists():
         pytest.skip(f"CSV file not found: {csv}")
     return str(csv)
