@@ -47,11 +47,11 @@ dev = [
     "types-redis>=4.6.0",     # Type hints for Redis development
 ]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
+# [tool.pytest.ini_options]
+# testpaths = ["tests"]
+# python_files = ["test_*.py"]
+# python_classes = ["Test*"]
+# python_functions = ["test_*"]
 
 # =============================================================================
 # REMOVED DEPENDENCIES - Commented out to save Docker image size
