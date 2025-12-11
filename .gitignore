@@ -104,7 +104,7 @@ apps/backend/tests/test_results/
 *.mdc
 
 # Raw walkthrough and design documents
-data/walkthroughs/
-data/raw_docs/
-data/lore/
-data/puzzle/
+apps/backend/data/walkthroughs/
+apps/backend/data/lore/
+apps/backend/data/puzzle/
+apps/backend/data/raw_docs/
