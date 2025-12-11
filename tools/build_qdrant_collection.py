@@ -5,7 +5,7 @@ Simplest possible script to build persistent Qdrant collection from CSV.
 Can be run from any directory - paths are resolved relative to script location.
 
 Usage:
-    python tools/build_qdrant_collection.py [--csv-path PATH] [--qdrant-path PATH]
+    python tools/build_qdrant_collection.py [--csv-path PATH] [--txt-dir PATH] [--qdrant-path PATH]
     
 Examples:
     # Use defaults (run from project root or anywhere)
@@ -13,6 +13,9 @@ Examples:
     
     # Custom CSV path
     python tools/build_qdrant_collection.py --csv-path /path/to/data.csv
+    
+    # Include sequential text documents
+    python tools/build_qdrant_collection.py --txt-dir apps/backend/data/walkthroughs
 """
 
 import sys
@@ -46,7 +49,7 @@ from qdrant_client import QdrantClient
 
 # Import from shared rag_utils
 from rag_utils.embedding_utils import get_embedding_function
-from rag_utils.build_utils import load_csv_documents, upsert_documents_to_collection
+from rag_utils.build_utils import load_csv_documents, upsert_documents_to_collection, chunk_text_by_lines
 
 
 def load_dotenv_from_path():
@@ -79,12 +82,20 @@ Examples:
   
   # Custom paths
   python tools/build_qdrant_collection.py --csv-path ./data/hints.csv --qdrant-path /tmp/my_qdrant/
+  
+  # Include sequential text documents
+  python tools/build_qdrant_collection.py --txt-dir apps/backend/data/walkthroughs
         """
     )
     parser.add_argument(
         "--csv-path",
         default=str(default_csv_path),
         help=f"Path to the input CSV file (default: {default_csv_path})"
+    )
+    parser.add_argument(
+        "--txt-dir",
+        default=None,
+        help="Optional: Directory containing .txt sequential text files to ingest"
     )
     parser.add_argument(
         "--qdrant-path",
@@ -94,10 +105,13 @@ Examples:
     
     args = parser.parse_args()
     csv_path = args.csv_path
+    txt_dir = args.txt_dir
     qdrant_path = args.qdrant_path
     
     print(f"📦 Building Qdrant Collection")
     print(f"   CSV: {csv_path}")
+    if txt_dir:
+        print(f"   TXT: {txt_dir}")
     print(f"   DB:  {qdrant_path}")
     print()
     
@@ -122,7 +136,27 @@ Examples:
             "puzzle_id", "response_must_mention", "response_must_not_mention"
         ]
     )
-    print(f"✅ Loaded {len(hint_data)} documents")
+    print(f"✅ Loaded {len(hint_data)} CSV documents")
+    
+    # Load and chunk sequential text files if txt_dir provided
+    sequential_docs = []
+    if txt_dir:
+        txt_path = Path(txt_dir)
+        if not txt_path.exists():
+            print(f"⚠️  Warning: Text directory not found: {txt_dir}")
+        else:
+            for file in txt_path.glob("*.txt"):
+                raw_text = file.read_text(encoding="utf-8", errors="ignore")
+                docs = chunk_text_by_lines(raw_text, file.name)
+                sequential_docs.extend(docs)
+                print(f"✅ Loaded {file.name}: {len(docs)} chunks")
+            
+            if sequential_docs:
+                print(f"✅ Total sequential text chunks: {len(sequential_docs)}")
+    
+    # Merge all documents
+    all_docs = hint_data + sequential_docs
+    print(f"✅ Total documents for ingestion: {len(all_docs)}")
     
     # Create embeddings using rag_utils
     embeddings = get_embedding_function(model_name="text-embedding-3-small")
@@ -132,7 +166,7 @@ Examples:
     vectorstore = upsert_documents_to_collection(
         qdrant_path=qdrant_path,
         collection_name="Thudbot_Hints",
-        documents=hint_data,
+        documents=all_docs,
         embeddings=embeddings
     )
     
