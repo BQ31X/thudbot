@@ -11,6 +11,7 @@ from pathlib import Path
 
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.vectorstores import Qdrant
+from langchain.schema import Document
 
 
 def load_csv_documents(
@@ -64,3 +65,71 @@ def upsert_documents_to_collection(
     )
     
     return vectorstore
+
+
+def chunk_text_by_lines(
+    raw_text: str,
+    source_name: str,
+    chunk_size: int = 10,
+    chunk_overlap: int = 4,
+    document_type: str = "sequential"
+) -> list[Document]:
+    """
+    Chunk text into overlapping line-based chunks.
+    
+    Strategy: Split on newlines, group into fixed-size windows with overlap.
+    Suitable for sequential content like step-by-step instructions.
+    
+    Args:
+        raw_text: Raw text content (unmodified)
+        source_name: Source filename for metadata
+        chunk_size: Number of lines per chunk
+        chunk_overlap: Number of overlapping lines between chunks
+        document_type: Document structure type (e.g., "sequential", "prose")
+    
+    Returns:
+        List of LangChain Document objects with metadata
+    
+    Rules:
+        - Do NOT modify text. No normalization, stripping, or filtering.
+        - Split only on '\n'.
+        - Return a list of LangChain Document objects with metadata.
+        - This function is for build-time ingestion ONLY.
+    """
+    # Split into lines (no modification)
+    lines = raw_text.split("\n")
+    
+    # Calculate source_id (uppercase stem without extension)
+    file_stem = source_name.rsplit(".", 1)[0]
+    source_id = file_stem.upper()
+    
+    # Generate chunks with overlap
+    chunks = []
+    chunk_index = 0
+    
+    start = 0
+    while start < len(lines):
+        # Get chunk_size lines starting from start position
+        end = start + chunk_size
+        chunk_lines = lines[start:end]
+        
+        # Join lines with newline (no modification)
+        page_content = "\n".join(chunk_lines)
+        
+        # Create Document with metadata
+        doc = Document(
+            page_content=page_content,
+            metadata={
+                "source": source_name,
+                "document_type": document_type,
+                "source_id": source_id,
+                "chunk_index": chunk_index
+            }
+        )
+        chunks.append(doc)
+        
+        # Move to next chunk with overlap
+        chunk_index += 1
+        start += (chunk_size - chunk_overlap)
+    
+    return chunks
