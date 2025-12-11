@@ -103,5 +103,8 @@ apps/backend/tests/test_results/
 .cursor/
 *.mdc
 
-#Makefile
-# Makefile is used for deployment, so it should not be ignored (20251208)
+# Raw walkthrough and design documents
+data/walkthroughs/
+data/raw_docs/
+data/lore/
+data/puzzle/
