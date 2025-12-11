@@ -96,6 +96,13 @@ def chunk_text_by_lines(
         - Return a list of LangChain Document objects with metadata.
         - This function is for build-time ingestion ONLY.
     """
+    # Validate parameters to prevent infinite loop
+    if chunk_overlap >= chunk_size:
+        raise ValueError(
+            f"chunk_overlap ({chunk_overlap}) must be less than chunk_size ({chunk_size}). "
+            f"Otherwise the chunking loop cannot advance."
+        )
+    
     # Split into lines (no modification)
     lines = raw_text.split("\n")
     
