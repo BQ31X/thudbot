@@ -66,6 +66,7 @@ apps/backend/cache/
 qdrant_db/
 apps/backend/qdrant_db/
 apps/backend/qdrant_db_backup*/
+apps/backend/qdrant_db*/
 /tmp/thudbot_qdrant_build/
 /app/qdrant_build/
 /app/qdrant_backup/
@@ -109,3 +110,7 @@ apps/backend/data/walkthroughs/
 apps/backend/data/lore/
 apps/backend/data/puzzle/
 apps/backend/data/raw_docs/
+
+# TEF generated artifacts (manual labeling / tests)
+tools/tef/benchmark/chunks_export.csv
+tools/tef/benchmark/test_benchmark.csv

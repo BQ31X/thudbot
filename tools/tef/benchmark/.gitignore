@@ -1,0 +1,6 @@
+# Ignore generated chunk export files (used for manual labeling)
+chunks_export.csv
+
+# Ignore test benchmark files
+test_benchmark.csv
+

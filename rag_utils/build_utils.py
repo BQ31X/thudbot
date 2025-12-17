@@ -183,6 +183,9 @@ def load_csv_with_chunk_id(csv_path: str, source_id: str, metadata_columns: List
     # Load CSV
     docs = load_csv_documents(csv_path, metadata_columns)
     
+    # Get just the filename (not the full path) for consistency
+    csv_filename = Path(csv_path).name
+    
     # Post-process each document
     for doc in docs:
         # Validate question_id exists
@@ -196,6 +199,9 @@ def load_csv_with_chunk_id(csv_path: str, source_id: str, metadata_columns: List
         # Generate chunk_id
         chunk_id = f"{source_id}:row:{question_id}"
         doc.metadata["chunk_id"] = chunk_id
+        
+        # Normalize source to just filename (for consistency with sequential chunks)
+        doc.metadata["source"] = csv_filename
         
         # Set document_type explicitly
         doc.metadata["document_type"] = "csv_row"
