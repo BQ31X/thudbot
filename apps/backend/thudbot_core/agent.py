@@ -201,6 +201,20 @@ def get_direct_hint_with_context(question: str, hint_level: int = 1) -> dict:
     print(f"📝 RAG Response: {response[:100]}{'...' if len(response) > 100 else ''}")
     print(f"📄 Context docs: {len(context) if isinstance(context, list) else '1'}")
     
+    # Enhanced logging: show which documents were retrieved
+    if isinstance(context, list):
+        for i, doc in enumerate(context):
+            source = doc.metadata.get('source', 'unknown')
+            doc_type = doc.metadata.get('document_type', 'csv')
+            chunk_idx = doc.metadata.get('chunk_index', '')
+            
+            if doc_type == 'sequential':
+                print(f"   [{i+1}] {source} (chunk {chunk_idx})")
+            else:
+                # CSV hints - show first 50 chars of content for context
+                preview = doc.page_content[:50].replace('\n', ' ')
+                print(f"   [{i+1}] CSV: \"{preview}...\"")
+    
     return {
         "response": response,
         "context": context_text
