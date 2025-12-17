@@ -15,14 +15,17 @@ from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import LocalFileStore
 
 
-def get_embedding_function(
+def create_cached_openai_embeddings(
     model_name: str = "text-embedding-3-small",
     cache_dir: str = "./cache/embeddings"
 ):
     """
-    Create cached embeddings with fallback to non-cached if caching fails.
-    
-    Based on HW16 pattern with production-ready fallback strategy.
+    Create cached OpenAI embeddings with a safe fallback to direct embeddings 
+    if caching is unavailable.
+
+    This implementation is intentionally stable and should not be modified
+    without careful consideration, as it defines the canonical OpenAI
+    embedding behavior for the project.
     
     Args:
         model_name: OpenAI embedding model name
@@ -56,6 +59,42 @@ def get_embedding_function(
     except Exception as e:
         logging.warning(f"Unexpected caching error, falling back to direct embeddings: {e}")
         return OpenAIEmbeddings(model=model_name)
+
+
+def get_embedding_function(
+    provider: str = "openai",
+    model_name: Optional[str] = None,
+    cache_dir: str = "./cache/embeddings"
+):
+    """
+    Create embeddings with support for multiple providers.
+    
+    Args:
+        provider: Embedding provider ("openai" or "local")
+        model_name: Model name (if None, uses provider default)
+        cache_dir: Directory for embedding cache (OpenAI only)
+        
+    Returns:
+        Configured embeddings object
+        
+    Provider Defaults:
+        - openai: text-embedding-3-small (with caching)
+        - local: BAAI/bge-small-en-v1.5 (no caching needed)
+    """
+    if provider == "openai":
+        model_name = model_name or "text-embedding-3-small"
+        return create_cached_openai_embeddings(
+            model_name=model_name, 
+            cache_dir=cache_dir,
+            )
+        
+    elif provider == "local":
+        model_name = model_name or "BAAI/bge-small-en-v1.5"
+        from langchain_huggingface import HuggingFaceEmbeddings
+        return HuggingFaceEmbeddings(model_name=model_name)
+        
+    else:
+        raise ValueError(f"Unknown provider: {provider}. Must be 'openai' or 'local'")
 
 
 def embed_text(text: str, model_name: str = "text-embedding-3-small") -> List[float]:

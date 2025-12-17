@@ -193,8 +193,10 @@ Examples:
     print(f"🔧 Using embedding model: {actual_model}")
     
     # Create embeddings using rag_utils
-    # Note: Phase 2 will update get_embedding_function() to accept provider parameter
-    embeddings = get_embedding_function(model_name=actual_model)
+    embeddings = get_embedding_function(
+        provider=args.embedding_provider,
+        model_name=actual_model if args.embedding_model else None
+    )
     
     # Create persistent vectorstore using rag_utils
     print(f"🔨 Creating collection...")

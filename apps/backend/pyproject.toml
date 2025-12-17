@@ -33,8 +33,10 @@ dependencies = [
     "langchain-community>=0.3.16", # Core framework for building agentic and RAG applications
     "langchain-openai>=0.3.7",
     "langchain-qdrant>=0.2.0",
+    "langchain-huggingface>=0.1.0", # HuggingFace embeddings for local models
     "langgraph>=0.2.69",
-    "qdrant-client>=1.13.2"
+    "qdrant-client>=1.13.2",
+    "sentence-transformers>=2.0.0", # Required by langchain-huggingface for local embeddings
 ]
 
 # DEVELOPMENT DEPENDENCIES - excluded from Docker with --no-dev
