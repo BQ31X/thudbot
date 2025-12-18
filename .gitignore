@@ -117,3 +117,4 @@ tools/tef/benchmark/test_benchmark.csv
 tools/tef/benchmark/*_export.csv
 tools/tef/benchmark/*_results.*
 tools/tef/benchmark/test_*.csv
+tools/tef/results/
