@@ -223,7 +223,7 @@ TEF-020,What do I do in the Barbershop?,VILWIN:chunk:1,,,,
 **Optional columns:**
 - `expected_secondary`: Secondary expected chunk_id (alternative valid answer)
 - `notes`: Human-readable notes
-- `tags`: Comma-separated tags
+- `tags`: Tags for categorization (use semicolons or spaces to separate multiple tags)
 
 **Chunk ID format:**
 - CSV rows: `HINTS:row:{question_id}` (e.g., `HINTS:row:TSB-007`)
