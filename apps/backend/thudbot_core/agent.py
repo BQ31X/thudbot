@@ -63,7 +63,11 @@ def initialize_rag_only(api_key=None):
     print(f"✅ Found collection '{collection_name}' with existing data")
     
     # Load embeddings (used for query embedding only, not document embedding)
-    embeddings = get_embedding_function(model_name="text-embedding-3-small")
+    embeddings = get_embedding_function(
+        provider="openai",
+        execution_mode="runtime",  # Backend runtime - only OpenAI allowed
+        model_name="text-embedding-3-small"
+    )
     
     # Load existing collection (NO CSV, NO document embedding)
     vectorstore = Qdrant(

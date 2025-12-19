@@ -123,6 +123,21 @@ def chunk_text_by_lines(
         # Join lines with newline (no modification)
         page_content = "\n".join(chunk_lines)
         
+        # Validate that we can assign chunk_id (REQUIRED invariant)
+        if not source_id:
+            raise ValueError(
+                f"Cannot assign chunk_id: source_id is empty or None. "
+                f"source_name={source_name}"
+            )
+        if chunk_index is None:
+            raise ValueError(
+                f"Cannot assign chunk_id: chunk_index is None. "
+                f"source_name={source_name}"
+            )
+        
+        # Generate chunk_id
+        chunk_id = f"{source_id}:chunk:{chunk_index}"
+        
         # Create Document with metadata
         doc = Document(
             page_content=page_content,
@@ -130,7 +145,8 @@ def chunk_text_by_lines(
                 "source": source_name,
                 "document_type": document_type,
                 "source_id": source_id,
-                "chunk_index": chunk_index
+                "chunk_index": chunk_index,
+                "chunk_id": chunk_id  # NEW - guaranteed to exist
             }
         )
         chunks.append(doc)
@@ -140,3 +156,57 @@ def chunk_text_by_lines(
         start += (chunk_size - chunk_overlap)
     
     return chunks
+
+
+def load_csv_with_chunk_id(csv_path: str, source_id: str, metadata_columns: List[str]):
+    """
+    Load CSV documents with chunk_id generation.
+    
+    Wraps load_csv_documents() to add chunk_id metadata for each row.
+    chunk_id format: {source_id}:row:{question_id}
+    
+    Args:
+        csv_path: Path to CSV file
+        source_id: Identifier for this data source (e.g., "HINTS")
+        metadata_columns: List of column names to extract as metadata
+        
+    Returns:
+        List of Document objects with chunk_id in metadata
+        
+    Raises:
+        ValueError: If question_id is missing from any row
+    """
+    # Ensure question_id is in metadata_columns
+    if "question_id" not in metadata_columns:
+        metadata_columns = ["question_id"] + metadata_columns
+    
+    # Load CSV
+    docs = load_csv_documents(csv_path, metadata_columns)
+    
+    # Get just the filename (not the full path) for consistency
+    csv_filename = Path(csv_path).name
+    
+    # Post-process each document
+    for doc in docs:
+        # Validate question_id exists
+        question_id = doc.metadata.get("question_id")
+        if not question_id:
+            raise ValueError(
+                f"Missing question_id in CSV row. "
+                f"Cannot assign chunk_id without question_id."
+            )
+        
+        # Generate chunk_id
+        chunk_id = f"{source_id}:row:{question_id}"
+        doc.metadata["chunk_id"] = chunk_id
+        
+        # Normalize source to just filename (for consistency with sequential chunks)
+        doc.metadata["source"] = csv_filename
+        
+        # Set document_type explicitly
+        doc.metadata["document_type"] = "csv_row"
+        
+        # Add source_id for consistency with sequential chunks
+        doc.metadata["source_id"] = source_id
+    
+    return docs

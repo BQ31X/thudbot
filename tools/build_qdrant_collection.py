@@ -49,7 +49,17 @@ from qdrant_client import QdrantClient
 
 # Import from shared rag_utils
 from rag_utils.embedding_utils import get_embedding_function
-from rag_utils.build_utils import load_csv_documents, upsert_documents_to_collection, chunk_text_by_lines
+from rag_utils.build_utils import load_csv_documents, load_csv_with_chunk_id, upsert_documents_to_collection, chunk_text_by_lines
+
+
+def get_default_model_for_provider(provider: str) -> str:
+    """Get default model for provider (must match embedding_utils.py defaults)"""
+    if provider == "openai":
+        return "text-embedding-3-small"
+    elif provider == "local":
+        return "BAAI/bge-small-en-v1.5"
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
 
 
 def load_dotenv_from_path():
@@ -102,6 +112,23 @@ Examples:
         default="/tmp/thudbot_qdrant_build/",
         help="Path to store the Qdrant collection (default: /tmp/thudbot_qdrant_build/)"
     )
+    parser.add_argument(
+        "--collection-name",
+        default="Thudbot_Hints",
+        help="Name of the Qdrant collection (default: Thudbot_Hints)"
+    )
+    parser.add_argument(
+        "--embedding-provider",
+        default="openai",
+        choices=["openai", "local"],
+        help="Embedding provider: 'openai' for OpenAI API, 'local' for HuggingFace models (default: openai)"
+    )
+    parser.add_argument(
+        "--embedding-model",
+        default=None,
+        help="Override default embedding model. If not specified, uses provider default: "
+             "OpenAI='text-embedding-3-small', Local='BAAI/bge-small-en-v1.5'"
+    )
     
     args = parser.parse_args()
     csv_path = args.csv_path
@@ -127,10 +154,12 @@ Examples:
         print(f"   rm -rf {qdrant_path}")
         return
     
-    # Load CSV using rag_utils
-    hint_data = load_csv_documents(
+    # Load CSV using rag_utils with chunk_id generation
+    hint_data = load_csv_with_chunk_id(
         csv_path=csv_path,
+        source_id="HINTS",
         metadata_columns=[
+            "question_id",  # Required for chunk_id generation
             "question", "hint_level", "character", "speaker",
             "narrative_context", "planet", "location", "category",
             "puzzle_id", "response_must_mention", "response_must_not_mention"
@@ -158,17 +187,45 @@ Examples:
     all_docs = hint_data + sequential_docs
     print(f"✅ Total documents for ingestion: {len(all_docs)}")
     
+    # Determine actual model used (CLI arg or provider default)
+    actual_model = args.embedding_model or get_default_model_for_provider(args.embedding_provider)
+    print(f"🔧 Using embedding provider: {args.embedding_provider}")
+    print(f"🔧 Using embedding model: {actual_model}")
+    
     # Create embeddings using rag_utils
-    embeddings = get_embedding_function(model_name="text-embedding-3-small")
+    embeddings = get_embedding_function(
+        provider=args.embedding_provider,
+        execution_mode="eval",  # Build scripts are evaluation/development
+        model_name=actual_model if args.embedding_model else None
+    )
     
     # Create persistent vectorstore using rag_utils
     print(f"🔨 Creating collection...")
     vectorstore = upsert_documents_to_collection(
         qdrant_path=qdrant_path,
-        collection_name="Thudbot_Hints",
+        collection_name=args.collection_name,
         documents=all_docs,
         embeddings=embeddings
     )
+    
+    # Write collection metadata
+    import json
+    from datetime import datetime
+    
+    metadata = {
+        "schema_version": "1.0",
+        "embedding_provider": args.embedding_provider,
+        "embedding_model": actual_model,
+        "chunk_strategy": "line_based",
+        "chunk_size": 10,
+        "chunk_overlap": 4,
+        "collection_name": args.collection_name,
+        "created_at": datetime.utcnow().isoformat() + "Z"
+    }
+    
+    metadata_path = Path(qdrant_path) / "collection_metadata.json"
+    metadata_path.write_text(json.dumps(metadata, indent=2))
+    print(f"✅ Wrote collection metadata: {metadata_path}")
     
     # Show where files are
     resolved_path = Path(qdrant_path).resolve()

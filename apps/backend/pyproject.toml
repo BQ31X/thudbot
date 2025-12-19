@@ -37,8 +37,16 @@ dependencies = [
     "qdrant-client>=1.13.2"
 ]
 
-# DEVELOPMENT DEPENDENCIES - excluded from Docker with --no-dev
+
+# OPTIONAL DEPENDENCIES - excluded from Docker (unless explicitly requested)
 [project.optional-dependencies]
+
+# Heavy ML stack for local embedding and TEF. use uv sync --extra local-embeddings to include
+local-embeddings = [
+  "langchain-huggingface>=0.1.0", # HuggingFace embeddings for local models
+  "sentence-transformers>=2.0.0", # Required by langchain-huggingface for local embeddings
+]
+# Development and tooling.  use: uv sync --extra dev to include
 dev = [
     "jupyter>=1.1.1",         # Notebooks for data exploration
     "pytest>=7.4.0",          # Testing and evaluation dependencies
