@@ -33,14 +33,20 @@ dependencies = [
     "langchain-community>=0.3.16", # Core framework for building agentic and RAG applications
     "langchain-openai>=0.3.7",
     "langchain-qdrant>=0.2.0",
-    "langchain-huggingface>=0.1.0", # HuggingFace embeddings for local models
     "langgraph>=0.2.69",
-    "qdrant-client>=1.13.2",
-    "sentence-transformers>=2.0.0", # Required by langchain-huggingface for local embeddings
+    "qdrant-client>=1.13.2"
 ]
 
-# DEVELOPMENT DEPENDENCIES - excluded from Docker with --no-dev
+
+# OPTIONAL DEPENDENCIES - excluded from Docker (unless explicitly requested)
 [project.optional-dependencies]
+
+# Heavy ML stack for local embedding and TEF. use uv sync --extra local-embeddings to include
+local-embeddings = [
+  "langchain-huggingface>=0.1.0", # HuggingFace embeddings for local models
+  "sentence-transformers>=2.0.0", # Required by langchain-huggingface for local embeddings
+]
+# Development and tooling.  use: uv sync --extra dev to include
 dev = [
     "jupyter>=1.1.1",         # Notebooks for data exploration
     "pytest>=7.4.0",          # Testing and evaluation dependencies

@@ -141,11 +141,10 @@ class TEFEvaluator:
         Returns:
             Configured embeddings object
         """
-        cache_dir = str(PROJECT_ROOT / "cache/embeddings")
         return get_embedding_function(
             provider=self.config.embedding_provider,
-            model_name=self.config.embedding_model,
-            cache_dir=cache_dir
+            execution_mode="eval",  # TEF is evaluation-only
+            model_name=self.config.embedding_model
         )
     
     def _load_retriever(self):

@@ -195,6 +195,7 @@ Examples:
     # Create embeddings using rag_utils
     embeddings = get_embedding_function(
         provider=args.embedding_provider,
+        execution_mode="eval",  # Build scripts are evaluation/development
         model_name=actual_model if args.embedding_model else None
     )
     

@@ -2759,7 +2759,6 @@ dependencies = [
     { name = "langchain" },
     { name = "langchain-community" },
     { name = "langchain-core" },
-    { name = "langchain-huggingface" },
     { name = "langchain-openai" },
     { name = "langchain-qdrant" },
     { name = "langgraph" },
@@ -2769,7 +2768,6 @@ dependencies = [
     { name = "qdrant-client" },
     { name = "redis" },
     { name = "requests" },
-    { name = "sentence-transformers" },
     { name = "slowapi" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -2782,6 +2780,10 @@ dev = [
     { name = "pytest" },
     { name = "types-redis" },
 ]
+local-embeddings = [
+    { name = "langchain-huggingface" },
+    { name = "sentence-transformers" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -2790,7 +2792,7 @@ requires-dist = [
     { name = "langchain", specifier = ">=0.3.19" },
     { name = "langchain-community", specifier = ">=0.3.16" },
     { name = "langchain-core", specifier = ">=0.3.0" },
-    { name = "langchain-huggingface", specifier = ">=0.1.0" },
+    { name = "langchain-huggingface", marker = "extra == 'local-embeddings'", specifier = ">=0.1.0" },
     { name = "langchain-openai", specifier = ">=0.3.7" },
     { name = "langchain-qdrant", specifier = ">=0.2.0" },
     { name = "langgraph", specifier = ">=0.2.69" },
@@ -2803,12 +2805,12 @@ requires-dist = [
     { name = "qdrant-client", specifier = ">=1.13.2" },
     { name = "redis", specifier = ">=5.0.4" },
     { name = "requests", specifier = ">=2.31.0" },
-    { name = "sentence-transformers", specifier = ">=2.0.0" },
+    { name = "sentence-transformers", marker = "extra == 'local-embeddings'", specifier = ">=2.0.0" },
     { name = "slowapi", specifier = ">=0.1.9" },
     { name = "types-redis", marker = "extra == 'dev'", specifier = ">=4.6.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.24.0" },
 ]
-provides-extras = ["dev"]
+provides-extras = ["local-embeddings", "dev"]
 
 [[package]]
 name = "tiktoken"
