@@ -208,7 +208,7 @@ class TEFEvaluator:
             )
         
         # Validate chunk_id format (basic pattern check)
-        chunk_id_pattern = re.compile(r'^[A-Z_]+:(chunk|row):\S+$')
+        chunk_id_pattern = re.compile(r'^[A-Z0-9_]+:(chunk|row):\S+$')
         
         invalid_chunks = []
         for row in rows:
