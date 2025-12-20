@@ -79,7 +79,8 @@ def initialize_rag_only(api_key=None):
     print(f"✅ Vectorstore loaded successfully")
     
     # Create retrievers
-    naive_retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+    # increased from 4 to 5 to improve recall based on TEF evaluation Dec 19, 2025
+    naive_retriever = vectorstore.as_retriever(search_kwargs={"k": 5}) 
     chat_model = ChatOpenAI(model="gpt-4.1-nano")
     multi_query_retriever = MultiQueryRetriever.from_llm(
         retriever=naive_retriever, llm=chat_model
@@ -161,9 +162,10 @@ def get_direct_hint_with_context(question: str, hint_level: int = 1) -> dict:
         
         if vectorstore and hasattr(vectorstore, 'as_retriever'):
             # Create retriever with hint level filter (graceful fallback if metadata missing)
+            # increased from 4 to 5 to improve recall based on TEF evaluation Dec 19, 2025
             level_filter = {"hint_level": {"$lte": hint_level}}
             level_filtered_retriever = vectorstore.as_retriever(
-                search_kwargs={"k": 4, "filter": level_filter}
+                search_kwargs={"k": 5, "filter": level_filter} 
             )
             
             # Test if level filtering works by doing a quick search
