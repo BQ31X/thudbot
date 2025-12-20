@@ -113,6 +113,7 @@ apps/backend/data/raw_docs/
 
 # TEF generated artifacts (manual labeling / tests)
 tools/tef/benchmark/chunks_export.csv
+tools/tef/benchmark/chunks_export*.csv
 tools/tef/benchmark/test_benchmark.csv
 tools/tef/benchmark/*_export.csv
 tools/tef/benchmark/*_results.*
