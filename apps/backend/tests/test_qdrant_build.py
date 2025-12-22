@@ -38,7 +38,7 @@ def skip_if_no_openai_key():
     if not os.getenv("OPENAI_API_KEY"):
         pytest.skip("OPENAI_API_KEY not set")
 
-
+@pytest.mark.skip(reason="Embedded Qdrant build semantics deprecated; server-mode build tests pending")
 def test_build_script_creates_collection(temp_qdrant_path, csv_path, skip_if_no_openai_key, monkeypatch):
     """Test that the build script creates a working Qdrant collection"""
     # Mock sys.argv to pass paths to the script using named flags
@@ -65,7 +65,7 @@ def test_build_script_creates_collection(temp_qdrant_path, csv_path, skip_if_no_
         # Properly close client to release locks
         client.close()
 
-
+@pytest.mark.skip(reason="Embedded Qdrant filesystem checks no longer apply in server mode")
 def test_build_script_respects_existing_db(temp_qdrant_path, csv_path, skip_if_no_openai_key, monkeypatch, capsys):
     """Test that the build script detects and respects existing databases"""
     # Mock sys.argv using named flags

@@ -5,17 +5,20 @@ Simplest possible script to build persistent Qdrant collection from CSV.
 Can be run from any directory - paths are resolved relative to script location.
 
 Usage:
-    python tools/build_qdrant_collection.py [--csv-path PATH] [--txt-dir PATH] [--qdrant-path PATH]
+    python tools/build_qdrant_collection.py [--csv-path PATH] [--txt-dir PATH] [--qdrant-url URL] [--collection-name NAME]
     
 Examples:
     # Use defaults (run from project root or anywhere)
-    python tools/build_qdrant_collection.py
+    python tools/build_qdrant_collection.py --qdrant-url http://localhost:6333
     
     # Custom CSV path
-    python tools/build_qdrant_collection.py --csv-path /path/to/data.csv
+    python tools/build_qdrant_collection.py --qdrant-url http://localhost:6333 --csv-path /path/to/data.csv
     
     # Include sequential text documents
-    python tools/build_qdrant_collection.py --txt-dir apps/backend/data/walkthroughs
+    python tools/build_qdrant_collection.py --qdrant-url http://localhost:6333 --txt-dir apps/backend/data/walkthroughs
+    
+    # Force rebuild existing collection
+    python tools/build_qdrant_collection.py --qdrant-url http://localhost:6333 --collection-name Thudbot_Hints --force
 """
 
 import sys
@@ -83,18 +86,21 @@ def main():
     default_csv_path = project_root / "apps" / "backend" / "data" / "Thudbot_Hint_Data_1.csv"
     
     parser = argparse.ArgumentParser(
-        description="Build Qdrant vectorstore from CSV data.",
+        description="Build Qdrant vectorstore on Qdrant server from CSV data.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Use defaults (can run from any directory)
-  python tools/build_qdrant_collection.py
+  # Build collection on local Qdrant server
+  python tools/build_qdrant_collection.py --qdrant-url http://localhost:6333
   
-  # Custom paths
-  python tools/build_qdrant_collection.py --csv-path ./data/hints.csv --qdrant-path /tmp/my_qdrant/
+  # Custom collection name and CSV path
+  python tools/build_qdrant_collection.py --qdrant-url http://localhost:6333 --collection-name MyHints --csv-path ./data/hints.csv
   
   # Include sequential text documents
-  python tools/build_qdrant_collection.py --txt-dir apps/backend/data/walkthroughs
+  python tools/build_qdrant_collection.py --qdrant-url http://localhost:6333 --txt-dir apps/backend/data/walkthroughs
+  
+  # Force rebuild existing collection
+  python tools/build_qdrant_collection.py --qdrant-url http://localhost:6333 --collection-name Thudbot_Hints --force
         """
     )
     parser.add_argument(
@@ -108,14 +114,19 @@ Examples:
         help="Optional: Directory containing .txt sequential text files to ingest"
     )
     parser.add_argument(
-        "--qdrant-path",
-        default="/tmp/thudbot_qdrant_build/",
-        help="Path to store the Qdrant collection (default: /tmp/thudbot_qdrant_build/)"
+        "--qdrant-url",
+        required=True,
+        help="Qdrant server URL (e.g., http://localhost:6333) - REQUIRED"
     )
     parser.add_argument(
         "--collection-name",
-        default="Thudbot_Hints",
-        help="Name of the Qdrant collection (default: Thudbot_Hints)"
+        required=True,
+        help="Name of the Qdrant collection - REQUIRED"
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force rebuild if collection already exists (deletes and recreates)"
     )
     parser.add_argument(
         "--embedding-provider",
@@ -133,26 +144,43 @@ Examples:
     args = parser.parse_args()
     csv_path = args.csv_path
     txt_dir = args.txt_dir
-    qdrant_path = args.qdrant_path
+    qdrant_url = args.qdrant_url
+    collection_name = args.collection_name
     
     print(f"📦 Building Qdrant Collection")
-    print(f"   CSV: {csv_path}")
+    print(f"   CSV:        {csv_path}")
     if txt_dir:
-        print(f"   TXT: {txt_dir}")
-    print(f"   DB:  {qdrant_path}")
+        print(f"   TXT:        {txt_dir}")
+    print(f"   Server:     {qdrant_url}")
+    print(f"   Collection: {collection_name}")
     print()
     
-    # Make sure directory exists
-    Path(qdrant_path).mkdir(parents=True, exist_ok=True)
-    
-    # Check if Qdrant database already exists (without opening client to avoid locks)
-    # Qdrant creates a meta.json file when initialized
-    meta_file = Path(qdrant_path) / "meta.json"
-    if meta_file.exists():
-        print(f"⚠️  Qdrant database already exists at {qdrant_path}")
-        print(f"   To rebuild, delete the directory first:")
-        print(f"   rm -rf {qdrant_path}")
+    # Connect to Qdrant server and check collection existence
+    print(f"🌐 Connecting to Qdrant server at {qdrant_url}...")
+    try:
+        client = QdrantClient(url=qdrant_url)
+        # Test connection
+        client.get_collections()
+        print(f"✅ Connected to Qdrant server")
+    except Exception as e:
+        print(f"❌ Error: Cannot connect to Qdrant server at {qdrant_url}")
+        print(f"   Make sure Qdrant is running: docker compose up -d qdrant")
+        print(f"   Error details: {e}")
         return
+    
+    # Check if collection already exists
+    if client.collection_exists(collection_name):
+        if not args.force:
+            print(f"❌ Error: Collection '{collection_name}' already exists at {qdrant_url}")
+            print(f"   To rebuild, use the --force flag:")
+            print(f"   python tools/build_qdrant_collection.py --qdrant-url {qdrant_url} --collection-name {collection_name} --force")
+            return
+        else:
+            print(f"⚠️  Collection '{collection_name}' exists. Deleting due to --force flag...")
+            client.delete_collection(collection_name)
+            print(f"✅ Deleted existing collection")
+    else:
+        print(f"✅ Collection '{collection_name}' does not exist. Proceeding with creation.")
     
     # Load CSV using rag_utils with chunk_id generation
     hint_data = load_csv_with_chunk_id(
@@ -199,40 +227,41 @@ Examples:
         model_name=actual_model if args.embedding_model else None
     )
     
-    # Create persistent vectorstore using rag_utils
-    print(f"🔨 Creating collection...")
+    # Create persistent vectorstore using rag_utils (server mode)
+    print(f"🔨 Creating collection on server...")
     vectorstore = upsert_documents_to_collection(
-        qdrant_path=qdrant_path,
-        collection_name=args.collection_name,
+        qdrant_url=qdrant_url,
+        collection_name=collection_name,
         documents=all_docs,
         embeddings=embeddings
     )
     
-    # Write collection metadata
+    # Store collection metadata in payload for retrieval later
     import json
     from datetime import datetime
     
     metadata = {
         "schema_version": "1.0",
+        "storage_mode": "server",
+        "server_url": qdrant_url,
         "embedding_provider": args.embedding_provider,
         "embedding_model": actual_model,
         "chunk_strategy": "line_based",
         "chunk_size": 10,
         "chunk_overlap": 4,
-        "collection_name": args.collection_name,
+        "collection_name": collection_name,
         "created_at": datetime.utcnow().isoformat() + "Z"
     }
     
-    metadata_path = Path(qdrant_path) / "collection_metadata.json"
-    metadata_path.write_text(json.dumps(metadata, indent=2))
-    print(f"✅ Wrote collection metadata: {metadata_path}")
+    print(f"✅ Collection metadata:")
+    for key, value in metadata.items():
+        print(f"   {key}: {value}")
     
-    # Show where files are
-    resolved_path = Path(qdrant_path).resolve()
     print()
-    print(f"✅ Done! Collection created")
-    print(f"   Location: {resolved_path}")
-    print(f"   To open:  open {qdrant_path}")
+    print(f"✅ Done! Collection '{collection_name}' created on server")
+    print(f"   Server:     {qdrant_url}")
+    print(f"   Collection: {collection_name}")
+    print(f"   Documents:  {len(all_docs)}")
 
 
 if __name__ == "__main__":

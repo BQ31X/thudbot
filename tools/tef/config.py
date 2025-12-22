@@ -28,8 +28,8 @@ class TEFConfig:
     Default paths are relative to PROJECT_ROOT for consistency regardless of cwd.
     Embedding settings must match the collection being evaluated.
     """
-    # Paths (relative to project root)
-    qdrant_path: str = str(PROJECT_ROOT / "apps/backend/qdrant_db_eval")
+    # Qdrant connection
+    qdrant_url: str = "http://localhost:6333"
     collection_name: str = "Thudbot_Hints"
     benchmark_path: str = str(PROJECT_ROOT / "tools/tef/benchmark/benchmark_tef.csv")
     

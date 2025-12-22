@@ -42,22 +42,21 @@ def initialize_rag_only(api_key=None):
     if not os.getenv('OPENAI_API_KEY'):
         raise ValueError("OpenAI API key required - provide via parameter or environment variable")
     
-    # Get Qdrant path from config
-    from thudbot_core.config import QDRANT_DB_PATH
-    qdrant_path = QDRANT_DB_PATH
+    # Get Qdrant URL from config
+    from thudbot_core.config import QDRANT_URL, QDRANT_COLLECTION
     
-    print(f"📂 Loading Qdrant from: {qdrant_path}")
+    print(f"🌐 Connecting to Qdrant at: {QDRANT_URL}")
     
     # Create client and check collection exists using rag_utils
-    client = load_qdrant_client(qdrant_path)
-    collection_name = "Thudbot_Hints"
+    client = load_qdrant_client(QDRANT_URL)
+    collection_name = QDRANT_COLLECTION
     
     # Fail fast if collection doesn't exist
     if not client.collection_exists(collection_name):
         raise RuntimeError(
-            f"❌ Qdrant collection '{collection_name}' not found at {qdrant_path}\n"
+            f"❌ Qdrant collection '{collection_name}' not found at {QDRANT_URL}\n"
             f"   Build the collection before starting:\n"
-            f"   python tools/build_qdrant_collection.py"
+            f"   python tools/build_qdrant_collection.py --qdrant-url {QDRANT_URL} --collection-name {collection_name}"
         )
     
     print(f"✅ Found collection '{collection_name}' with existing data")

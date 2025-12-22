@@ -36,16 +36,16 @@ def load_csv_documents(
 
 
 def upsert_documents_to_collection(
-    qdrant_path: str,
+    qdrant_url: str,
     collection_name: str,
     documents: List,
     embeddings
 ):
     """
-    Create or update Qdrant collection with documents.
+    Create or update Qdrant collection with documents on server.
     
     Args:
-        qdrant_path: Path to Qdrant storage directory
+        qdrant_url: Qdrant server URL (e.g., "http://localhost:6333")
         collection_name: Name of the collection
         documents: List of Document objects to add
         embeddings: Embeddings function to use
@@ -53,14 +53,11 @@ def upsert_documents_to_collection(
     Returns:
         Qdrant vectorstore instance
     """
-    # Ensure directory exists
-    Path(qdrant_path).mkdir(parents=True, exist_ok=True)
-    
-    # Create persistent vectorstore
+    # Create vectorstore on server
     vectorstore = Qdrant.from_documents(
         documents=documents,
         embedding=embeddings,
-        path=qdrant_path,
+        url=qdrant_url,
         collection_name=collection_name
     )
     

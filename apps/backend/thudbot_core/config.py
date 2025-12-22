@@ -64,35 +64,17 @@ def _set_redis_host(verbose: bool = False):
 
     print(f"🔧 DEBUG: is_in_docker()={is_in_docker()}, COMPOSE_MODE={compose_mode}, REDIS_HOST={REDIS_HOST}")
 
-def _set_qdrant_path(verbose: bool = False):
-    """Set Qdrant database path - always absolute"""
-    global QDRANT_DB_PATH
-    
-    raw_path = os.getenv("QDRANT_DB_PATH", None)
-    
-    if raw_path:
-        QDRANT_DB_PATH = str(Path(raw_path).resolve())
-        if verbose:
-            print(f"🗄️  Qdrant DB (from env): {QDRANT_DB_PATH}")
-    else:
-        # Default: qdrant_db relative to backend directory
-        current_file = Path(__file__).resolve()
-        backend_dir = current_file.parent.parent
-        default_path = backend_dir / "qdrant_db"
-        QDRANT_DB_PATH = str(default_path.resolve())
-        if verbose:
-            print(f"🗄️  Qdrant DB (default): {QDRANT_DB_PATH}")
-
 # Load .env variables before accessing any of them but skip in CI
 if os.getenv("CI") != "true":
     load_env(verbose=True)
-    _set_qdrant_path(verbose=True)
 else:
     print("🧪 CI detected — skipping load_env() in config.py")
     # Still set Redis host for CI
     _set_redis_host(verbose=True)
-    # Set default Qdrant path for CI
-    QDRANT_DB_PATH = "/tmp/qdrant_db"
+
+# Qdrant Configuration (server-based)
+QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "Thudbot_Hints")
 
 # Maximum number of concurrent sessions allowed
 # Session limits to prevent memory exhaustion DoS; can override in .env
