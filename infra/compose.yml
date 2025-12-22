@@ -3,14 +3,14 @@
 # This configuration is designed for local development with:
 # - Local builds from source code for rapid iteration
 # - Direct .env file usage (no Docker secrets needed)
-# - Exposed Redis port for debugging and inspection
+# - Exposed Redis and Qdrant ports for debugging and inspection
 # - Bridge networking for single-host development
 # - Health checks and auto-restart for reliability
 #
 # Key differences from production (compose.prod.yml):
 # - Builds backend from source vs. using Docker Hub image
 # - Uses .env file vs. Docker Swarm secrets
-# - Exposes Redis port 6379 vs. internal-only
+# - Exposes Redis port 6379 and Qdrant ports 6333/6334 vs. internal-only
 # - Bridge network vs. overlay network
 # - Standard docker compose vs. docker stack deploy
 #
@@ -19,6 +19,7 @@
 # 2. Run: docker compose up --build
 # 3. Backend available at: http://localhost:8000
 # 4. Redis available at: localhost:6379 (for debugging)
+# 5. Qdrant available at: http://localhost:6333 (for debugging)
 #
 # Useful commands:
 # - View logs: docker compose logs -f backend
@@ -44,6 +45,24 @@ services:
     networks:
       - thudbot-network # Use the bridge network
 
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: thudbot-qdrant
+    ports:
+      - "6333:6333"  # HTTP API
+      - "6334:6334"  # gRPC (optional)
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    networks:
+      - thudbot-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
   backend:
     build:  # Build the backend from source code
       context: ../apps/backend
@@ -62,8 +81,10 @@ services:
 
     env_file:
       - ../.env # Load API keys from project root .env file
-    depends_on: # Ensure Redis is healthy before starting the backend
+    depends_on: # Ensure Redis and Qdrant are healthy before starting the backend
       redis:
+        condition: service_healthy
+      qdrant:
         condition: service_healthy
 
     healthcheck: # Ensure the backend is running properly
@@ -80,3 +101,6 @@ services:
 networks:
   thudbot-network:
     driver: bridge # Single-host networking for development
+
+volumes:
+  qdrant_storage:  # Named volume for persistent Qdrant storage (outside repo)

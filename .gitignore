@@ -70,6 +70,7 @@ apps/backend/qdrant_db*/
 /tmp/thudbot_qdrant_build/
 /app/qdrant_build/
 /app/qdrant_backup/
+dump.rdb
 
 #test results
 tests/test_results/
