@@ -18,8 +18,9 @@
 # 1. Ensure .env file exists in project root with API keys
 # 2. Run: docker compose up --build
 # 3. Backend available at: http://localhost:8000
-# 4. Redis available at: localhost:6379 (for debugging)
-# 5. Qdrant available at: http://localhost:6333 (for debugging)
+# 4. Retrieval API available at: http://localhost:8001
+# 5. Redis available at: localhost:6379 (for debugging)
+# 6. Qdrant available at: http://localhost:6333 (for debugging)
 #
 # Useful commands:
 # - View logs: docker compose logs -f backend
@@ -63,6 +64,24 @@ services:
       retries: 3
       start_period: 10s
 
+  retrieval:
+    build:
+      context: ..  # Repo root for access to rag_utils/
+      dockerfile: apps/retrieval/Dockerfile
+    container_name: thudbot-retrieval
+    ports:
+      - "8001:8001"  # Expose retrieval API
+    environment:
+      - QDRANT_URL=http://qdrant:6333  # Internal Docker network URL
+    env_file:
+      - ../.env  # Load API keys (OPENAI_API_KEY, etc.)
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    networks:
+      - thudbot-network
+    restart: unless-stopped
+
   backend:
     build:  # Build the backend from source code
       context: ../apps/backend
@@ -75,17 +94,18 @@ services:
 
     environment:
       - COMPOSE_MODE=true # Enables Docker service discovery for Redis connection
+      - RETRIEVAL_API_URL=http://retrieval:8001  # Internal Docker network URL
 
     volumes:
       - ../apps/backend/qdrant_db:/app/qdrant_db  # Bind mount local datastore (read-write for rebuilding)
 
     env_file:
       - ../.env # Load API keys from project root .env file
-    depends_on: # Ensure Redis and Qdrant are healthy before starting the backend
+    depends_on: # Ensure Redis and Retrieval API are healthy before starting the backend
       redis:
         condition: service_healthy
-      qdrant:
-        condition: service_healthy
+      retrieval:
+        condition: service_started
 
     healthcheck: # Ensure the backend is running properly
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/docs"]

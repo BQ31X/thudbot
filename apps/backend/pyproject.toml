@@ -32,9 +32,8 @@ dependencies = [
     "langchain-core>=0.3.0",
     "langchain-community>=0.3.16", # Core framework for building agentic and RAG applications
     "langchain-openai>=0.3.7",
-    "langchain-qdrant>=0.2.0",
-    "langgraph>=0.2.69",
-    "qdrant-client>=1.13.2"
+    "langgraph>=0.2.69"
+    # Note: Qdrant dependencies removed - backend uses retrieval API via HTTP
 ]
 
 

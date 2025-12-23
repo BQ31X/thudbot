@@ -72,9 +72,9 @@ else:
     # Still set Redis host for CI
     _set_redis_host(verbose=True)
 
-# Qdrant Configuration (server-based)
-QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "Thudbot_Hints")
+# Retrieval API Configuration
+# Backend no longer talks to Qdrant directly - all vector operations via retrieval API
+RETRIEVAL_API_URL = os.getenv("RETRIEVAL_API_URL", "http://localhost:8001")
 
 # Maximum number of concurrent sessions allowed
 # Session limits to prevent memory exhaustion DoS; can override in .env

@@ -1,0 +1,17 @@
+[project]
+name = "retrieval-service"
+version = "0.1.0"
+description = "Stateless API for vector retrieval from Qdrant"
+requires-python = ">=3.13"
+
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.5.0",
+    "qdrant-client>=1.13.2",
+    "langchain>=0.3.19",
+    "langchain-community>=0.3.16",
+    "langchain-openai>=0.3.7",
+    "openai>=1.0.0",
+]
+
