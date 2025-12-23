@@ -20,6 +20,7 @@ WORKDIR /app
 
 # Copy dependency management files first (for layer caching)
 COPY apps/retrieval/pyproject.toml ./
+COPY apps/retrieval/uv.lock ./
 
 # Copy shared rag_utils (required by retriever)
 COPY rag_utils/ ./rag_utils/
@@ -28,10 +29,10 @@ COPY rag_utils/ ./rag_utils/
 COPY apps/retrieval/retrieval_service/ ./retrieval_service/
 
 # Install dependencies into a virtual environment
+# --frozen uses uv.lock for reproducible builds
 # --no-dev excludes dev dependencies to keep image lean
-# TODO: add --frozen after uv.lock file is created for reproducible builds
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --no-dev
+    uv sync --frozen --no-dev
 
 # --------------------------------------
 # Stage 2: Production - minimal runtime image
@@ -68,7 +69,6 @@ HEALTHCHECK --interval=30s --timeout=20s --start-period=120s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"
 
 # Set the entrypoint (runs before CMD)
-COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 

@@ -14,6 +14,7 @@ except ImportError:
 # Core imports
 from langchain_openai import ChatOpenAI
 from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain_core.retrievers import BaseRetriever
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
@@ -27,14 +28,13 @@ import logging
 # Global components for RAG-only system
 _multi_query_retrieval_chain = None
 
-class HTTPRetriever:
+class HTTPRetriever(BaseRetriever):
     """Custom retriever that calls retrieval API via HTTP."""
     
-    def __init__(self, api_url: str, k: int = 5):
-        self.api_url = api_url
-        self.k = k
+    api_url: str
+    k: int = 5
     
-    def get_relevant_documents(self, query: str):
+    def _get_relevant_documents(self, query: str):
         """Retrieve documents via HTTP request to retrieval API."""
         try:
             response = requests.post(
@@ -70,6 +70,10 @@ class HTTPRetriever:
             
         except requests.exceptions.RequestException as e:
             raise RuntimeError(f"Failed to connect to retrieval API at {self.api_url}: {e}")
+    
+    async def _aget_relevant_documents(self, query: str):
+        """Async version - calls sync version for now."""
+        return self._get_relevant_documents(query)
 
 def initialize_rag_only(api_key=None):
     """Initialize RAG system using retrieval API - fail fast if API unreachable"""
