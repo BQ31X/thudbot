@@ -124,7 +124,7 @@ class TEFEvaluator:
         """
         return get_embedding_function(
             provider=self.config.embedding_provider,
-            execution_mode="eval",  # TEF is evaluation-only
+            execution_mode="build",  # TEF is evaluation-only
             model_name=self.config.embedding_model
         )
     

@@ -13,5 +13,19 @@ dependencies = [
     "langchain-community>=0.3.16",
     "langchain-openai>=0.3.7",
     "openai>=1.0.0",
+    # Local embeddings support (BGE models)
+    "torch>=2.0.0",  # CPU-only from PyTorch index (see [tool.uv.sources])
+    "langchain-huggingface>=0.1.0",
+    "sentence-transformers>=5.2.0",  # Matches tested version on Linode
 ]
+
+[tool.uv.sources]
+# Force torch to use CPU-only wheels from PyTorch index
+# This avoids ~1.5GB of unused CUDA dependencies
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true  # Only use this index for explicitly configured packages
 

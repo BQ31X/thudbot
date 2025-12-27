@@ -33,7 +33,7 @@ class RetrieverClient:
         # Initialize embeddings function (for query embedding only)
         self.embeddings = get_embedding_function(
             provider=EMBEDDING_PROVIDER,
-            execution_mode="runtime",
+            execution_mode="retrieval-service",
             model_name=EMBEDDING_MODEL
         )
     
