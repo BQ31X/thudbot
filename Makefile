@@ -1,69 +1,119 @@
 # === Config ===
+# -----------------------------------------------------------------------------
+# Global image build policy
+# -----------------------------------------------------------------------------
+REGISTRY        ?= bq31
+BUILD_DATE_UTC  ?= $(shell date -u +%Y-%m-%d)
+VERSION_SUFFIX  ?= $(BUILD_DATE_UTC)
 
-# Your Linode login info
-LINODE_USER = bq
-LINODE_HOST = 45.33.65.116
+# =============================================================================
+# Service image names
+# =============================================================================
+BACKEND_IMAGE   ?= $(REGISTRY)/thudbot-backend
+RETRIEVAL_IMAGE ?= $(REGISTRY)/thudbot-retrieval
+FRONTEND_IMAGE  ?= $(REGISTRY)/thudbot-frontend
 
-# Remote path on Linode where compose file is deployed (file-only, no repo)
-REMOTE_DIR = ~/thudbot
+# =============================================================================
+# Service version labels
+# =============================================================================
+BACKEND_VERSION   ?= backend-$(VERSION_SUFFIX)
+RETRIEVAL_VERSION ?= retrieval-api-$(VERSION_SUFFIX)
+FRONTEND_VERSION  ?= frontend-$(VERSION_SUFFIX)
 
-# Path to compose file relative to this Makefile (Mac/local path)
-COMPOSE_FILE = infra/compose.prod.yml
+# =============================================================================
+# Deployment / infrastructure configuration
+# =============================================================================
+# NOTE:
+# - App node uses Docker Swarm (stateful, secrets, long-lived services)
+# - Retrieval node uses docker compose (stateless, compute-focused)
 
-# Just the filename (for remote use)
-COMPOSE_FILENAME = compose.prod.yml
+# App node (primary, secrets, swarm leader)
+APP_LINODE_USER ?= bq
+APP_LINODE_HOST ?= 45.33.65.116
 
-# Docker stack name (on Linode)
-STACK_NAME = thudbot-prod
+# Retrieval node (Qdrant + retrieval API + local embeddings)
+RETRIEVAL_LINODE_USER ?= bq
+RETRIEVAL_LINODE_HOST ?= 45.79.143.75
 
+# -----------------------------------------------------------------------------
+# App node compose configuration (Swarm)
+# -----------------------------------------------------------------------------
+REMOTE_DIR ?= ~/thudbot
+COMPOSE_FILE ?= infra/compose.prod.app.yml
+COMPOSE_FILENAME ?= compose.prod.app.yml
+STACK_NAME ?= thudbot-prod
+
+# -----------------------------------------------------------------------------
+# Retrieval node compose configuration (docker compose)
+# -----------------------------------------------------------------------------
+RETRIEVAL_REMOTE_DIR ?= ~/thudbot
+RETRIEVAL_COMPOSE_FILE ?= infra/compose.prod.retrieval.yml
+RETRIEVAL_COMPOSE_FILENAME ?= compose.prod.retrieval.yml
+
+# These are now obsolete with the new retrieval node and will be removed in the near future
 # Path to local Qdrant collection
-QDRANT_LOCAL = apps/backend/qdrant_db
+# QDRANT_LOCAL = apps/backend/qdrant_db
 
 # Staging path on Linode (temporary, before copying to Docker volume)
-QDRANT_STAGING = ~/qdrant_db
+# QDRANT_STAGING = ~/qdrant_db
 
 # === Targets ===
 
 # Declare non-file targets (prevents filename collision issues)
-.PHONY: help deploy-prod deploy-all push-compose ssh-deploy logs logs-frontend remove
-.PHONY: deploy-qdrant push-qdrant update-qdrant restart-backend
-.PHONY: build-all build-backend build-frontend inspect-images
-
+.PHONY: \
+	help \
+	build-all build-backend build-frontend build-retrieval inspect-images \
+	deploy-prod deploy-all push-compose ssh-deploy \
+	deploy-retrieval push-compose-retrieval ssh-deploy-retrieval \
+	logs logs-frontend logs-retrieval logs-qdrant \
+	restart-backend restart-retrieval stop-retrieval \
+	remove
+	
 # 📖 Show available commands
 help:
 	@echo "Build commands:"
-	@echo "  make build-backend   - Build and push backend image"
-	@echo "  make build-frontend  - Build and push frontend image"
-	@echo "  make build-all       - Build and push both images"
-	@echo "  make inspect-images  - Verify multi-arch images"
+	@echo "  make build-backend    - Build and push backend image"
+	@echo "  make build-frontend   - Build and push frontend image"
+	@echo "  make build-retrieval  - Build and push retrieval image"
+	@echo "  make build-all        - Build and push all images"
+	@echo "  make inspect-images   - Verify multi-arch images"
 	@echo ""
-	@echo "Deploy commands:"
-	@echo "  make deploy-prod     - Deploy code changes (compose + images)"
-	@echo "  make deploy-qdrant   - Deploy Qdrant collection updates"
-	@echo "  make deploy-all      - Deploy both code and data"
+	@echo "Deploy commands (two-node architecture):"
+	@echo "  make deploy-prod      - Deploy app node (backend + frontend + redis)"
+	@echo "  make deploy-retrieval - Deploy retrieval node (qdrant + retrieval service)"
+	@echo "  make deploy-all       - Deploy both nodes (retrieval first, then app)"
 	@echo ""
-	@echo "Monitoring commands:"
-	@echo "  make logs            - View backend logs"
-	@echo "  make logs-frontend   - View frontend logs"
+	@echo "Monitoring - App node:"
+	@echo "  make logs             - View backend logs (app node)"
+	@echo "  make logs-frontend    - View frontend logs (app node)"
 	@echo ""
-	@echo "Qdrant management:"
-	@echo "  make push-qdrant     - Transfer collection to Linode"
-	@echo "  make update-qdrant   - Update Docker volume"
-	@echo "  make restart-backend - Restart backend service"
+	@echo "Monitoring - Retrieval node:"
+	@echo "  make logs-retrieval   - View retrieval service logs"
+	@echo "  make logs-qdrant      - View qdrant logs"
 	@echo ""
-	@echo "Other:"
-	@echo "  make remove          - Remove the stack"
+	@echo "Operations:"
+	@echo "  make restart-backend   - Restart backend service (app node)"
+	@echo "  make restart-retrieval - Restart retrieval service"
+	@echo "  make stop-retrieval    - Stop retrieval stack"
+	@echo ""
+	@echo "Destructive:"
+	@echo "  make remove            - Remove app stack (swarm)"
+
+# NOTE: Internal targets (push-compose, ssh-deploy, push-compose-retrieval, 
+# ssh-deploy-retrieval) are intentionally hidden from help - they are
+# implementation details called by the high-level deploy targets above.
 
 # === Docker Image Build Targets ===
 
-# 🏗️  Build and push both images
-build-all: build-backend build-frontend
+# 🏗️  Build and push all images
+build-all: build-backend build-frontend build-retrieval
 
 # 🐍 Build and push backend image
 build-backend:
 	@echo "🏗️  Building and pushing backend image (multi-arch)..."
 	docker buildx build --platform linux/amd64,linux/arm64 \
-		-t bq31/thudbot-backend:latest \
+		-t $(BACKEND_IMAGE):latest \
+		-t $(BACKEND_IMAGE):$(BACKEND_VERSION) \
 		--push \
 		apps/backend/
 	@echo "✅ Backend image pushed to Docker Hub"
@@ -72,80 +122,142 @@ build-backend:
 build-frontend:
 	@echo "🏗️  Building and pushing frontend image (multi-arch)..."
 	docker buildx build --platform linux/amd64,linux/arm64 \
-		-t bq31/thudbot-frontend:latest \
+		-t $(FRONTEND_IMAGE):latest \
+		-t $(FRONTEND_IMAGE):$(FRONTEND_VERSION) \
 		--push \
 		apps/frontend/
 	@echo "✅ Frontend image pushed to Docker Hub"
 
+build-retrieval:
+	@echo "🏗️  Building and pushing retrieval image (multi-arch)..."
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		-t $(RETRIEVAL_IMAGE):latest \
+		-t $(RETRIEVAL_IMAGE):$(RETRIEVAL_VERSION) \
+		-f apps/retrieval/Dockerfile \
+		--push \
+		.
+	@echo "✅ Retrieval image pushed to Docker Hub"
+
 # 🔍 Verify multi-arch images
 inspect-images:
 	@echo "🔍 Backend image:"
-	@docker buildx imagetools inspect bq31/thudbot-backend:latest
+	@docker buildx imagetools inspect $(BACKEND_IMAGE):latest
 	@echo ""
 	@echo "🔍 Frontend image:"
-	@docker buildx imagetools inspect bq31/thudbot-frontend:latest
+	@docker buildx imagetools inspect $(FRONTEND_IMAGE):latest
+	@echo ""
+	@echo "🔍 Retrieval image:"
+	@docker buildx imagetools inspect $(RETRIEVAL_IMAGE):latest
 
 # === Deployment Targets ===
 
 # 🟢 Full deployment pipeline: scp + ssh deploy
+# 🟢 App-node deployment pipeline (compose + swarm redeploy; backend + frontend + redis on app node)
 deploy-prod: push-compose ssh-deploy
 
-# 🚀 Full deployment: code + data (use when both changed)
-deploy-all: deploy-prod deploy-qdrant
+# 🚀 Full deployment: both nodes (app + retrieval)
+deploy-all: deploy-retrieval deploy-prod
 	@echo ""
 	@echo "🎉 Full deployment complete!"
-	@echo "📋 Monitor with: make logs"
+	@echo "📋 Monitor with: make logs (app) or make logs-retrieval (retrieval)"
 
-# 📤 Push updated compose file to Linode
+# 📤 Push updated compose file to app node
 push-compose:
-	scp $(COMPOSE_FILE) $(LINODE_USER)@$(LINODE_HOST):$(REMOTE_DIR)/
+	scp $(COMPOSE_FILE) $(APP_LINODE_USER)@$(APP_LINODE_HOST):$(REMOTE_DIR)/
 
-# 🚀 SSH into Linode and redeploy the stack
+# 🚀 SSH into app node and redeploy the stack
 ssh-deploy:
-	ssh $(LINODE_USER)@$(LINODE_HOST) 'cd $(REMOTE_DIR) && docker stack deploy -c $(COMPOSE_FILENAME) $(STACK_NAME)'
+	ssh $(APP_LINODE_USER)@$(APP_LINODE_HOST) 'cd $(REMOTE_DIR) && docker stack deploy -c $(COMPOSE_FILENAME) $(STACK_NAME)'
 
 # 📄 Show backend logs
 logs:
-	ssh $(LINODE_USER)@$(LINODE_HOST) 'docker service logs $(STACK_NAME)_backend --tail=50'
+	ssh $(APP_LINODE_USER)@$(APP_LINODE_HOST) 'docker service logs $(STACK_NAME)_backend --tail=50'
 
 # 📄 Show frontend logs
 logs-frontend:
-	ssh $(LINODE_USER)@$(LINODE_HOST) 'docker service logs $(STACK_NAME)_frontend --tail=50'
+	ssh $(APP_LINODE_USER)@$(APP_LINODE_HOST) 'docker service logs $(STACK_NAME)_frontend --tail=50'
+
+# === Retrieval Node Deployment ===
+
+# 🟢 Deploy retrieval node (compose qdrant + retrieval service, no swarm)
+deploy-retrieval: push-compose-retrieval ssh-deploy-retrieval
+	@echo ""
+	@echo "✅ Retrieval node deployed!"
+	@echo "📋 Monitor with: make logs-retrieval"
+
+# 📤 Push compose file to retrieval node
+push-compose-retrieval:
+	@echo "📤 Pushing $(RETRIEVAL_COMPOSE_FILENAME) to retrieval node..."
+	scp $(RETRIEVAL_COMPOSE_FILE) $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST):$(RETRIEVAL_REMOTE_DIR)/
+
+# 🚀 Deploy retrieval stack via docker compose
+ssh-deploy-retrieval:
+	@echo "🚀 Deploying retrieval stack..."
+	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) '\
+		cd $(RETRIEVAL_REMOTE_DIR) && \
+		docker compose -f $(RETRIEVAL_COMPOSE_FILENAME) up -d'
+
+# 📄 Show retrieval service logs (on retrieval node)
+logs-retrieval:
+	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) 'docker compose -f $(RETRIEVAL_REMOTE_DIR)/$(RETRIEVAL_COMPOSE_FILENAME) logs retrieval --tail=50 -f'
+
+# 📄 Show qdrant logs (on retrieval node)
+logs-qdrant:
+	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) 'docker compose -f $(RETRIEVAL_REMOTE_DIR)/$(RETRIEVAL_COMPOSE_FILENAME) logs qdrant --tail=50 -f'
+
+# 🔄 Restart retrieval service
+restart-retrieval:
+	@echo "🔄 Restarting retrieval service..."
+	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) 'docker compose -f $(RETRIEVAL_REMOTE_DIR)/$(RETRIEVAL_COMPOSE_FILENAME) restart retrieval'
+
+# ❌ Stop retrieval stack
+stop-retrieval:
+	@echo "⚠️  Stopping retrieval stack..."
+	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) 'docker compose -f $(RETRIEVAL_REMOTE_DIR)/$(RETRIEVAL_COMPOSE_FILENAME) down'
+
 
 # === Qdrant Collection Management ===
 
-# 🗄️  Deploy Qdrant collection to production
-deploy-qdrant: push-qdrant update-qdrant restart-backend
+# These are now obsolete with the new retrieval node and will be removed in the near future
+# # 🗄️  Deploy Qdrant collection to production
+# deploy-qdrant: push-qdrant update-qdrant restart-backend
 
-# 📤 Transfer Qdrant collection to Linode
-push-qdrant:
-	@echo "📤 Transferring Qdrant collection to Linode..."
-	scp -r $(QDRANT_LOCAL) $(LINODE_USER)@$(LINODE_HOST):$(QDRANT_STAGING)
-	@echo "✅ Transfer complete"
+# # 📤 Transfer Qdrant collection to retrieval node
+# push-qdrant:
+# 	@echo "📤 Transferring Qdrant collection to retrieval node..."
+# 	scp -r $(QDRANT_LOCAL) $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST):$(QDRANT_STAGING)
+# 	@echo "✅ Transfer complete"
 
-# 🔄 Update Qdrant volume and cleanup
-update-qdrant:
-	@echo "🔄 Updating Qdrant Docker volume..."
-	ssh $(LINODE_USER)@$(LINODE_HOST) '\
-		docker run --rm \
-			-v qdrant_data:/dst \
-			-v $(QDRANT_STAGING):/src \
-			busybox cp -r /src/. /dst/ && \
-		rm -rf $(QDRANT_STAGING) \
-	'
-	@echo "✅ Volume updated and staging files cleaned"
+# # 🔄 Update Qdrant volume and cleanup
+# update-qdrant:
+# 	@echo "🔄 Updating Qdrant Docker volume on retrieval node..."
+# 	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) '\
+# 		docker run --rm \
+# 			-v qdrant_data:/dst \
+# 			-v $(QDRANT_STAGING):/src \
+# 			busybox cp -r /src/. /dst/ && \
+# 		rm -rf $(QDRANT_STAGING) \
+# 	'
+# 	@echo "✅ Volume updated and staging files cleaned"
 
-# 🔄 Restart backend to load new collection
+
+
+
+# === App Node Operations ===
+
 restart-backend:
-	@echo "🔄 Restarting backend service..."
-	ssh $(LINODE_USER)@$(LINODE_HOST) 'docker service update --force $(STACK_NAME)_backend'
+	@echo "🔄 Restarting backend service on app node..."
+	ssh $(APP_LINODE_USER)@$(APP_LINODE_HOST) \
+	  'docker service update --force $(STACK_NAME)_backend'
 	@echo "✅ Backend restarting..."
 	@echo ""
 	@echo "📋 Monitor with: make logs"
 
-# ❌ Tear down the running stack
+# === App Stack Destructive Operations ===
+
 remove:
-	@echo "⚠️  WARNING: This will remove the PRODUCTION stack ($(STACK_NAME))"
+	@echo "⚠️  WARNING: This will remove the PRODUCTION stack ($(STACK_NAME)) on app node"
 	@echo "Press Ctrl-C to abort..."
 	@sleep 5
-	ssh $(LINODE_USER)@$(LINODE_HOST) 'docker stack rm $(STACK_NAME)'
+	ssh $(APP_LINODE_USER)@$(APP_LINODE_HOST) \
+	  'docker stack rm $(STACK_NAME)'

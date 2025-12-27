@@ -7,12 +7,21 @@
 # - Bridge networking for single-host development
 # - Health checks and auto-restart for reliability
 #
-# Key differences from production (compose.prod.yml):
-# - Builds backend from source vs. using Docker Hub image
-# - Uses .env file vs. Docker Swarm secrets
-# - Exposes Redis port 6379 and Qdrant ports 6333/6334 vs. internal-only
-# - Bridge network vs. overlay network
-# - Standard docker compose vs. docker stack deploy
+# NOTE:
+# This compose file is for LOCAL DEVELOPMENT ONLY.
+#
+# It runs a full local stack:
+#   backend → retrieval → qdrant → redis
+#
+# Production differs structurally:
+#   - Retrieval + Qdrant run on a separate node (thudbot-retrieval)
+#   - Backend talks to retrieval over HTTP
+#   - App node uses Docker Swarm and secrets
+#
+# This file exists to:
+#   - Enable fast local iteration
+#   - Mirror the production call chain, not the production topology
+
 #
 # Usage:
 # 1. Ensure .env file exists in project root with API keys
@@ -69,7 +78,7 @@ services:
     environment:
       - QDRANT_URL=http://qdrant:6333  # Internal Docker network URL
     env_file:
-      - ../.env  # Load API keys (OPENAI_API_KEY, etc.)
+      - ../.env  # Local dev only; prod retrieval has no secrets
     depends_on:
       qdrant:
         condition: service_started
@@ -91,8 +100,8 @@ services:
       - COMPOSE_MODE=true # Enables Docker service discovery for Redis connection
       - RETRIEVAL_API_URL=http://retrieval:8001  # Internal Docker network URL
 
-    volumes:
-      - ../apps/backend/qdrant_db:/app/qdrant_db  # Bind mount local datastore (read-write for rebuilding)
+    # volumes: # no longer needed with the new retrieval node
+    #   - ../apps/backend/qdrant_db:/app/qdrant_db  # Bind mount local datastore (read-write for rebuilding)
 
     env_file:
       - ../.env # Load API keys from project root .env file
