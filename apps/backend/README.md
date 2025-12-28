@@ -39,41 +39,66 @@ uvicorn thudbot_core.api:app --reload --host 0.0.0.0 --port 8000
 ```
 
 
-## 🗄️ Qdrant Collection Management
+## 🌐 Retrieval API Integration
 
-Thudbot uses a **persistent Qdrant vectorstore** that must be built before starting the backend.
+**As of Dec 2024**, the backend no longer accesses Qdrant directly. Instead, it communicates with a separate **Retrieval Service** via HTTP.
 
-### Initial Setup
+### Architecture
 
-```bash
-# Build the Qdrant collection from CSV data
-cd apps/backend
-python tools/build_qdrant_collection.py
-
-# This creates: apps/backend/qdrant_db/
+```
+Backend → HTTP (RETRIEVAL_API_URL) → Retrieval Service → Qdrant
 ```
 
-### Rebuilding After Data Changes
+### Configuration
 
-If you update `data/Thudbot_Hint_Data_1.csv`:
-
-```bash
-# Force recreate the collection
-python tools/build_qdrant_collection.py --force-recreate
-```
-
-### Production Deployment
-
-The collection must be built and transferred to the production server:
+Set the retrieval API URL via environment variable:
 
 ```bash
-# See Makefile targets:
-make deploy-qdrant  # Build and transfer to production
-make push-qdrant    # Transfer existing collection
-make update-qdrant  # Update and restart backend service
+# Development (.env file)
+RETRIEVAL_API_URL=http://localhost:8001
+
+# Or point to remote retrieval node
+RETRIEVAL_API_URL=http://<retrieval-node-ip>:8001
+
+# Production (set in compose.prod.app.yml)
+RETRIEVAL_API_URL=http://<retrieval-node-ip>:8001
 ```
 
-**Note:** The backend will fail at startup if the collection is missing (fail-fast design).  
+### Local Development Options
+
+**Option 1: Point to remote retrieval node (recommended)**
+```bash
+# In .env
+RETRIEVAL_API_URL=http://<retrieval-node-ip>:8001
+
+# Start backend only
+python -m thudbot_core
+```
+
+**Option 2: Run retrieval service locally**
+```bash
+# Start qdrant + retrieval service
+cd infra
+docker compose --profile local-retrieval up
+
+# In .env
+RETRIEVAL_API_URL=http://localhost:8001
+
+# Start backend
+python -m thudbot_core
+```
+
+### Collection Management
+
+Collection building is handled **offline** (on your local machine), then deployed as a derived artifact to the retrieval node:
+
+1. **Build locally:** Run `tools/build_qdrant_collection.py` to create a server-mode Qdrant collection
+2. **Extract artifact:** Export the collection from the Docker volume to `~/thudbot_build_artifacts/`
+3. **Deploy artifact:** `rsync` the collection directory to the retrieval node at `/opt/thud-retrieval/qdrant_data/collections/`
+
+See `apps/retrieval/README.md` for detailed collection building and deployment steps.
+
+**Note:** The backend will fail fast if `RETRIEVAL_API_URL` is unreachable (by design).  
 
 ### Production (Docker)
 

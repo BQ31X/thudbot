@@ -24,6 +24,30 @@ Thudbot Backend → HTTP → Retrieval Service → Qdrant Server
 ❌ Retries or circuit breakers (caller's responsibility)  
 ❌ Session management (stateless service)
 
+## 🎯 Embedding Options
+
+The retrieval service supports two embedding providers:
+
+### OpenAI Embeddings (Default)
+```bash
+EMBEDDING_PROVIDER=openai
+EMBEDDING_MODEL=text-embedding-3-small  # 1536 dimensions
+```
+
+### Local BGE Embeddings (CPU-only)
+```bash
+EMBEDDING_PROVIDER=local
+EMBEDDING_MODEL=BAAI/bge-base-en-v1.5  # 768 dimensions
+```
+
+**Why Local Embeddings?**
+- ✅ No API costs
+- ✅ No external dependencies
+- ✅ Privacy (no data leaves your server)
+- ✅ CPU-only (no GPU required)
+
+**Performance:** BGE embeddings are comparable to OpenAI for retrieval quality (validated via TEF framework).
+
 ## Endpoints
 
 ### `GET /health`
@@ -97,13 +121,37 @@ All configuration via environment variables:
 |----------|---------|-------------|
 | `QDRANT_URL` | `http://localhost:6333` | Qdrant server URL |
 | `QDRANT_COLLECTION` | `Thudbot_Hints` | Collection name |
-| `EMBEDDING_PROVIDER` | `openai` | Embedding provider (`openai`, `huggingface`) |
-| `EMBEDDING_MODEL` | `text-embedding-3-small` | Embedding model name |
-| `OPENAI_API_KEY` | (required) | OpenAI API key (if using `openai` provider) |
+| `EMBEDDING_PROVIDER` | `openai` | Embedding provider (`openai`, `local`) |
+| `EMBEDDING_MODEL` | `text-embedding-3-small` | Model name for embeddings |
+| `OPENAI_API_KEY` | (required if using OpenAI) | OpenAI API key |
 | `SERVICE_PORT` | `8001` | Service port |
 
-**Production:** Secrets managed by Docker Swarm secrets model.  
+**Production:** Secrets managed by Docker Swarm secrets model (app node only).  
 **Development:** Secrets loaded from `.env` file.
+
+### Local Embeddings Setup
+
+The retrieval service includes CPU-only PyTorch + sentence-transformers for local BGE embeddings.
+
+**Dependencies** (already in `pyproject.toml`):
+```toml
+dependencies = [
+    ...
+    "langchain-huggingface>=0.1.0",
+    "sentence-transformers>=5.2.0",
+]
+
+[tool.uv.sources]
+# Force CPU-only PyTorch (~500MB vs ~2GB GPU version)
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+```
+
+**First run:** Downloads BGE model (~438MB, takes 60-90 seconds). Cached afterwards.
 
 ## Local Development
 
@@ -174,18 +222,92 @@ curl http://localhost:8001/meta
 
 ## Production Deployment
 
-**Multi-VM Architecture:**
-- **VM 1:** Thudbot Backend (calls retrieval API via HTTP)
-- **VM 2:** Qdrant + Retrieval Service (colocated for performance)
+### Two-Node Architecture
 
-**Why colocate Qdrant and Retrieval?**
-- Minimize network latency
-- Single point of failure isolation
-- Simplified deployment
+**Node 1 (App):** Backend + Frontend + Redis  
+**Node 2 (Retrieval):** Qdrant + Retrieval Service
 
-**Network boundary:**
+**Why separate nodes?**
+- ✅ Isolate compute (app) from retrieval workloads
+- ✅ No secrets needed on retrieval node (local embeddings only)
+- ✅ Independent scaling and deployment
+- ✅ Simpler failure isolation
+
+**Network flow:**
 ```
-Internet → Thudbot Backend (VM1) → Retrieval API (VM2) → Qdrant (VM2)
+Internet → Backend (Node 1) → HTTP → Retrieval API (Node 2) → Qdrant (Node 2)
+```
+
+### Multi-Arch Build
+
+```bash
+# Build for both amd64 (Linode) and arm64 (Mac)
+make build-retrieval
+
+# Or manually
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t bq31/thudbot-retrieval:latest \
+  -f apps/retrieval/Dockerfile \
+  --push \
+  .
+```
+
+**Note:** Build context is project root (`.`) because it needs access to `rag_utils/`.
+
+### Deploy to Retrieval Node
+
+```bash
+# Deploy qdrant + retrieval service
+make deploy-retrieval
+
+# Check logs
+make logs-retrieval
+make logs-qdrant
+
+# Restart if needed
+make restart-retrieval
+```
+
+### Building Collections
+
+Build Qdrant collections locally, then rsync to retrieval node:
+
+```bash
+# 1. Start local Qdrant server
+docker compose -f infra/compose.yml up -d qdrant
+
+# 2. Build BGE collection locally
+python tools/build_qdrant_collection.py \
+  --qdrant-url http://localhost:6333 \
+  --collection-name Thudbot_Hints_BGE_base \
+  --embedding-provider local \
+  --embedding-model BAAI/bge-base-en-v1.5 \
+  --force
+
+# 3. Extract from Docker volume
+docker run --rm \
+  -v infra_qdrant_storage:/source:ro \
+  -v ~/thudbot_build_artifacts:/dest \
+  alpine \
+  cp -r /source/collections/Thudbot_Hints_BGE_base /dest/
+
+# 4. Rsync to retrieval node
+rsync -avz --progress \
+  ~/thudbot_build_artifacts/Thudbot_Hints_BGE_base/ \
+  bq@<retrieval-node-ip>:/opt/thud-retrieval/qdrant_data/collections/Thudbot_Hints_BGE_base/
+
+# 5. Restart qdrant on retrieval node
+ssh bq@<retrieval-node-ip> 'cd ~/thudbot && docker compose -f compose.prod.retrieval.yml restart qdrant'
+```
+
+**Verification:**
+```bash
+# Check collection exists
+curl http://<retrieval-node-ip>:6333/collections/Thudbot_Hints_BGE_base | jq
+
+# Should show no storage.sqlite (server-mode, not embedded)
+ssh bq@<retrieval-node-ip> 'find /opt/thud-retrieval/qdrant_data -name "*.sqlite"'
 ```
 
 ## Design Principles
