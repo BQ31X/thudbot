@@ -1,0 +1,31 @@
+[project]
+name = "retrieval-service"
+version = "0.1.0"
+description = "Stateless API for vector retrieval from Qdrant"
+requires-python = ">=3.13"
+
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.24.0",
+    "pydantic>=2.5.0",
+    "qdrant-client>=1.13.2,<1.16", #No surprise API change (search method missing in 1.16.2)
+    "langchain>=0.3.27,<0.4", #Stay in the 0.3.x series; prevent 1.x upgrade        # Min version for CacheBackedEmbeddings compatibility
+    "langchain-community>=0.3.16",
+    "langchain-openai>=0.3.7",
+    "openai>=1.0.0",
+    # Local embeddings support (BGE models)
+    "torch>=2.0.0",  # CPU-only from PyTorch index (see [tool.uv.sources])
+    "langchain-huggingface>=0.1.0",
+    "sentence-transformers>=5.2.0",  # Matches tested version on Linode
+]
+
+[tool.uv.sources]
+# Force torch to use CPU-only wheels from PyTorch index
+# This avoids ~1.5GB of unused CUDA dependencies
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true  # Only use this index for explicitly configured packages
+

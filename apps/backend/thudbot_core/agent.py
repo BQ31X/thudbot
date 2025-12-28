@@ -12,27 +12,71 @@ except ImportError:
     pass
 
 # Core imports
-from langchain_community.vectorstores import Qdrant
 from langchain_openai import ChatOpenAI
 from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain_core.retrievers import BaseRetriever
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.tools import tool
 from langchain.agents import initialize_agent, AgentType
+from langchain_core.documents import Document
 from operator import itemgetter
 import requests
 import logging
 
-# Import from shared rag_utils
-from rag_utils.embedding_utils import get_embedding_function
-from rag_utils.loader import load_qdrant_client
-
 # Global components for RAG-only system
 _multi_query_retrieval_chain = None
 
+class HTTPRetriever(BaseRetriever):
+    """Custom retriever that calls retrieval API via HTTP."""
+    
+    api_url: str
+    k: int = 5
+    
+    def _get_relevant_documents(self, query: str):
+        """Retrieve documents via HTTP request to retrieval API."""
+        try:
+            response = requests.post(
+                f"{self.api_url}/retrieve",
+                json={"query": query, "k": self.k},
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                raise RuntimeError(
+                    f"Retrieval API returned {response.status_code}: {response.text}"
+                )
+            
+            data = response.json()
+            
+            # Validate API contract - fail fast on malformed responses
+            if "results" not in data or not isinstance(data["results"], list):
+                raise RuntimeError(f"Malformed retrieval response: {data}")
+            
+            # Convert API response to LangChain Document objects
+            documents = []
+            for result in data["results"]:
+                # Include score in metadata for debugging/future use
+                metadata = result["metadata"].copy()
+                metadata["score"] = result.get("score")
+                
+                doc = Document(
+                    page_content=result["text"],
+                    metadata=metadata
+                )
+                documents.append(doc)            
+            return documents
+            
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Failed to connect to retrieval API at {self.api_url}: {e}")
+    
+    async def _aget_relevant_documents(self, query: str):
+        """Async version - calls sync version for now."""
+        return self._get_relevant_documents(query)
+
 def initialize_rag_only(api_key=None):
-    """Load existing Qdrant collection - fail fast if missing"""
+    """Initialize RAG system using retrieval API - fail fast if API unreachable"""
     
     # Use provided API key or fall back to environment
     if api_key:
@@ -42,45 +86,30 @@ def initialize_rag_only(api_key=None):
     if not os.getenv('OPENAI_API_KEY'):
         raise ValueError("OpenAI API key required - provide via parameter or environment variable")
     
-    # Get Qdrant path from config
-    from thudbot_core.config import QDRANT_DB_PATH
-    qdrant_path = QDRANT_DB_PATH
+    # Get Retrieval API URL from config
+    from thudbot_core.config import RETRIEVAL_API_URL
     
-    print(f"📂 Loading Qdrant from: {qdrant_path}")
+    print(f"🌐 Connecting to Retrieval API at: {RETRIEVAL_API_URL}")
     
-    # Create client and check collection exists using rag_utils
-    client = load_qdrant_client(qdrant_path)
-    collection_name = "Thudbot_Hints"
-    
-    # Fail fast if collection doesn't exist
-    if not client.collection_exists(collection_name):
+    # Check retrieval API health
+    try:
+        response = requests.get(f"{RETRIEVAL_API_URL}/health", timeout=10)
+        if response.status_code != 200:
+            raise RuntimeError(f"Retrieval API health check failed: {response.status_code}")
+        print(f"✅ Retrieval API is healthy")
+    except requests.exceptions.RequestException as e:
         raise RuntimeError(
-            f"❌ Qdrant collection '{collection_name}' not found at {qdrant_path}\n"
-            f"   Build the collection before starting:\n"
-            f"   python tools/build_qdrant_collection.py"
+            f"❌ Cannot connect to Retrieval API at {RETRIEVAL_API_URL}\n"
+            f"   Error: {e}\n"
+            f"   Ensure retrieval service is running:\n"
+            f"   docker compose up -d retrieval"
         )
     
-    print(f"✅ Found collection '{collection_name}' with existing data")
-    
-    # Load embeddings (used for query embedding only, not document embedding)
-    embeddings = get_embedding_function(
-        provider="openai",
-        execution_mode="runtime",  # Backend runtime - only OpenAI allowed
-        model_name="text-embedding-3-small"
-    )
-    
-    # Load existing collection (NO CSV, NO document embedding)
-    vectorstore = Qdrant(
-        client=client,
-        collection_name=collection_name,
-        embeddings=embeddings
-    )
-    
-    print(f"✅ Vectorstore loaded successfully")
-    
-    # Create retrievers
+    # Create HTTP-based retriever
     # increased from 4 to 5 to improve recall based on TEF evaluation Dec 19, 2025
-    naive_retriever = vectorstore.as_retriever(search_kwargs={"k": 5}) 
+    naive_retriever = HTTPRetriever(api_url=RETRIEVAL_API_URL, k=5)
+    
+    # Multi-query logic stays in backend (generates alternative queries, calls API N times)
     chat_model = ChatOpenAI(model="gpt-4.1-nano")
     multi_query_retriever = MultiQueryRetriever.from_llm(
         retriever=naive_retriever, llm=chat_model

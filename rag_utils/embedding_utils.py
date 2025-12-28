@@ -70,9 +70,15 @@ def get_embedding_function(
     Create embeddings with support for multiple providers.
     
     Args:
-        provider: Embedding provider ("openai" or "local")
-        execution_mode: Execution context - REQUIRED, must be "runtime" or "eval"
-                        Controls whether local embeddings are allowed.
+        provider: Embedding provider ("openai", "local", or others)
+        execution_mode: Caller context - REQUIRED. Allowed values:
+            - "backend": Main thudbot backend (local embeddings forbidden)
+            - "retrieval-service": Retrieval API (local embeddings allowed)
+            - "build": Build scripts/TEF (local embeddings allowed)
+            
+            Legacy values (backward compatibility):
+            - "runtime" → treated as "backend"
+            - "eval" → treated as "build"
         model_name: Model name (if None, uses provider default)
         
     Returns:
@@ -83,22 +89,28 @@ def get_embedding_function(
         - local: BAAI/bge-small-en-v1.5 (handles own caching internally)
     
     Raises:
-        RuntimeError: If provider="local" and execution_mode="runtime"
-        ValueError: If execution_mode is not "runtime" or "eval"
+        RuntimeError: If provider="local" and execution_mode="backend"
+        ValueError: If execution_mode is invalid
     
     Notes:
-        Local embeddings (provider="local") are ONLY supported in evaluation mode.
-        This is an architectural invariant, not a missing dependency.
-        
-        If TEF shows local embeddings are viable for production, they must be
-        accessed via a separate embedding service (e.g., provider="embedding-service"),
-        not by loading models in-process.
+        Local embeddings (provider="local") are forbidden in the backend service
+        to keep it lightweight. They are allowed in:
+        - retrieval-service: Dedicated embedding container
+        - build: Offline collection building and evaluation (TEF)
     """
+    # Normalize legacy values for backward compatibility
+    if execution_mode == "runtime":
+        execution_mode = "backend"
+    elif execution_mode == "eval":
+        execution_mode = "build"
+    
     # Validate execution_mode
-    if execution_mode not in ["runtime", "eval"]:
+    allowed_modes = ["backend", "retrieval-service", "build"]
+    if execution_mode not in allowed_modes:
         raise ValueError(
-            f"execution_mode must be 'runtime' or 'eval', got: {execution_mode}"
+            f"execution_mode must be one of {allowed_modes}, got: {execution_mode}"
         )
+    
     if provider == "openai":
         model_name = model_name or "text-embedding-3-small"
         # Cache directory is OpenAI implementation detail
@@ -109,24 +121,14 @@ def get_embedding_function(
         )
         
     elif provider == "local":
-        # Architectural guardrail: local embeddings are evaluation-only
-        if execution_mode == "runtime":
+        # Architectural guardrail: local embeddings forbidden in backend only
+        if execution_mode == "backend":
             raise RuntimeError(
-                "Local embeddings (provider='local') are not supported in backend runtime.\n"
-                "\n"
-                "This is an architectural invariant:\n"
-                "  - Backend runtime must remain lightweight (no ML models in-process)\n"
-                "  - Local embeddings are for evaluation only (TEF, build scripts)\n"
-                "\n"
-                "If TEF shows local embeddings are viable for production:\n"
-                "  1. Deploy a separate embedding service container\n"
-                "  2. Add a new provider (e.g., 'embedding-service')\n"
-                "  3. Backend calls the service over HTTP\n"
-                "\n"
-                "The backend will never load models in-process."
+                "Local embeddings are not allowed in the Thudbot backend service.\n"
+                "Use execution_mode='retrieval-service' to run local embeddings safely."
             )
         
-        # Evaluation mode: allow local embeddings
+        # retrieval-service and build modes: allow local embeddings
         model_name = model_name or "BAAI/bge-small-en-v1.5"
         try:
             from langchain_huggingface import HuggingFaceEmbeddings
@@ -135,7 +137,7 @@ def get_embedding_function(
                 "Local embeddings require optional dependencies.\n"
                 "Install with: uv sync --extra local-embeddings\n"
                 "\n"
-                "Note: This is only for evaluation/development (TEF, build scripts).\n"
+                "Note: This is only for retrieval-service and build scripts.\n"
                 "Production backend uses OpenAI embeddings."
             ) from e
         return HuggingFaceEmbeddings(model_name=model_name)

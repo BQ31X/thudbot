@@ -6,9 +6,9 @@ This tool enumerates all chunks in the collection and exports them to CSV
 for manual inspection and benchmark labeling.
 
 Usage:
-    python tools/view_chunks.py --qdrant-path ./apps/backend/qdrant_db
-    python tools/view_chunks.py --output ./my_chunks.csv
-    python tools/view_chunks.py --include-full-content
+    python tools/view_chunks.py --qdrant-url http://localhost:6333
+    python tools/view_chunks.py --qdrant-url http://localhost:6333 --output ./my_chunks.csv
+    python tools/view_chunks.py --qdrant-url http://localhost:6333 --include-full-content
 """
 
 import sys
@@ -39,7 +39,7 @@ def truncate_text(text: str, max_length: int = 100) -> str:
 
 
 def export_chunks_to_csv(
-    qdrant_path: str,
+    qdrant_url: str,
     collection_name: str,
     output_path: str,
     include_full_content: bool = False,
@@ -49,19 +49,19 @@ def export_chunks_to_csv(
     Export all chunks from Qdrant collection to CSV.
     
     Args:
-        qdrant_path: Path to Qdrant storage directory
+        qdrant_url: Qdrant server URL (e.g., "http://localhost:6333")
         collection_name: Name of the collection
         output_path: Path to output CSV file
         include_full_content: If True, include full page_content in CSV
         preview_length: Length of preview text (default: 100 chars)
     """
     # Connect to Qdrant
-    print(f"📂 Loading collection from: {qdrant_path}")
-    client = QdrantClient(path=qdrant_path)
+    print(f"🌐 Connecting to Qdrant at: {qdrant_url}")
+    client = QdrantClient(url=qdrant_url)
     
     # Verify collection exists
     if not client.collection_exists(collection_name):
-        print(f"❌ Error: Collection '{collection_name}' not found at {qdrant_path}")
+        print(f"❌ Error: Collection '{collection_name}' not found at {qdrant_url}")
         sys.exit(1)
     
     # Get collection info
@@ -172,9 +172,9 @@ Examples:
     )
     
     parser.add_argument(
-        "--qdrant-path",
-        default="./apps/backend/qdrant_db",
-        help="Path to Qdrant storage directory (default: ./apps/backend/qdrant_db)"
+        "--qdrant-url",
+        default="http://localhost:6333",
+        help="Qdrant server URL (default: http://localhost:6333)"
     )
     parser.add_argument(
         "--collection",
@@ -201,7 +201,7 @@ Examples:
     args = parser.parse_args()
     
     export_chunks_to_csv(
-        qdrant_path=args.qdrant_path,
+        qdrant_url=args.qdrant_url,
         collection_name=args.collection,
         output_path=args.output,
         include_full_content=args.include_full_content,

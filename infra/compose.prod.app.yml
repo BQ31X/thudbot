@@ -1,0 +1,96 @@
+# Production Docker Compose for APP NODE (thudbot)
+# 
+# Services: backend, frontend, redis
+# Uses Docker Swarm for secrets management
+#
+# Deploy:
+#   RETRIEVAL_API_URL=http://45.79.143.75:8001 docker stack deploy -c compose.prod.app.yml thudbot
+#
+# Or create .env.prod with RETRIEVAL_API_URL and source it before deploy:
+#   source .env.prod && docker stack deploy -c compose.prod.app.yml thudbot
+#
+# Prerequisites:
+#   - Docker Swarm initialized: docker swarm init
+#   - Secrets created:
+#       echo "your_key" | docker secret create openai_api_key -
+#       echo "your_key" | docker secret create langchain_api_key -
+#   - Retrieval node must be accessible at RETRIEVAL_API_URL
+#   - Set RETRIEVAL_API_URL environment variable before deploy
+#
+
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
+    networks:
+      - thudbot-network
+    
+    deploy:
+      restart_policy:
+        condition: any
+
+  backend:
+    image: bq31/thudbot-backend:latest # Use Docker Hub image for production
+    ports:
+      - "8000:8000" # Expose API on port 8000
+    
+    secrets:
+      - openai_api_key # Docker Swarm Secret for OpenAI API key
+      - langchain_api_key # Docker Swarm Secret for LangChain API key
+    
+    environment:
+      - COMPOSE_MODE=true
+      - ENV=prod
+      - RETRIEVAL_API_URL=http://45.79.143.75:8001  # Must be set before deploy
+    
+    networks:
+      - thudbot-network
+    
+    depends_on:
+      - redis
+    
+    deploy:
+      restart_policy:
+        condition: any # Always restart on failure
+        max_attempts: 3 # Limit the number of restarts to prevent endless loops
+        window: 60s
+
+  frontend:
+    image: bq31/thudbot-frontend:latest # Use Docker Hub image for production
+    ports:
+      - "3000:3000" # Expose frontend port for nginx reverse proxy
+    
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000 # Backend service URL for API calls
+    
+    networks:
+      - thudbot-network
+    
+    deploy:
+      restart_policy:
+        condition: any # Always restart on failure (matches backend)
+        max_attempts: 3 # Limit restarts to prevent endless loops
+        window: 60s
+
+    # Note: No ports exposed - nginx reverse proxy handles external access
+    # Health check defined in Dockerfile will be used automatically
+secrets:
+  openai_api_key:
+    external: true
+  langchain_api_key:
+    external: true
+
+networks:
+  thudbot-network:
+    driver: overlay # Multi-host networking for Docker Swarm (encrypted by default)
+

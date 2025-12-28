@@ -1,0 +1,61 @@
+# Production Docker Compose for RETRIEVAL NODE (thudbot-retrieval)
+# 
+# Pure local operation: BGE embeddings, no external APIs, no secrets
+# No Docker Swarm needed - simple docker compose deployment
+#
+# Deploy:
+#   docker compose -f compose.prod.retrieval.yml up -d
+#
+# Services:
+#   - qdrant: Vector database (server mode)
+#   - retrieval: FastAPI service for vector retrieval
+#
+# Prerequisites:
+#   - Qdrant data must exist at /opt/thud-retrieval/qdrant_data/collections/Thudbot_Hints_BGE_base/
+#   - No secrets required (local embeddings only)
+#
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.16.3  # Pinned to tested version
+    container_name: thudbot-qdrant
+    ports:
+      - "6333:6333"  # HTTP API
+      - "6334:6334"  # gRPC (optional)
+    
+    volumes:
+      - /opt/thud-retrieval/qdrant_data:/qdrant/storage
+    
+    networks:
+      - retrieval-network
+    
+    restart: unless-stopped
+
+  retrieval:
+    image: bq31/thudbot-retrieval:latest
+    container_name: thudbot-retrieval
+    ports:
+      - "8001:8001"
+    
+    environment:
+      - QDRANT_URL=http://qdrant:6333
+      - QDRANT_COLLECTION=Thudbot_Hints_BGE_base
+      - EMBEDDING_PROVIDER=local
+      - EMBEDDING_MODEL=BAAI/bge-base-en-v1.5
+    
+    networks:
+      - retrieval-network
+    
+    depends_on:
+      - qdrant
+    
+    restart: unless-stopped
+    
+    # Memory limits (BGE model + sentence-transformers overhead)
+    mem_limit: 2g
+    mem_reservation: 1g
+
+networks:
+  retrieval-network:
+    driver: bridge  # Simple bridge network, no overlay needed
+

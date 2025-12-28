@@ -12,21 +12,21 @@ from qdrant_client import QdrantClient
 from langchain_community.vectorstores import Qdrant
 
 
-def load_qdrant_client(qdrant_path: str) -> QdrantClient:
+def load_qdrant_client(qdrant_url: str) -> QdrantClient:
     """
-    Load Qdrant client from persistent storage.
+    Load Qdrant client connected to server.
     
     Args:
-        qdrant_path: Path to Qdrant storage directory
+        qdrant_url: Qdrant server URL (e.g., "http://localhost:6333")
         
     Returns:
         QdrantClient instance
     """
-    return QdrantClient(path=qdrant_path)
+    return QdrantClient(url=qdrant_url)
 
 
 def load_retriever(
-    qdrant_path: str,
+    qdrant_url: str,
     collection_name: str,
     embeddings,
     search_kwargs: Optional[Dict[str, Any]] = None
@@ -35,7 +35,7 @@ def load_retriever(
     Load a retriever from an existing Qdrant collection.
     
     Args:
-        qdrant_path: Path to Qdrant storage directory
+        qdrant_url: Qdrant server URL (e.g., "http://localhost:6333")
         collection_name: Name of the collection to load
         embeddings: Embeddings function (for query embedding only)
         search_kwargs: Optional search parameters (e.g., {"k": 4})
@@ -47,11 +47,11 @@ def load_retriever(
         search_kwargs = {"k": 4}
     
     # Load client and verify collection exists
-    client = load_qdrant_client(qdrant_path)
+    client = load_qdrant_client(qdrant_url)
     
     if not client.collection_exists(collection_name):
         raise RuntimeError(
-            f"Collection '{collection_name}' not found at {qdrant_path}"
+            f"Collection '{collection_name}' not found at {qdrant_url}"
         )
     
     # Load vectorstore

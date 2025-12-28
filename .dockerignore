@@ -1,0 +1,43 @@
+# VCS
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+
+# Virtualenvs / env files
+.env
+.env.*
+.venv
+venv/
+env/
+
+# Caches
+.cache/
+pytest_cache/
+.coverage
+htmlcov/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Node / frontend artifacts
+node_modules/
+.next/
+dist/
+build/
+
+# Notebooks / docs not needed at runtime
+notebooks/
+reference_notebooks/
+docs/dev_journey/
+
+# GitHub / tooling
+.cursor/
+

@@ -7,7 +7,7 @@ Run retrieval evaluation on Thudbot benchmark.
 Usage:
     python tools/tef/run_eval.py
     python tools/tef/run_eval.py --embedding-provider local
-    python tools/tef/run_eval.py --qdrant-path ./apps/backend/qdrant_db_eval
+    python tools/tef/run_eval.py --qdrant-url http://localhost:6333
 """
 import sys
 import json
@@ -42,8 +42,8 @@ Examples:
   # Use local embeddings with custom model
   python tools/tef/run_eval.py --embedding-provider local --embedding-model BAAI/bge-base-en-v1.5
 
-  # Point to different collection
-  python tools/tef/run_eval.py --qdrant-path ./apps/backend/qdrant_db
+  # Point to different server
+  python tools/tef/run_eval.py --qdrant-url http://localhost:6333
 
   # Custom benchmark file
   python tools/tef/run_eval.py --benchmark ./tools/tef/benchmark/test_benchmark.csv
@@ -51,9 +51,9 @@ Examples:
     )
     
     parser.add_argument(
-        '--qdrant-path',
-        default=str(PROJECT_ROOT / "apps/backend/qdrant_db_eval"),
-        help='Path to Qdrant collection (default: apps/backend/qdrant_db_eval)'
+        '--qdrant-url',
+        default="http://localhost:6333",
+        help='Qdrant server URL (default: http://localhost:6333)'
     )
     
     parser.add_argument(
@@ -148,7 +148,7 @@ def save_results(
     # Build summary
     summary = {
         "config": {
-            "qdrant_path": config.qdrant_path,
+            "qdrant_url": config.qdrant_url,
             "collection_name": config.collection_name,
             "embedding_provider": config.embedding_provider,
             "embedding_model": config.embedding_model or collection_metadata["embedding_model"],
@@ -211,7 +211,7 @@ def main():
     
     # Build configuration from CLI args
     config = TEFConfig(
-        qdrant_path=args.qdrant_path,
+        qdrant_url=args.qdrant_url,
         collection_name=args.collection,
         benchmark_path=args.benchmark,
         embedding_provider=args.embedding_provider,

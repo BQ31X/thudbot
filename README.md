@@ -149,68 +149,124 @@ echo "your_openai_api_key_here" | docker secret create openai_api_key -
 echo "your_langchain_api_key_here" | docker secret create langchain_api_key -
 ```
 
-#### Deploy to Production
+#### Deploy to Production (Two-Node Architecture)
+
+**Prerequisites:**
+- Two servers (app node + retrieval node)
+- Docker + Docker Buildx on local machine
+- Docker Swarm on app node
+- Docker + Docker Compose on retrieval node
+
+##### Build Multi-Arch Images
 ```bash
-# Navigate to infrastructure directory
-cd infra
+# Build all images (backend, frontend, retrieval)
+make build-all
 
-# Deploy the stack using Docker Swarm
-docker stack deploy -c compose.prod.yml thudbot
+# Or build individually
+make build-backend
+make build-frontend
+make build-retrieval
 
-# Verify deployment
-docker service ls
-docker service logs thudbot_backend
+# Verify multi-arch support
+make inspect-images
+```
+
+##### Deploy Retrieval Node First
+```bash
+# Deploy qdrant + retrieval service
+make deploy-retrieval
+
+# Verify
+make logs-retrieval
+make logs-qdrant
+```
+
+##### Deploy App Node
+```bash
+# Create Docker secrets on app node (one-time)
+ssh bq@<app-node-ip>
+echo "your_openai_key" | docker secret create openai_api_key -
+echo "your_langchain_key" | docker secret create langchain_api_key -
+docker swarm init
+
+# Deploy backend + frontend + redis
+make deploy-prod
+
+# Verify
+make logs
+make logs-frontend
+```
+
+##### Full Deployment
+```bash
+# Deploy both nodes with one command
+make deploy-all
 ```
 
 #### Production Features
-- **🔐 Docker Secrets**: Secure API key management (no env files)
-- **🌐 Overlay Networking**: Multi-host container communication
-- **📦 Pre-built Images**: Uses `bq31/thudbot-backend:latest` from Docker Hub
+- **🌐 Two-Node Architecture**: Separates compute (app) from retrieval (embeddings + vector search)
+- **🔐 Docker Secrets**: Secure API key management on app node (no secrets on retrieval node)
+- **📦 Multi-Arch Images**: ARM64 (Mac dev) + AMD64 (Linode prod)
 - **🔄 Auto-restart**: Automatic service recovery with restart policies
-- **📊 Health Checks**: Built-in service monitoring
+- **🎯 Local Embeddings**: BGE CPU-only embeddings 
 
 #### Management Commands
 ```bash
-# View service status
-docker service ls
-docker service ps thudbot_backend
+# App node operations
+make logs              # View backend logs
+make logs-frontend     # View frontend logs  
+make restart-backend   # Restart backend service
 
-# View logs
-docker service logs -f thudbot_backend
-docker service logs -f thudbot_redis
+# Retrieval node operations
+make logs-retrieval    # View retrieval service logs
+make logs-qdrant       # View qdrant logs
+make restart-retrieval # Restart retrieval service
+make stop-retrieval    # Stop retrieval stack
 
-# Scale services (if needed)
-docker service scale thudbot_backend=2
-
-# Update deployment
-docker stack deploy -c compose.prod.yml thudbot
-
-# Remove deployment
-docker stack rm thudbot
+# Build operations
+make build-all         # Build and push all images
+make inspect-images    # Verify multi-arch builds
 ```
 
 **🌐 Production Access:** Backend available at `http://your-server:8000` 
 ⚠️ **Security Note:** Restrict access via firewall, VPN, or reverse proxy in production
+
+**⚙️ Configuration:**
+- Edit `Makefile` to set your server IPs (APP_LINODE_HOST, RETRIEVAL_LINODE_HOST)
+- Retrieval API URL is set in `infra/compose.prod.app.yml`
 
 ---
 
 
 ## 🏗️ Architecture
 
+### Two-Node Production Architecture
+
 ```
-Frontend (Next.js) → Backend (FastAPI) → Agent (LangGraph)
+Frontend (Next.js)
+    ↓
+Backend (FastAPI + LangGraph) ─── App Node (<app-node-ip>)
+    ↓ HTTP
+Retrieval Service (FastAPI)   ─── Retrieval Node (<retrieval-node-ip>)
+    ↓ local
+Qdrant (server-mode)
 ```
 
+**Production Deployment:**
+- **App Node**: Backend + Frontend + Redis (Docker Swarm)
+- **Retrieval Node**: Qdrant + Retrieval API (docker compose)
+- **Communication**: Backend → Retrieval API via `RETRIEVAL_API_URL`
 
 **Built with:**
 - **Backend**: FastAPI + LangChain + OpenAI GPT-4
 - **Frontend**: Next.js + React + Tailwind CSS  
-- **Data**: Qdrant vector store (persistent) + Multi-query retrieval
-- **Build**: Offline collection builder from CSV hint database
+- **Retrieval**: FastAPI + Qdrant (server-mode) + BGE embeddings (local, CPU-only)
+- **Data**: Server-mode Qdrant collection + Multi-query retrieval
+- **Build**: Offline collection builder with OpenAI or local BGE embeddings
 
 **Storage Architecture:**
-- **Build-time**: `tools/build_qdrant_collection.py` creates vectorstore from CSV
-- **Run-time**: Backend loads pre-built collection (no embedding, fail-fast validation)
+- **Build-time**: `tools/build_qdrant_collection.py` creates server-mode collections
+- **Run-time**: Backend calls retrieval API; retrieval service queries Qdrant directly
 
 
 ## 📊 RAG Evaluation & Performance
