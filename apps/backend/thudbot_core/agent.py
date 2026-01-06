@@ -89,14 +89,29 @@ def initialize_rag_only(api_key=None):
     # Get Retrieval API URL from config
     from thudbot_core.config import RETRIEVAL_API_URL
     
-    print(f"🌐 Connecting to Retrieval API at: {RETRIEVAL_API_URL}")
+    # Determine if retrieval API is local or remote
+    is_local = "localhost" in RETRIEVAL_API_URL or "127.0.0.1" in RETRIEVAL_API_URL
+    location = "LOCALHOST" if is_local else "NETWORK"
+    print(f"🌐 Connecting to Retrieval API at: {RETRIEVAL_API_URL} ({location})")
     
-    # Check retrieval API health
+    # Check retrieval API health and get collection info
     try:
         response = requests.get(f"{RETRIEVAL_API_URL}/health", timeout=10)
         if response.status_code != 200:
             raise RuntimeError(f"Retrieval API health check failed: {response.status_code}")
-        print(f"✅ Retrieval API is healthy")
+        
+        # Get collection metadata
+        meta_response = requests.get(f"{RETRIEVAL_API_URL}/meta", timeout=10)
+        if meta_response.status_code == 200:
+            meta = meta_response.json()
+            collection_name = meta.get("collection_name") or meta.get("collection") or "unknown"
+            vectors_count = meta.get("vectors_count")
+            vectors_count = vectors_count if vectors_count is not None else "?"
+            print(f"✅ Retrieval API is healthy")
+            print(f"   Collection: {collection_name} ({vectors_count} vectors)")
+        else:
+            print(f"✅ Retrieval API is healthy (metadata unavailable)")
+            
     except requests.exceptions.RequestException as e:
         raise RuntimeError(
             f"❌ Cannot connect to Retrieval API at {RETRIEVAL_API_URL}\n"
