@@ -30,8 +30,9 @@ except ImportError as e:
 class RawCollector:
     """Collects raw outputs from Thudbot nodes without interpretation"""
     
-    def __init__(self, input_csv: str):
+    def __init__(self, input_csv: str, run_label: str="regression"):
         self.input_csv = input_csv
+        self.run_label = run_label
         self.results = []
         self.timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         
@@ -88,8 +89,8 @@ class RawCollector:
         print(f"\n🎉 Collection complete!")
         print(f"📊 Results: {len([r for r in self.results if r['router'] != 'ERROR'])} successful, {len([r for r in self.results if r['router'] == 'ERROR'])} errors")
         print(f"⏱️ Total duration: {total_duration:.1f}s")
-        print(f"📄 Saved to: {REGRESSION_RESULTS_ROOT / f'regression_{self.timestamp}.csv'}")
-        print(f"📄 Saved to: {REGRESSION_RESULTS_ROOT / f'regression_{self.timestamp}.md'}")
+        print(f"📄 Saved to: {REGRESSION_RESULTS_ROOT / f'{self.run_label}_{self.timestamp}.csv'}")
+        print(f"📄 Saved to: {REGRESSION_RESULTS_ROOT / f'{self.run_label}_{self.timestamp}.md'}")
         
     def _load_questions(self):
         """Load questions from CSV file"""
@@ -212,7 +213,7 @@ class RawCollector:
     
     def _save_csv(self):
         """Save results as CSV"""
-        output_file = REGRESSION_RESULTS_ROOT / f"regression_{self.timestamp}.csv"
+        output_file = REGRESSION_RESULTS_ROOT / f"{self.run_label}_{self.timestamp}.csv"
         
         with open(output_file, 'w', newline='') as f:
             if self.results:
@@ -223,10 +224,10 @@ class RawCollector:
     
     def _save_markdown(self):
         """Save results as Markdown table"""
-        output_file = REGRESSION_RESULTS_ROOT / f"regression_{self.timestamp}.md"
+        output_file = REGRESSION_RESULTS_ROOT / f"{self.run_label}_{self.timestamp}.md"
         
         with open(output_file, 'w') as f:
-            f.write(f"# Thudbot Regression Test Results\n\n")
+            f.write(f"# Thudbot Test Results ({self.run_label})\n\n")
             f.write(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"**Test Count:** {len(self.results)}\n\n")
             
@@ -294,11 +295,11 @@ class RawCollector:
     
     def _create_latest_symlink(self):
         """Create symlink to latest results"""
-        csv_file = f"regression_{self.timestamp}.csv"
-        symlink_path = REGRESSION_RESULTS_ROOT / "latest_regression.csv"
+        csv_file = f"{self.run_label}_{self.timestamp}.csv"
+        symlink_path = REGRESSION_RESULTS_ROOT / f"latest_{self.run_label}.csv"
         
         # Remove existing symlink if it exists
-        if os.path.exists(symlink_path):
+        if os.path.exists(symlink_path) or os.path.islink(symlink_path):
             os.remove(symlink_path)
             
         # Create new symlink
