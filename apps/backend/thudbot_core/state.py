@@ -17,6 +17,7 @@ class LangGraphState(TypedDict):
         verification_reason: Reason for verification failure (if any)
         retry_count: Number of retries attempted for failed verifications
         retrieved_context: The original context documents from RAG retrieval
+        intent_classification: The classifier output (GAME_RELATED or OFF_TOPIC) - signal only, not used for routing
     """
     chat_history: List[BaseMessage]
     hint_level: int
@@ -29,3 +30,4 @@ class LangGraphState(TypedDict):
     verification_reason: str
     retry_count: int
     retrieved_context: str
+    intent_classification: str

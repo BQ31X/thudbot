@@ -137,7 +137,8 @@ def run_hint_request(user_input: str, session_id: str = "default") -> str:
         verification_passed=False,
         verification_reason="",
         retry_count=0,
-        retrieved_context=""
+        retrieved_context="",
+        intent_classification=""
     )
     
     print(f"🚀 Running LangGraph with input: '{user_input}' (session: {session_id})")
