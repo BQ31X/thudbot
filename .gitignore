@@ -120,3 +120,7 @@ tools/tef/benchmark/*_export.csv
 tools/tef/benchmark/*_results.*
 tools/tef/benchmark/test_*.csv
 tools/tef/results/
+
+# Local diagnostic / canonical test artifacts
+apps/backend/tests/regression/run_canon_diag_test.py
+apps/backend/tests/regression/test_canon_questions.csv

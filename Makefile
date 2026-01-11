@@ -66,7 +66,7 @@ RETRIEVAL_COMPOSE_FILENAME ?= compose.prod.retrieval.yml
 	deploy-prod deploy-all push-compose ssh-deploy \
 	deploy-retrieval push-compose-retrieval ssh-deploy-retrieval \
 	logs logs-frontend logs-retrieval logs-qdrant \
-	restart-backend restart-retrieval stop-retrieval \
+	restart-backend restart-retrieval restart-retrieval-stack stop-retrieval \
 	remove
 	
 # 📖 Show available commands
@@ -80,7 +80,7 @@ help:
 	@echo ""
 	@echo "Deploy commands (two-node architecture):"
 	@echo "  make deploy-prod      - Deploy app node (backend + frontend + redis)"
-	@echo "  make deploy-retrieval - Deploy retrieval node (qdrant + retrieval service)"
+	@echo "  make deploy-retrieval - Apply retrieval compose (recreate retrieval; qdrant unchanged)"
 	@echo "  make deploy-all       - Deploy both nodes (retrieval first, then app)"
 	@echo ""
 	@echo "Monitoring - App node:"
@@ -92,12 +92,13 @@ help:
 	@echo "  make logs-qdrant      - View qdrant logs"
 	@echo ""
 	@echo "Operations:"
-	@echo "  make restart-backend   - Restart backend service (app node)"
-	@echo "  make restart-retrieval - Restart retrieval service"
-	@echo "  make stop-retrieval    - Stop retrieval stack"
+	@echo "  make restart-backend          - Restart backend service (app node)"
+	@echo "  make restart-retrieval        - Restart retrieval service only"
+	@echo "  make restart-retrieval-stack  - Restart qdrant + retrieval (after data promotion)"
+	@echo "  make stop-retrieval           - Stop retrieval stack"
 	@echo ""
 	@echo "Destructive:"
-	@echo "  make remove            - Remove app stack (swarm)"
+	@echo "  make remove                   - Remove app stack (swarm)"
 
 # NOTE: Internal targets (push-compose, ssh-deploy, push-compose-retrieval, 
 # ssh-deploy-retrieval) are intentionally hidden from help - they are
@@ -205,10 +206,19 @@ logs-retrieval:
 logs-qdrant:
 	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) 'docker compose -f $(RETRIEVAL_REMOTE_DIR)/$(RETRIEVAL_COMPOSE_FILENAME) logs qdrant --tail=50 -f'
 
-# 🔄 Restart retrieval service
+# 🔄 Restart retrieval service only
 restart-retrieval:
 	@echo "🔄 Restarting retrieval service..."
-	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) 'docker compose -f $(RETRIEVAL_REMOTE_DIR)/$(RETRIEVAL_COMPOSE_FILENAME) restart retrieval'
+	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) '\
+		cd $(RETRIEVAL_REMOTE_DIR) && \
+		docker compose -f $(RETRIEVAL_COMPOSE_FILENAME) restart retrieval'
+
+# 🔄 Restart both Qdrant and retrieval (required after collection promotion)
+restart-retrieval-stack:
+	@echo "🔄 Restarting Qdrant and retrieval (required after collection promotion)..."
+	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) '\
+		cd $(RETRIEVAL_REMOTE_DIR) && \
+		docker compose -f $(RETRIEVAL_COMPOSE_FILENAME) restart qdrant retrieval'
 
 # ❌ Stop retrieval stack
 stop-retrieval:

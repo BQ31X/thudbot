@@ -46,19 +46,12 @@ def router_node(state: LangGraphState) -> LangGraphState:
     
     # Use LLM to classify intent for non-escalation requests
     intent = classify_intent(user_input)
-    print(f"🔍 ROUTER CLASSIFICATION: {intent}")
+    state["intent_classification"] = intent
+    print(f"🔍 ROUTER CLASSIFICATION (signal): {intent}")
     
-    if intent == "OFF_TOPIC":
-        # Use a canned response instead of calling character maintenance
-        import random
-        canned_response = random.choice(OFF_TOPIC_RESPONSES)
-        state["formatted_output"] = canned_response
-        print(f"🚫 Off-topic question detected, using canned response")
-        print(f"🔍 ROUTER OUTPUT: OFF_TOPIC -> '{canned_response[:50]}...'")
-        return state
-    
-    # This is a game-related question, proceed with hint logic
-    print(f"✅ Game-related question detected")
+    # Classification is now advisory only - do not block on OFF_TOPIC
+    # Let flow continue regardless of classification
+    print(f"➡️ ROUTER NEXT: find_hint")
     
     # Extract keywords from current question
     current_keywords = extract_question_keywords(user_input)
