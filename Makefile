@@ -66,6 +66,7 @@ RETRIEVAL_COMPOSE_FILENAME ?= compose.prod.retrieval.yml
 	deploy-prod deploy-all push-compose ssh-deploy \
 	deploy-retrieval push-compose-retrieval ssh-deploy-retrieval \
 	logs logs-frontend logs-retrieval logs-qdrant \
+	version version-frontend version-backend version-retrieval \
 	restart-backend restart-retrieval restart-retrieval-stack stop-retrieval \
 	remove
 	
@@ -90,6 +91,12 @@ help:
 	@echo "Monitoring - Retrieval node:"
 	@echo "  make logs-retrieval   - View retrieval service logs"
 	@echo "  make logs-qdrant      - View qdrant logs"
+	@echo ""
+	@echo "Version checks:"
+	@echo "  make version           - Check all service versions in production"
+	@echo "  make version-frontend  - Check frontend version"
+	@echo "  make version-backend   - Check backend version"
+	@echo "  make version-retrieval - Check retrieval version"
 	@echo ""
 	@echo "Operations:"
 	@echo "  make restart-backend          - Restart backend service (app node)"
@@ -178,6 +185,28 @@ logs:
 logs-frontend:
 	ssh $(APP_LINODE_USER)@$(APP_LINODE_HOST) 'docker service logs $(STACK_NAME)_frontend --tail=50'
 
+# 🔍 Check service versions
+version-frontend:
+	@echo "Frontend version:"
+	@ssh $(APP_LINODE_USER)@$(APP_LINODE_HOST) \
+	  "docker ps --filter 'name=thudbot-prod_frontend' --format '{{.Names}}' | head -n 1 | \
+	   xargs -I{} docker exec {} wget -qO- http://localhost:3000/api/version"
+	@echo
+
+version-backend:
+	@echo "Backend version:"
+	@ssh $(APP_LINODE_USER)@$(APP_LINODE_HOST) \
+	  "docker ps --filter 'name=thudbot-prod_backend' --format '{{.Names}}' | head -n 1 | \
+	   xargs -I{} docker exec {} python -c \"import urllib.request; print(urllib.request.urlopen('http://localhost:8000/version').read().decode())\""
+	@echo
+
+version-retrieval:
+	@echo "Retrieval version:"
+	@curl -s http://$(RETRIEVAL_LINODE_HOST):8001/version
+	@echo
+
+version: version-frontend version-backend version-retrieval
+
 # === Retrieval Node Deployment ===
 
 # 🟢 Deploy retrieval node (compose qdrant + retrieval service, no swarm)
@@ -196,7 +225,8 @@ ssh-deploy-retrieval:
 	@echo "🚀 Deploying retrieval stack..."
 	ssh $(RETRIEVAL_LINODE_USER)@$(RETRIEVAL_LINODE_HOST) '\
 		cd $(RETRIEVAL_REMOTE_DIR) && \
-		docker compose -f $(RETRIEVAL_COMPOSE_FILENAME) up -d'
+		docker compose -f $(RETRIEVAL_COMPOSE_FILENAME) pull && \
+		docker compose -f $(RETRIEVAL_COMPOSE_FILENAME) up -d --force-recreate'
 
 # 📄 Show retrieval service logs (on retrieval node)
 logs-retrieval:
