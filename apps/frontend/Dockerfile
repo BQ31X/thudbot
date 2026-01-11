@@ -1,9 +1,14 @@
 # apps/frontend/Dockerfile
 
 # ---------- Build stage ----------
-    FROM node:20 AS builder
+FROM node:20 AS builder
 
-    WORKDIR /app
+# Build arguments for version metadata
+ARG GIT_COMMIT=unknown
+ARG BUILD_TIME_UTC=unknown
+ARG IMAGE_TAG=unknown
+
+WORKDIR /app
     
     # Copy only package manifests first (better build caching)
     COPY package*.json ./
@@ -19,6 +24,11 @@
     
 # ---------- Runtime stage ----------
 FROM node:20-alpine AS runner
+
+# Re-declare build arguments for runtime stage
+ARG GIT_COMMIT=unknown
+ARG BUILD_TIME_UTC=unknown
+ARG IMAGE_TAG=unknown
 
 WORKDIR /app
 
@@ -39,6 +49,12 @@ USER nextjs
 
 # Set environment to production
 ENV NODE_ENV=production
+
+# Persist build metadata as environment variables
+ENV GIT_COMMIT=${GIT_COMMIT}
+ENV BUILD_TIME_UTC=${BUILD_TIME_UTC}
+ENV IMAGE_TAG=${IMAGE_TAG}
+
 EXPOSE 3000
 
 # Add healthcheck
