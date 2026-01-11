@@ -1,3 +1,40 @@
+"""
+Route an incoming player query to the appropriate next node in the LangGraph.
+
+Responsibilities:
+- Acts as the single, authoritative decision point for high-level control flow.
+- Classifies the player's current input using classification-focused signals
+  (intent, keyword overlap, prior state).
+- Chooses the *next node* to execute, not the final response.
+- Does not perform retrieval, hint generation, or narrative synthesis itself.
+
+Reads from state:
+- user_input
+- chat_history
+- hint_level
+- last_question_id
+- last_question_keywords
+
+Writes to state:
+- user_input (may replace with previous question)
+- hint_level (escalates or resets to 1)
+- last_question_id (stores current question)
+- last_question_keywords (stores extracted keywords)
+- intent_classification (signal only, not used for routing)
+- formatted_output (only for smalltalk pattern match)
+
+Notes:
+- Spans multiple phases: intent classification, progressive hint detection,
+  keyword extraction, session state management, and early exit for smalltalk.
+- Uses LLM (gpt-4.1-nano) for intent classification; OFF_TOPIC is advisory only.
+- Pattern matching for vague escalation (is_vague_escalation_request)
+  and smalltalk (is_smalltalk_question).
+- Keyword overlap detection (2+ matches) triggers hint level escalation.
+- Side effect: replaces vague user input with previous question when escalating.
+- Early termination: sets formatted_output for smalltalk, triggering END via should_continue.
+- Imports utility functions from langgraph_flow.py.
+"""
+
 from thudbot_core.state import LangGraphState
 from langsmith import traceable
 from thudbot_core.langgraph_flow import classify_intent, OFF_TOPIC_RESPONSES, is_vague_escalation_request, extract_question_keywords, is_smalltalk_question

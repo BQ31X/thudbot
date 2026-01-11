@@ -1,3 +1,32 @@
+"""
+Retrieve candidate hint content for the current player query using retrieval-augmented generation.
+
+Responsibilities:
+- Acts as the sole entry point for hint retrieval within the LangGraph.
+- Translates the current player query and hint level into multiple retrieval queries.
+- Invokes the external retrieval service and assembles candidate hint material.
+- Applies progressive hint filtering based on the current hint level, with defined fallbacks.
+- Produces fact-only hint content for downstream selection and presentation.
+- Does not decide whether a hint should be shown or how it is phrased to the player.
+
+Reads from state:
+
+user_input
+hint_level
+Writes to state:
+
+current_hint (RAG response)
+retrieved_context (formatted document text for verification)
+
+Notes:
+Calls external HTTP retrieval API via HTTPRetriever (URL from config)
+Uses MultiQueryRetriever to generate alternative queries
+Progressive hint filtering: Attempts level-based filtering (hint_level: {$lte: hint_level}) with fallback to unfiltered
+Level filtering implementation incomplete (TODO comment in code)
+RAG template explicitly removes personality (fact-only extraction)
+Retrieves k=5 documents (increased from 4 per Dec 2025 TEF evaluation)
+External dependency: Requires retrieval service running (fails fast if unavailable)
+"""
 from langsmith import traceable
 from thudbot_core.agent import get_direct_hint_with_context
 from thudbot_core.state import LangGraphState

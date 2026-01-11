@@ -1,3 +1,28 @@
+"""
+Rewrite the verified hint content to maintain Zelda’s character voice and tone.
+
+Responsibilities:
+- Transforms fact-only hint content into character-consistent narrative output.
+- Injects personality, tone, and voice while preserving the underlying factual meaning.
+- Enforces character and IP guardrails by detecting forbidden terms and references.
+- Acts as the final content-shaping step before player-facing delivery.
+- Does not introduce new factual information or modify hint correctness.
+
+Reads from state:
+- current_hint
+
+Writes to state:
+- current_hint (rewritten in Zelda’s voice)
+
+Notes:
+- Uses LLM (gpt-4o-mini) to apply character voice to verified hint content.
+- Guardrail enforcement scans for forbidden terms (e.g., Legend of Zelda,
+  Hyrule, princess, Nintendo, triforce).
+- Implements tiered fallback behavior:
+  - Guardrail violation → API error → ultimate fallback to original hint.
+- This transformation is irreversible: the original fact-only hint is overwritten.
+- This node is only executed on the successful verification path.
+"""
 from thudbot_core.state import LangGraphState
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
