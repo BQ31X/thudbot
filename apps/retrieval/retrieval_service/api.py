@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any
 import logging
+import os
 
 from .retriever import RetrieverClient
 from .config import QDRANT_URL, QDRANT_COLLECTION, EMBEDDING_PROVIDER, EMBEDDING_MODEL, DEFAULT_K
@@ -145,4 +146,20 @@ async def get_metadata():
             status_code=500,
             detail=f"Failed to get metadata: {str(e)}"
         )
+
+
+@app.get("/version")
+async def get_version():
+    """
+    Version endpoint - returns build metadata.
+    
+    Metadata is injected at Docker build time via build args.
+    Returns 'unknown' for any missing values (no crashes).
+    """
+    return {
+        "service": "retrieval",
+        "git_commit": os.getenv("GIT_COMMIT", "unknown"),
+        "build_time_utc": os.getenv("BUILD_TIME_UTC", "unknown"),
+        "image_tag": os.getenv("IMAGE_TAG", "unknown")
+    }
 

@@ -121,6 +121,21 @@ async def clear_chat_session(request: ClearSessionRequest):
             status_code=500, 
             detail="Unable to clear session. Please try again."
         )
+
+@app.get("/version")
+async def get_version():
+    """
+    Version endpoint - returns build metadata.
+    
+    Metadata is injected at Docker build time via build args.
+    Returns 'unknown' for any missing values (no crashes).
+    """
+    return {
+        "service": "backend",
+        "git_commit": os.getenv("GIT_COMMIT", "unknown"),
+        "build_time_utc": os.getenv("BUILD_TIME_UTC", "unknown"),
+        "image_tag": os.getenv("IMAGE_TAG", "unknown")
+    }
 # This module is not intended to be run directly.
 # Use `python -m thudbot_core` instead.
 

@@ -39,9 +39,19 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # --------------------------------------
 FROM python:3.13-slim-bookworm
 
+# Build arguments for version metadata
+ARG GIT_COMMIT=unknown
+ARG BUILD_TIME_UTC=unknown
+ARG IMAGE_TAG=unknown
+
 # Set Python environment variables for production
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
+
+# Persist build metadata as environment variables
+ENV GIT_COMMIT=${GIT_COMMIT}
+ENV BUILD_TIME_UTC=${BUILD_TIME_UTC}
+ENV IMAGE_TAG=${IMAGE_TAG}
 
 # Create app directory
 WORKDIR /app

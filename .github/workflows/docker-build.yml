@@ -6,17 +6,20 @@ on:
     paths:
       - 'apps/backend/**'
       - 'apps/frontend/**'
+      - 'apps/retrieval/**'
       - '.github/workflows/docker-build.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'apps/backend/**'
       - 'apps/frontend/**'
+      - 'apps/retrieval/**'
 
 env:
   REGISTRY: docker.io
   BACKEND_IMAGE: bq31/thudbot-backend
   FRONTEND_IMAGE: bq31/thudbot-frontend
+  RETRIEVAL_IMAGE: bq31/thudbot-retrieval
 
 jobs:
   build-backend:
@@ -44,8 +47,18 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=sha
+            type=sha,format=short
             type=raw,value=latest,enable={{is_default_branch}}
+      # Select a single canonical immutable tag for runtime version reporting.
+      # This must match the commit-based Docker tag pushed in this build.
+      - name: Select immutable image tag
+        id: version
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          echo "IMAGE_TAG=${{ env.BACKEND_IMAGE }}:sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "GIT_COMMIT=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "BUILD_TIME_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> "$GITHUB_OUTPUT"
+          
 
       - name: Build and push backend image
         uses: docker/build-push-action@v5
@@ -55,6 +68,62 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            IMAGE_TAG=${{ steps.version.outputs.IMAGE_TAG }}
+            GIT_COMMIT=${{ steps.version.outputs.GIT_COMMIT }}
+            BUILD_TIME_UTC=${{ steps.version.outputs.BUILD_TIME_UTC }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-retrieval:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.RETRIEVAL_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Select immutable image tag
+        id: version
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          echo "IMAGE_TAG=${{ env.RETRIEVAL_IMAGE }}:sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "GIT_COMMIT=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "BUILD_TIME_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push retrieval image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/retrieval/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            IMAGE_TAG=${{ steps.version.outputs.IMAGE_TAG }}
+            GIT_COMMIT=${{ steps.version.outputs.GIT_COMMIT }}
+            BUILD_TIME_UTC=${{ steps.version.outputs.BUILD_TIME_UTC }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -83,8 +152,16 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=sha
+            type=sha,format=short
             type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Select immutable image tag
+        id: version
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          echo "IMAGE_TAG=${{ env.FRONTEND_IMAGE }}:sha-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "GIT_COMMIT=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "BUILD_TIME_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> "$GITHUB_OUTPUT"
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
@@ -94,5 +171,9 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            IMAGE_TAG=${{ steps.version.outputs.IMAGE_TAG }}
+            GIT_COMMIT=${{ steps.version.outputs.GIT_COMMIT }}
+            BUILD_TIME_UTC=${{ steps.version.outputs.BUILD_TIME_UTC }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
