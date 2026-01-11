@@ -1,3 +1,29 @@
+"""
+Format the final player-facing response and update conversational session state.
+
+Responsibilities:
+- Produces the final, player-visible response string from the prepared hint content.
+- Applies simple, consistent formatting that reflects the current hint level.
+- Updates conversational history to persist the completed exchange.
+- Acts as the terminal node in the LangGraph, always leading to END.
+- Does not perform retrieval, verification, or content transformation beyond formatting.
+
+Reads from state:
+- current_hint
+- hint_level
+- user_input
+- chat_history
+
+Writes to state:
+- formatted_output (final response string)
+- chat_history (appends HumanMessage and AIMessage entries)
+
+Notes:
+- Uses simple string formatting (e.g., "🎯 Hint (Level {hint_level}): {hint}").
+- Appends the current turn to chat history for session continuity.
+- Truncates chat history to the most recent 20 messages (10 exchanges).
+- This node represents the final side-effectful step before returning control to the caller.
+"""
 from thudbot_core.state import LangGraphState
 from langchain_core.messages import HumanMessage, AIMessage
 

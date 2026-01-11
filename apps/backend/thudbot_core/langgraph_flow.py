@@ -1,5 +1,52 @@
-# Shared utilities for LangGraph nodes
-# This file contains shared constants and utility functions used by multiple nodes
+"""
+Shared utility functions and constants supporting LangGraph control flow.
+
+This module contains helper logic used by graph nodes, primarily the router,
+to classify player input and detect special interaction patterns. It is not
+itself a LangGraph node and does not participate directly in graph execution.
+
+Purpose:
+- Provide reusable, testable utilities for intent classification and pattern
+  detection.
+- Centralize lightweight text analysis logic that informs routing decisions.
+- Keep router_node focused on control flow rather than low-level heuristics.
+
+Contents:
+Constants:
+- OFF_TOPIC_RESPONSES
+  Canned responses for off-topic input. Defined but not used in the current
+  implementation, as router behavior relies on LLM-generated responses instead.
+- VAGUE_ESCALATION_PATTERNS
+  Phrase patterns indicating the player is requesting additional help or
+  escalation.
+- SMALLTALK_PATTERNS
+  Phrase patterns indicating meta or smalltalk questions about Zelda or
+  system capabilities.
+- STOP_WORDS
+  Common words filtered out during keyword extraction.
+
+Functions:
+- extract_question_keywords(user_input)
+  Removes stop words and extracts meaningful keywords from player input.
+- is_vague_escalation_request(user_input)
+  Detects escalation requests using pattern matching.
+- is_smalltalk_question(user_input)
+  Detects smalltalk or meta questions using pattern matching.
+- classify_intent(user_input)
+  Uses an LLM-based classifier to label input as GAME_RELATED or OFF_TOPIC.
+
+Usage:
+- Imported and used primarily by router_node to inform routing decisions.
+- May be reused by other nodes for lightweight classification or pattern checks.
+
+Notes:
+- This module is intentionally separate from graph node implementations to
+  avoid overloading router_node with low-level logic.
+- Functions here may invoke LLMs or apply heuristics, but they do not mutate
+  shared graph state directly.
+- Constants and helpers reflect current routing needs and may evolve as graph
+  behavior changes.
+"""
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI

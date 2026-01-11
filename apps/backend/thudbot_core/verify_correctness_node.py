@@ -1,3 +1,33 @@
+"""
+Verify that the retrieved hint content is correct, relevant, and supported by the retrieved context.
+
+Responsibilities:
+- Evaluates the candidate hint against retrieved source context for correctness and relevance.
+- Performs verification across multiple dimensions (answer appropriateness, factual accuracy, contextual support).
+- Produces a structured verification outcome and reason code for downstream routing.
+- Acts as a routing gate between successful hint delivery and error or fallback paths.
+- Does not modify the hint content itself.
+- Does not perform retrieval or generate new hint material.
+
+Reads from state:
+- current_hint
+- user_input
+- retrieved_context
+
+Writes to state:
+- verification_passed (Boolean)
+- verification_reason (String: VERIFIED, TOO_SPECIFIC, HALLUCINATED,
+  INSUFFICIENT_CONTEXT, API_ERROR, VERIFICATION_ERROR)
+
+Notes:
+- Uses LLM (gpt-4o-mini) to verify hint content against retrieved context.
+- Verification considers multiple dimensions: question-answer appropriateness,
+  factual accuracy, and contextual relevance.
+- On API or verification errors, sets verification_passed=False and continues
+  execution (graceful degradation).
+- This node is a critical control-flow point that determines success vs. error routing.
+"""
+
 from thudbot_core.state import LangGraphState
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate

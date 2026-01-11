@@ -1,3 +1,28 @@
+"""
+Generate a player-facing error or clarification message when hint delivery fails.
+
+Responsibilities:
+- Produces a polite, user-facing message explaining why a hint could not be delivered.
+- Tailors the message based on the verification outcome or failure reason.
+- Applies character-consistent tone while preserving a non-informational response.
+- Acts as the terminal node for verification or retrieval failure paths.
+- Does not attempt hint retrieval, verification, or correction.
+
+Reads from state:
+- user_input
+- verification_reason
+
+Writes to state:
+- formatted_output (error or clarification message string)
+
+Notes:
+- Uses LLM (gpt-4o-mini) to generate a polite clarification or retry prompt.
+- Enforces the same character and IP guardrails as maintain_character_node.
+- Implements tiered fallback behavior:
+  - Guardrail violation → API error → ultimate fallback to a hardcoded message.
+- Does not update chat history (unlike format_output_node).
+- This node always leads to END.
+"""
 from thudbot_core.state import LangGraphState
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
