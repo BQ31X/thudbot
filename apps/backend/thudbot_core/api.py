@@ -136,6 +136,12 @@ async def get_version():
         "build_time_utc": os.getenv("BUILD_TIME_UTC", "unknown"),
         "image_tag": os.getenv("IMAGE_TAG", "unknown")
     }
+
+@app.api_route("/health", methods=["GET","HEAD"])
+async def health():
+    """Health endpoint for uptime monitoring"""
+    return {"status": "ok"}
+
 # This module is not intended to be run directly.
 # Use `python -m thudbot_core` instead.
 
